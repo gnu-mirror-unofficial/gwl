@@ -1,0 +1,5 @@
+digraph G {
+  graph [bgcolor=transparent, fontsize=24];
+ "annotate-variants-1.0" [shape=box,style="rounded,filled",fillcolor="#ff9955",label=<<FONT POINT-SIZE="14"><U>ANNOTATE VARIANTS</U></FONT><BR/><FONT POINT-SIZE="12"><BR/><BR/>Uses: snpeff-4.1, gatk-3.4, igvtools-2.3.71.</FONT>>];
+
+}

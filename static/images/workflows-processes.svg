@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="svg2"
+   viewBox="0 0 396.60148 210.88766"
+   height="168.71013pt"
+   width="317.28119pt"
+   sodipodi:docname="workflows-processes.svg"
+   inkscape:version="0.92.0 r15299">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview392"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="1.0083732"
+     inkscape:cx="129.52749"
+     inkscape:cy="19.081318"
+     inkscape:window-x="1920"
+     inkscape:window-y="26"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs4" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(-235.29957,-205.87473)"
+     id="layer1">
+    <g
+       id="g4593"
+       transform="translate(-92,-240)">
+      <g
+         id="g4595"
+         transform="translate(215.16249,49.091373)">
+        <rect
+           ry="6.4285698"
+           y="397.78336"
+           x="113.13708"
+           height="208.88765"
+           width="394.60147"
+           id="rect4597"
+           style="fill:#f2f2f2;fill-opacity:1;stroke:#4d4d4d;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none" />
+        <text
+           id="text4599"
+           y="425.38229"
+           x="122.12598"
+           style="font-style:normal;font-weight:normal;font-size:7.43717623px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.1899482px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             style="font-size:19.33665848px;stroke-width:1.1899482px"
+             y="425.38229"
+             x="122.12598"
+             id="tspan4601">Workflow</tspan></text>
+      </g>
+    </g>
+    <g
+       transform="translate(132.96048,-124.13068)"
+       id="g4358">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:monospace;-inkscape-font-specification:monospace;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="121.3811"
+         y="425.7442"
+         id="text4142"><tspan
+           id="tspan4645"
+           x="121.3811"
+           y="439.8067"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:monospace;-inkscape-font-specification:monospace" /></text>
+      <g
+         id="g4119"
+         transform="translate(150,-22.5)">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none"
+           id="rect4110"
+           width="84.16626"
+           height="35.436928"
+           x="113.13708"
+           y="385.78336"
+           ry="6.4285698" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:6.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="122.22846"
+           y="409.03717"
+           id="text4114"><tspan
+             id="tspan4112"
+             x="122.22846"
+             y="409.03717"
+             style="font-size:16.25px">Process</tspan></text>
+      </g>
+      <g
+         transform="translate(150,25.008762)"
+         id="g4143">
+        <rect
+           ry="6.4285698"
+           y="385.78336"
+           x="113.13708"
+           height="35.436928"
+           width="84.16626"
+           id="rect4137"
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none" />
+        <text
+           id="text4141"
+           y="409.03717"
+           x="122.22846"
+           style="font-style:normal;font-weight:normal;font-size:6.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             style="font-size:16.25px"
+             y="409.03717"
+             x="122.22846"
+             id="tspan4139">Process</tspan></text>
+      </g>
+      <g
+         transform="matrix(0.19616127,-0.98057165,-0.98057165,-0.19616127,487.80356,969.53843)"
+         id="g6811">
+        <g
+           id="g4289"
+           transform="translate(-5.352183,-1.7305374)">
+          <path
+             sodipodi:nodetypes="cc"
+             id="path6813"
+             d="m 517.18536,401.47175 c 0,0 17.6238,-5.16299 22.36701,-56.28451"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             inkscape:connector-curvature="0" />
+          <path
+             inkscape:transform-center-y="-1.7747138"
+             inkscape:transform-center-x="0.25352219"
+             id="path6815"
+             d="m 545.32588,345.19016 -12.44084,2.1388 5.99908,-9.01495 z"
+             style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <g
+         id="g4294">
+        <rect
+           ry="6.4285698"
+           y="385.78336"
+           x="113.13708"
+           height="35.436928"
+           width="84.16626"
+           id="rect3336"
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none" />
+        <text
+           id="text3338"
+           y="409.03717"
+           x="122.22846"
+           style="font-style:normal;font-weight:normal;font-size:6.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             style="font-size:16.25px"
+             y="409.03717"
+             x="122.22846"
+             id="tspan3340">Process</tspan></text>
+      </g>
+      <g
+         id="g4326"
+         transform="rotate(78.68743,342.74085,216.50145)">
+        <g
+           transform="translate(-5.352183,-1.7305374)"
+           id="g4324">
+          <path
+             inkscape:connector-curvature="0"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             d="m 517.18536,401.47175 c 0,0 17.6238,-5.16299 22.36701,-56.28451"
+             id="path4320"
+             sodipodi:nodetypes="cc" />
+          <path
+             inkscape:connector-curvature="0"
+             style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             d="m 545.32588,345.19016 -12.44084,2.1388 5.99908,-9.01495 z"
+             id="path4322"
+             inkscape:transform-center-x="0.25352219"
+             inkscape:transform-center-y="-1.7747138" />
+        </g>
+      </g>
+      <g
+         transform="translate(159.375,101.25)"
+         id="g4334">
+        <rect
+           ry="6.4285698"
+           y="385.78336"
+           x="113.13708"
+           height="35.436928"
+           width="84.16626"
+           id="rect4328"
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none" />
+        <text
+           id="text4332"
+           y="409.03717"
+           x="122.22846"
+           style="font-style:normal;font-weight:normal;font-size:6.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             style="font-size:16.25px"
+             y="409.03717"
+             x="122.22846"
+             id="tspan4330">Process</tspan></text>
+      </g>
+      <g
+         transform="rotate(162.64288,412.04994,395.62474)"
+         id="g4342">
+        <g
+           id="g4340"
+           transform="translate(-5.352183,-1.7305374)">
+          <path
+             sodipodi:nodetypes="cc"
+             id="path4336"
+             d="m 535.86133,380.86445 c 0,0 4.08672,-19.07453 3.69104,-35.67721"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             inkscape:connector-curvature="0" />
+          <path
+             inkscape:transform-center-y="-1.7747138"
+             inkscape:transform-center-x="0.25352219"
+             id="path4338"
+             d="m 545.32588,345.19016 -12.44084,2.1388 5.99908,-9.01495 z"
+             style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <g
+         transform="rotate(117.84166,325.77718,302.43085)"
+         id="g4350">
+        <g
+           id="g4348"
+           transform="translate(-5.352183,-1.7305374)">
+          <path
+             sodipodi:nodetypes="cc"
+             id="path4344"
+             d="m 517.18536,401.47175 c 0,0 59.62735,-40.35874 18.24663,-142.20956"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             inkscape:connector-curvature="0" />
+        </g>
+        <path
+           inkscape:connector-curvature="0"
+           style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 537.5192,258.46256 -11.61641,4.94044 3.76692,-10.15227 z"
+           id="path4352"
+           inkscape:transform-center-x="0.001454758"
+           inkscape:transform-center-y="-1.9497684" />
+      </g>
+      <g
+         id="g4375"
+         transform="translate(290.625,56.25)">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none"
+           id="rect4369"
+           width="84.16626"
+           height="35.436928"
+           x="113.13708"
+           y="385.78336"
+           ry="6.4285698" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:6.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="122.22846"
+           y="409.03717"
+           id="text4373"><tspan
+             id="tspan4371"
+             x="122.22846"
+             y="409.03717"
+             style="font-size:16.25px">Process</tspan></text>
+      </g>
+      <g
+         transform="rotate(45.945387,311.03913,268.89348)"
+         id="g4383">
+        <g
+           id="g4381"
+           transform="translate(-5.352183,-1.7305374)">
+          <path
+             sodipodi:nodetypes="cc"
+             id="path4377"
+             d="m 517.18536,401.47175 c 0,0 17.6238,-5.16299 22.36701,-56.28451"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             inkscape:connector-curvature="0" />
+          <path
+             inkscape:transform-center-y="-1.7747138"
+             inkscape:transform-center-x="0.25352219"
+             id="path4379"
+             d="m 545.32588,345.19016 -12.44084,2.1388 5.99908,-9.01495 z"
+             style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+      <g
+         id="g4391"
+         transform="matrix(0.64126783,-0.76731713,-0.76731713,-0.64126783,279.29786,1015.9787)">
+        <g
+           transform="translate(-5.352183,-1.7305374)"
+           id="g4387">
+          <path
+             inkscape:connector-curvature="0"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             d="m 536.56534,357.26642 c 0,0 23.20448,-31.66866 -4.42881,-85.87787"
+             id="path4385"
+             sodipodi:nodetypes="cc" />
+        </g>
+        <path
+           inkscape:transform-center-y="-1.9497684"
+           inkscape:transform-center-x="0.001454758"
+           id="path4389"
+           d="m 532.92738,270.25204 -11.61641,4.94044 3.76692,-10.15227 z"
+           style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g4399"
+         transform="rotate(103.44263,421.52858,347.86141)">
+        <g
+           transform="translate(-5.352183,-1.7305374)"
+           id="g4397">
+          <path
+             inkscape:connector-curvature="0"
+             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             d="m 535.2199,400.45064 c 0,0 4.72815,-38.66072 4.33247,-55.2634"
+             id="path4393"
+             sodipodi:nodetypes="cc" />
+          <path
+             inkscape:connector-curvature="0"
+             style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             d="m 545.32588,345.19016 -12.44084,2.1388 5.99908,-9.01495 z"
+             id="path4395"
+             inkscape:transform-center-x="0.25352219"
+             inkscape:transform-center-y="-1.7747138" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,24 @@
+digraph G {
+  graph [bgcolor=transparent, fontsize=24];
+ "quality-control-1.0" [shape=box,style="rounded,filled",fillcolor="#8dd35f",label=<<FONT POINT-SIZE="14"><U>QUALITY CONTROL</U></FONT><BR/><FONT POINT-SIZE="12">Generate quality control reports for FastQ files<BR/><BR/>Uses: fastqc-0.11.4.</FONT>>];
+ "align-1.0" [shape=box,style="rounded,filled",fillcolor="#decd87",label=<<FONT POINT-SIZE="14"><U>ALIGN</U></FONT><BR/><FONT POINT-SIZE="12">Align reads from FastQ files against reference genome<BR/><BR/>Uses: star-2.4.2a.</FONT>>];
+ "add-read-groups-1.0" [shape=box,style="rounded,filled",fillcolor="#bcd35f",label=<<FONT POINT-SIZE="14"><U>ADD READ GROUPS</U></FONT><BR/><FONT POINT-SIZE="12">Add read group information to the BAM files<BR/><BR/>Uses: picard-1.141.</FONT>>];
+ "sort-and-index-1.0" [shape=box,style="rounded,filled",fillcolor="#ffe680",label=<<FONT POINT-SIZE="14"><U>SORT AND INDEX</U></FONT><BR/><FONT POINT-SIZE="12">Sort and index BAM files<BR/><BR/>Uses: sambamba-0.6.5-5a33d57.</FONT>>];
+ "feature-readcount-1.0" [shape=box,style="rounded,filled",fillcolor="#aaeeff",label=<<FONT POINT-SIZE="14"><U>FEATURE READCOUNT</U></FONT><BR/><FONT POINT-SIZE="12">Number of mapped reads per feature<BR/><BR/>Uses: htseq-0.6.1.</FONT>>];
+ "collect-alignment-metrics-1.0" [shape=box,style="rounded,filled",fillcolor="#ffd42a",label=<<FONT POINT-SIZE="14"><U>COLLECT ALIGNMENT METRICS</U></FONT><BR/><FONT POINT-SIZE="12">Report quality statistics of sorted BAM files<BR/><BR/>Uses: picard-1.141.</FONT>>];
+ "variant-calling-1.0" [shape=box,style="rounded,filled",fillcolor="#ff9955",label=<<FONT POINT-SIZE="14"><U>VARIANT CALLING</U></FONT><BR/><FONT POINT-SIZE="12">Variant calling, filtering and annotation<BR/><BR/>Uses: picard-1.141.</FONT>>];
+ "merge-read-features-1.0" [shape=box,style="rounded,filled",fillcolor="#d38d5f",label=<<FONT POINT-SIZE="14"><U>MERGE READ FEATURES</U></FONT><BR/><FONT POINT-SIZE="12">Merge feature read count into one table<BR/><BR/>Uses: -.</FONT>>];
+ "compute-rpkm-values-1.0" [shape=box,style="rounded,filled",fillcolor="#ac93a7",label=<<FONT POINT-SIZE="14"><U>COMPUTE RPKM VALUES</U></FONT><BR/><FONT POINT-SIZE="12">Compute reads per kilobase per million (RPKM) values<BR/><BR/>Uses: r-3.3.2, r-edger-3.16.5.</FONT>>];
+ "normalize-read-counts-1.0" [shape=box,style="rounded,filled",fillcolor="#d35f5f",label=<<FONT POINT-SIZE="14"><U>NORMALIZE READ COUNTS</U></FONT><BR/><FONT POINT-SIZE="12">Normalize read counts by their size factor<BR/><BR/>Uses: r-3.3.2, r-deseq-1.26.0.</FONT>>];
+ "differential-expression-1.0" [shape=box,style="rounded,filled",fillcolor="#8dd35f",label=<<FONT POINT-SIZE="14"><U>DIFFERENTIAL EXPRESSION</U></FONT><BR/><FONT POINT-SIZE="12">Do a differential expression analysis<BR/><BR/>Uses: r-3.3.2, r-deseq2-1.14.1.</FONT>>];
+
+  "align-1.0" -> "add-read-groups-1.0"
+  "add-read-groups-1.0" -> "sort-and-index-1.0"
+  "sort-and-index-1.0" -> "variant-calling-1.0"
+  "sort-and-index-1.0" -> "collect-alignment-metrics-1.0"
+  "sort-and-index-1.0" -> "feature-readcount-1.0"
+  "feature-readcount-1.0" -> "merge-read-features-1.0"
+  "merge-read-features-1.0" -> "compute-rpkm-values-1.0"
+  "merge-read-features-1.0" -> "normalize-read-counts-1.0"
+  "merge-read-features-1.0" -> "differential-expression-1.0"
+}
