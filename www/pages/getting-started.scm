@@ -27,17 +27,24 @@
      (p "This tutorial assumes we have already "
         (a (@ (href "https://www.gnu.org/software/guix/manual/html_node/"
                     "Binary-Installation.html")) "installed GNU Guix") ". "
-                    "Additionally, we need to clone the "
-                    (a (@ (href "https://git.roelj.com/guix/guix-wl.git"))
-                       "guix-wl repository") ", which can be done with "
-                       "the following command:")
+                    "Additionally, we need to install the "
+                    (a (@ (href "https://git.roelj.com/guix/gwl.git"))
+                       "GWL extension") ", which can be done with "
+                       "the following commands:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "bash"))
-                     "$ git clone https://git.roelj.com/guix/guix-wl.git
-$ cd guix-wl/"))
-          (p (strong "Command 1") ": Get the workflow management code for "
-             "GNU Guix."))
+                     "# Get the code
+git clone https://git.roelj.com/guix/gwl.git && cd gwl/
+
+# Configure and compile the code
+autoreconf -ivf && ./configure && make
+
+# Add the 'workflow' and 'process' subcommands to GNU Guix
+CURRENT_DIR=`pwd`
+export \"GUILE_LOAD_PATH=$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
+          (p (strong "Command 1") ": Get the workflow management extension "
+             "for GNU Guix."))
 
      (p "After these steps have been completed, we can start using the "
         "workflow language.  In case you are wondering about which editor "
@@ -149,7 +156,7 @@ $ cd guix-wl/"))
 
      (div (@ (class "figure"))
              (pre (code (@ (class "bash"))
-                        "$ ./pre-inst-env guix process --run=hello-world
+                        "guix process --run=hello-world
 # Please run the following:
 
 /gnu/store/28hzs2kvj3m27iivv0dxipwyipgq75bl-hello-world-0.1"))
@@ -168,7 +175,7 @@ $ cd guix-wl/"))
 
      (div (@ (class "figure"))
           (pre (code (@ (class "bash"))
-                     "$ ./pre-inst-env guix process --run=hello-world --engine=grid-engine
+                     "guix process --run=hello-world --engine=grid-engine
 # Please run the following:
 
 qsub /gnu/store/gi1k8r1dhbmwaxhyqgyqh4vc5y5ih6h7-hello-world-0.1"))
@@ -203,7 +210,7 @@ inheritance to make our changes:")
 
      (div (@ (class "figure"))
        (pre (code (@ (class "bash"))
-        "$ ./pre-inst-env guix process --run=hello-bob
+        "guix process --run=hello-bob
 # Please run the following:
 
 /gnu/store/6491my3r1sybzgkdgb6ngp2p1idg53pc-hello-bob-0.1"))

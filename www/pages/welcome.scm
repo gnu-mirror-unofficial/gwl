@@ -21,6 +21,7 @@
 (define (page-welcome request-path)
   (page-root-template "GWL" request-path
    `((h2 "A workflow management language empowered by GNU Guix")
+
      (p "Workflow management for software systems starts with getting programs "
         "to run where and when you need them.  So, naturally, we start "
         "building on top of " (a (@ (href "https://arxiv.org/abs/1305.4584"))
@@ -32,8 +33,9 @@
         "individual program invocations, you need a language to express how "
         "to combine them by describing their dependencies and relationships.")
 
-     (p "Three domain-specific challenges implemented in one programming "
-        "language, working together to make complex problems easy to describe.")
+     (p "The GWL solves three domain-specific challenges implemented in one "
+        "programming language, working together to make complex problems "
+        "easy to describe.")
 
      (div (@ (style "text-align: center"))
           (div (@ (class "action-button"))
