@@ -41,7 +41,9 @@ Run a predefined computational process.\n"))
   ;; -l, --list-available-engines
   ;;                        list available engines for offloading"))
   (display (_ "
-  -p, --list-available   list available processes"))
+  -l, --list-available   list available processes"))
+  (display (_ "
+  -p, --prepare=PROCESS      Prepare the running of a PROCESS."))
   (display (_ "
   -r, --run=PROCESS      Run PROCESS."))
   (display (_ "
@@ -82,6 +84,11 @@ Run a predefined computational process.\n"))
                 (lambda (opt name arg result)
                   (alist-cons 'output arg
                               (alist-delete 'output result))))
+        (option '(#\p "prepare") #t #f
+                (lambda (opt name arg result)
+                  (alist-cons 'query 'prepare
+                              (alist-cons 'value arg
+                                          (alist-delete 'prepare result)))))
         (option '(#\r "run") #t #f
                 (lambda (opt name arg result)
                   (alist-cons 'query 'run
@@ -92,7 +99,7 @@ Run a predefined computational process.\n"))
                   (alist-cons 'query 'search
                               (alist-cons 'value arg
                                           (alist-delete 'search result)))))
-        (option '(#\p "list-available") #f #f
+        (option '(#\l "list-available") #f #f
                 (lambda args
                   (show-available-processes args)))))
 
@@ -128,7 +135,7 @@ Run a predefined computational process.\n"))
        #t)
       ;; Handle running a process.
       ;; ----------------------------------------------------------------------
-      ('run
+      ('prepare
        ;; TODO: Deal with the situation wherein multiple processes
        ;; with the same name are defined.
        (let* ((procs (find-process-by-name (assoc-ref opts 'value)))
@@ -150,6 +157,27 @@ Run a predefined computational process.\n"))
                    (if (not engine-symbol)
                        (format #t "The engine ~s is not available." engine-name)
                        (process->script proc engine-symbol))))))
+       #t)
+      ('run
+       (let* ((procs (find-process-by-name (assoc-ref opts 'value)))
+              (proc (if (null? procs) '() (car procs)))
+              (engine-name (assoc-ref opts 'engine))
+              (proc-name (assoc-ref opts 'value)))
+         ;; Use "bash" as the default engine.
+         (when (eq? engine-name #f) (set! engine-name "bash"))
+         (if (eq? proc-name #f)
+             (format #t "Please provide --engine and --run arguments.~%")
+             (if (not (process? proc))
+                 (format #t "Cannot find a process with name ~s.~%" proc-name)
+                 (let ((engine-symbol
+                        (module-ref
+                         (resolve-interface
+                          (append '(guix process-engines)
+                                  (list (string->symbol engine-name))))
+                         (string->symbol engine-name))))
+                   (if (not engine-symbol)
+                       (format #t "The engine ~s is not available." engine-name)
+                       (process->script->run proc engine-symbol))))))
        #t)
       ;; Handle (or don't handle) anything else.
       ;; ----------------------------------------------------------------------

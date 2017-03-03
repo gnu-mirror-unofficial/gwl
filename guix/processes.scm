@@ -59,6 +59,7 @@
 
             process->derivation
             process->script
+            process->script->run
 
             ;; For the lack of a better place.
             default-guile))
@@ -248,12 +249,10 @@ user needs to run."
         (format #t "~@[~a ~]~a~%" command-prefix output))))
 
 (define (process->script->run proc engine)
-  "Builds a derivation of PROC using ENGINE, runs the resulting script
-and returns the output location of PROC."
-  (let ((command-prefix (process-engine-command-prefix engine))
-        (derivation-builder (process-engine-derivation-builder engine)))
-    (if (not (and (process? proc)
-                  (string? (process-outputs proc engine))))
-        #f
-        (let ((output (derivation->script (derivation-builder proc))))
-          (system (format #f "~a ~a" command-prefix output))))))
+  "Builds a derivation of PROC and runs the resulting script."
+  (if (not (process? proc))
+      (display "This is not a process!")
+      (let* ((command-prefix (process-engine-command-prefix engine))
+             (derivation-builder (process-engine-derivation-builder engine))
+             (output (derivation->script (derivation-builder proc))))
+        (system (format #f "~@[~a ~]~a~%" command-prefix output)))))
