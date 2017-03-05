@@ -151,7 +151,7 @@ Run multiple predefined computational process in a workflow.\n"))
                          (string->symbol engine-name))))
                    (if (not engine-symbol)
                        (format #t "The engine ~s is not available." engine-name)
-                       (process->script wf engine-symbol))))))
+                       (workflow-run wf engine-symbol))))))
        #t)
       ;; Handle (or don't handle) anything else.
       ;; ----------------------------------------------------------------------

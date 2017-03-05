@@ -20,55 +20,44 @@
   #:use-module (srfi srfi-1)
   #:export (sequential-execution-order
             parallel-step-execution-order
-            graph-execution-order
-            process-depends-on
-            process-needed-by
             compute-free-points
-            reduce-dependencies))
+            resolve-dependency
+            resolve-dependencies))
 
-(define* (process-depends-on process dependencies #:optional (depend-list '()))
-  "Returns the list of processes PROCESS depends on."
-  (if (null? dependencies)
-    depend-list
-    (let ((item (car dependencies)))
-      (if (equal? process (cadr item))
-        (process-depends-on process (cdr dependencies)
-                            (append depend-list (cdr item)))
-        (process-depends-on process (cdr dependencies) depend-list)))))
+(define (resolve-dependency process dependencies)
+  "Remove PROCESS from the list of DEPENDENCIES."
+  ;; Remove the resolved dependency.
+  (let ((reduced (map (lambda (pair)
+                        `(,(car pair) .
+                          ,(if (cdr pair)
+                               (delete process (cdr pair)) #f)))
+                      dependencies)))
+    ;; Set the empty pairs to #f, so that it is equivalant to
+    ;; a missing key.
+    (map (lambda (pair)
+           (let ((pair-dependencies (cdr pair)))
+             `(,(car pair) . ,(if (null? pair-dependencies)
+                                  #f
+                                  pair-dependencies))))
+         reduced)))
 
-(define* (process-needed-by process dependencies #:optional (depend-list '()))
-  "Returns the dependency pairs are needed by PROCESS."
-  (if (null? dependencies)
-    depend-list
-    (let ((item (car dependencies)))
-      (if (equal? process (cadr item))
-        (process-needed-by process
-                           (delete item dependencies)
-                           (append depend-list (list item)))
-        (process-needed-by process
-                           (delete item dependencies)
-                           depend-list)))))
-
-(define* (compute-free-points processes dependencies
-                              #:optional (free-points '()))
-  "Returns a PROCESS that can be used to start the execution at."
+(define (resolve-dependencies processes dependencies)
+  "Removes PROCESSES from the list of DEPENDENCIES."
   (if (null? processes)
-    free-points
-    (let ((process (car processes)))
-      (if (null? (process-depends-on process dependencies))
-        (compute-free-points (cdr processes) dependencies
-                             (append free-points (list process)))
-        (compute-free-points (cdr processes) dependencies
-                             free-points)))))
+      dependencies
+      (resolve-dependencies
+       (cdr processes)
+       (resolve-dependency (car processes) dependencies))))
 
-(define (reduce-dependencies processes dependencies)
-  "Removes dependencies on resolved PROCESSES."
-  (if (null? processes)
-    dependencies
-    (reduce-dependencies
-     (cdr processes)
-     (lset-difference eq? dependencies
-                      (process-needed-by (car processes) dependencies)))))
+(define (full-dependency-list processes dependencies)
+  "Returns a list of dependency pairs, including implicit dependency pairs."
+  (map (lambda (process)
+         `(,process . ,(assoc-ref dependencies process)))
+       processes))
+
+(define (compute-free-points processes dependencies)
+  "Returns a list of processes that can run immediately."
+  (map car (remove list? (full-dependency-list processes dependencies))))
 
 (define* (sequential-execution-order processes dependencies #:optional (order '()))
   "Returns the list of PROCESSES, re-ordered so it can be executed in a sequence
@@ -76,12 +65,13 @@ and adhere to the dependencies provided in DEPENDENCIES."
   (if (null? processes)
     (reverse order)
     (let* ((resolvable (compute-free-points processes dependencies))
+           (reduced-dependencies (resolve-dependencies resolvable dependencies))
            (leftovers (lset-difference eq? processes resolvable)))
       (if (null? resolvable)
           #f
           (sequential-execution-order
            leftovers
-           (reduce-dependencies resolvable dependencies)
+           (resolve-dependencies resolvable dependencies)
            (append resolvable order))))))
 
 (define (parallel-step-execution-order processes dependencies)
@@ -95,10 +85,9 @@ parallel at each step and adhere to the dependencies provided in DEPENDENCIES."
                (leftovers (lset-difference eq? processes resolvable)))
           (if (null? resolvable)
               #f
-              (stepper
-               leftovers
-               (reduce-dependencies resolvable dependencies)
-               (append (list resolvable) order))))))
+              (stepper leftovers
+                       (resolve-dependencies resolvable dependencies)
+                       (append (list resolvable) order))))))
 
   (stepper processes dependencies '()))
 

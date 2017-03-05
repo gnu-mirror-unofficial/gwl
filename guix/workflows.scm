@@ -129,14 +129,28 @@ processes that can be executed in parallel."
       (order-function (workflow-processes workflow)
                       (workflow-restrictions workflow))))
 
-;; TODO: Job dependencies can be 
 (define* (workflow-run workflow engine #:key (parallel? #t))
   "Runs WORKFLOW using ENGINE."
   (let ((order (workflow-run-order workflow #:parallel? parallel?)))
-    (format #t "# Please run the following:~%~%")
-    (for-each (lambda (process)
-                (process->script process engine #:stand-alone? #f))
-              (list-ref order 0))))
+    (if (not order)
+        (begin
+          (display "Sorry, I cannot determine the order in which to ")
+          (display "execute the processes.")
+          (newline))
+        (begin
+          (format #t "# Please run the following:~%~%")
+          (if parallel?
+              (for-each (lambda (step)
+                          (for-each (lambda (process)
+                                      (process->script process engine #:stand-alone? #f))
+                                    ;; By reversing the order of the processes in STEP
+                                    ;; we keep the output order the same as the order
+                                    ;; of the sequential function.
+                                    (reverse step)))
+                        order)
+              (for-each (lambda (process)
+                          (process->script process engine #:stand-alone? #f))
+                        order))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; GRAPHING FUNCTIONALITY
