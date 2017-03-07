@@ -42,6 +42,7 @@
             print-workflow-record
 
             workflow-run-order
+            workflow-prepare
             workflow-run
 
             workflow->dot))
@@ -129,7 +130,53 @@ processes that can be executed in parallel."
       (order-function (workflow-processes workflow)
                       (workflow-restrictions workflow))))
 
+(define* (workflow-prepare workflow engine #:key (parallel? #t))
+  "Runs WORKFLOW using ENGINE."
+  (let ((order (workflow-run-order workflow #:parallel? parallel?)))
+    (if (not order)
+        (begin
+          (display "Sorry, I cannot determine the order in which to ")
+          (display "execute the processes.")
+          (newline))
+        (begin
+          (format #t "# Please run the following:~%~%")
+          (if parallel?
+              (for-each (lambda (step)
+                          (for-each (lambda (process)
+                                      (process->script process engine #:stand-alone? #f))
+                                    ;; By reversing the order of the processes in STEP
+                                    ;; we keep the output order the same as the order
+                                    ;; of the sequential function.
+                                    (reverse step)))
+                        order)
+              (for-each (lambda (process)
+                          (process->script process engine))
+                        order))))))
+
 (define* (workflow-run workflow engine #:key (parallel? #t))
+  "Runs WORKFLOW using ENGINE."
+  (let ((order (workflow-run-order workflow #:parallel? parallel?)))
+    (if (not order)
+        (begin
+          (display "Sorry, I cannot determine the order in which to ")
+          (display "execute the processes.")
+          (newline))
+        (begin
+          (format #t "# Please run the following:~%~%")
+          (if parallel?
+              (for-each (lambda (step)
+                          (for-each (lambda (process)
+                                      (process->script process engine #:stand-alone? #f))
+                                    ;; By reversing the order of the processes in STEP
+                                    ;; we keep the output order the same as the order
+                                    ;; of the sequential function.
+                                    (reverse step)))
+                        order)
+              (for-each (lambda (process)
+                          (process->script->run process engine))
+                        order))))))
+
+(define* (workflow-prepare workflow engine #:key (parallel? #t))
   "Runs WORKFLOW using ENGINE."
   (let ((order (workflow-run-order workflow #:parallel? parallel?)))
     (if (not order)
@@ -178,23 +225,19 @@ processes that can be executed in parallel."
                      (process-package-inputs proc))
                 '("-")))))
 
+(define (workflow-restriction->dot pair)
+  "Write the dependency relationships of a restriction in dot format."
+  (let ((process (process-full-name (car pair)))
+        (restrictions (cdr pair)))
+    (format #f "~{~a~}~%" (map (lambda (item)
+                                 (format #f "~s -> ~s~%"
+                                         (process-full-name item)
+                                         process))
+                               restrictions))))
+
 (define* (workflow->dot workflow #:key (parallel? #t))
   "Returns the workflow's processes formatted in Graphviz's Dot language as a
 directed acyclic graph."
   (format #f "digraph G {~%  graph [bgcolor=transparent, fontsize=24];~%~{~a~}~%~{~a~}}"
-          ;; (string-upcase (string-map (lambda (x)
-          ;;                              (if (eq? x #\-) #\  x))
-          ;;                            (workflow-name workflow)))
           (map workflow-dot-prettify-node (workflow-processes workflow))
-          (let ((restrictions (workflow-restrictions workflow)))
-            (if (not restrictions)
-                '("")
-                (map (lambda (pair)
-                       (let ((first (list-ref pair 0))
-                             (second (list-ref pair 1)))
-                         (format #f "  ~s -> ~s~%"
-                                 ;; Reversed order here because the flow is exactly
-                                 ;; the opposite of the dependency chain.
-                                 (process-full-name second)
-                                 (process-full-name first))))
-                     restrictions)))))
+          (map workflow-restriction->dot (workflow-restrictions workflow))))
