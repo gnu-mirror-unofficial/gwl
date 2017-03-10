@@ -55,8 +55,8 @@ Run multiple predefined computational process in a workflow.\n"))
   (newline))
 
 (define (show-available-workflows args)
-  "Display available processes."
-  (format #t "Available processes:~%")
+  "Display available workflows."
+  (format #t "Available workflows:~%")
   (let ((wfs (fold-workflows
                      (lambda (p r)
                        (vhash-cons (workflow-full-name p) p r))
