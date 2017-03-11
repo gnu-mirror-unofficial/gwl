@@ -43,9 +43,7 @@
 
             workflow-run-order
             workflow-prepare
-            workflow-run
-
-            workflow->dot))
+            workflow-run))
 
 ;;; ---------------------------------------------------------------------------
 ;;; RECORD TYPES
@@ -63,8 +61,8 @@
 
   ;; The input and output of a workfow will be passed to each starting process.
   ;; This can be files or directories, depending on what the workflow expects.
-  (input workflow-input)
-  (output workflow-output)
+  (input workflow-input               (default #f))
+  (output workflow-output             (default #f))
 
   ;; Processes are functions taking two parameters (input and output) that
   ;; return a <process> record type.
@@ -72,28 +70,18 @@
 
   ;; Processes can depend on each other.  By defining dependency pairs
   ;; in the form (A B) where A must be executed after B.
-  ;;
-  ;; When automatic-restrictions is set to #t, we do not need to specify
-  ;; workflow-restrictions manually.  The dependencies will be computed
-  ;; automatically.
-  ;;
-  ;; Automatically computing the dependencies may be too simplistic for
-  ;; your workflow.  You can therefore switch to specifying manual
-  ;; restrictions too.
   (restrictions workflow-restrictions (default '()))
-  (automatic-restrictions workflow-automatic-restrictions
-                          (default #f))
 
   ;; Arguments are literally command-line arguments that can be passed
   ;; when executing a specific workflow.  This allows users to turn features
   ;; off and on, and pass an input and output directory.
   ;;
   ;; The arguments are passed as a list to the workflow record.
-  (arguments workflow-arguments (default #f))
+  (arguments workflow-arguments       (default #f))
 
   ;; When a workflow requires additional code to execute, it can be
   ;; specified in the following field.
-  (execution workflow-execution (default #f)))
+  (execution workflow-execution       (default #f)))
 
 (define (workflow-full-name arg)
   "Writes the name and version as a single string of PROCESS to PORT."
@@ -130,7 +118,7 @@ processes that can be executed in parallel."
       (order-function (workflow-processes workflow)
                       (workflow-restrictions workflow))))
 
-(define* (workflow-prepare workflow engine #:key (parallel? #t))
+(define* (fold-workflow-processes workflow engine function #:key (parallel? #t))
   "Runs WORKFLOW using ENGINE."
   (let ((order (workflow-run-order workflow #:parallel? parallel?)))
     (if (not order)
@@ -139,105 +127,24 @@ processes that can be executed in parallel."
           (display "execute the processes.")
           (newline))
         (begin
-          (format #t "# Please run the following:~%~%")
+          ;(format #t "# Please run the following:~%~%")
           (if parallel?
               (for-each (lambda (step)
                           (for-each (lambda (process)
-                                      (process->script process engine #:stand-alone? #f))
+                                      (function process engine #:stand-alone? #f))
                                     ;; By reversing the order of the processes in STEP
                                     ;; we keep the output order the same as the order
                                     ;; of the sequential function.
                                     (reverse step)))
                         order)
               (for-each (lambda (process)
-                          (process->script process engine))
+                          (function process engine))
                         order))))))
+
+(define* (workflow-prepare workflow engine #:key (parallel? #t))
+  (fold-workflow-processes workflow engine process->script
+                           #:parallel? parallel?))
 
 (define* (workflow-run workflow engine #:key (parallel? #t))
-  "Runs WORKFLOW using ENGINE."
-  (let ((order (workflow-run-order workflow #:parallel? parallel?)))
-    (if (not order)
-        (begin
-          (display "Sorry, I cannot determine the order in which to ")
-          (display "execute the processes.")
-          (newline))
-        (begin
-          (format #t "# Please run the following:~%~%")
-          (if parallel?
-              (for-each (lambda (step)
-                          (for-each (lambda (process)
-                                      (process->script process engine #:stand-alone? #f))
-                                    ;; By reversing the order of the processes in STEP
-                                    ;; we keep the output order the same as the order
-                                    ;; of the sequential function.
-                                    (reverse step)))
-                        order)
-              (for-each (lambda (process)
-                          (process->script->run process engine))
-                        order))))))
-
-(define* (workflow-prepare workflow engine #:key (parallel? #t))
-  "Runs WORKFLOW using ENGINE."
-  (let ((order (workflow-run-order workflow #:parallel? parallel?)))
-    (if (not order)
-        (begin
-          (display "Sorry, I cannot determine the order in which to ")
-          (display "execute the processes.")
-          (newline))
-        (begin
-          (format #t "# Please run the following:~%~%")
-          (if parallel?
-              (for-each (lambda (step)
-                          (for-each (lambda (process)
-                                      (process->script process engine #:stand-alone? #f))
-                                    ;; By reversing the order of the processes in STEP
-                                    ;; we keep the output order the same as the order
-                                    ;; of the sequential function.
-                                    (reverse step)))
-                        order)
-              (for-each (lambda (process)
-                          (process->script process engine #:stand-alone? #f))
-                        order))))))
-
-;;; ---------------------------------------------------------------------------
-;;; GRAPHING FUNCTIONALITY
-;;; ---------------------------------------------------------------------------
-
-(define take-color (color-scheme-stepper %modern-color-scheme))
-
-(define (workflow-dot-prettify-node process)
-  "Returns a string of prettified node names for a Graphviz graph."
-  (let* ((proc process)
-         (pretty-name (string-map (lambda (x)
-                                    (if (eq? x #\-) #\  x))
-                                  (process-name proc))))
-    (format #f (string-append " ~s [shape=box,style=\"rounded,filled\",fillcolo"
-                              "r=~s,label=<<FONT POINT-SIZE=\"14\"><U>~a</U></F"
-                              "ONT><BR/><FONT POINT-SIZE=\"12\">~a<BR/><BR/>Use"
-                              "s: ~{~a~^, ~}.</FONT>>];~%")
-            (process-full-name proc)
-            (take-color)
-            (string-upcase pretty-name)
-            (process-synopsis proc)
-            (if (process-package-inputs proc)
-                (map (lambda (pair)
-                       (package-full-name (cadr pair)))
-                     (process-package-inputs proc))
-                '("-")))))
-
-(define (workflow-restriction->dot pair)
-  "Write the dependency relationships of a restriction in dot format."
-  (let ((process (process-full-name (car pair)))
-        (restrictions (cdr pair)))
-    (format #f "~{~a~}~%" (map (lambda (item)
-                                 (format #f "~s -> ~s~%"
-                                         (process-full-name item)
-                                         process))
-                               restrictions))))
-
-(define* (workflow->dot workflow #:key (parallel? #t))
-  "Returns the workflow's processes formatted in Graphviz's Dot language as a
-directed acyclic graph."
-  (format #f "digraph G {~%  graph [bgcolor=transparent, fontsize=24];~%~{~a~}~%~{~a~}}"
-          (map workflow-dot-prettify-node (workflow-processes workflow))
-          (map workflow-restriction->dot (workflow-restrictions workflow))))
+  (fold-workflow-processes workflow engine process->script->run
+                           #:parallel? parallel?))

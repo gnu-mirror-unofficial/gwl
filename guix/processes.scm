@@ -68,15 +68,6 @@
 ;;;
 ;;; This module provides a high-level mechanism to define processes in a
 ;;; Guix-based distribution.
-;;;
-;;; Code:
-
-;; (define-condition-type &process-error &error
-;;   process-error?
-;;   (process process-error-process))
-
-;; (define-condition-type &process-type-error &process-error
-;;   process-type-error?)
 
 ;;; ---------------------------------------------------------------------------
 ;;; RECORD TYPES
@@ -111,7 +102,7 @@
   ;;
   ;; Options can be discovered using:
   ;; $ guix process --list-options=test
-  (settings         process-settings (default #f))
+  ;;(settings         process-settings (default #f))
 
   (output-path      process-output-path (default #f))
   (outputs          process-output (default #f))
@@ -241,17 +232,17 @@ set to #f, it only returns the output path."
   "Builds a derivation of PROC and displays the commands a
 user needs to run."
   (if (not (process? proc))
-      (display "This is not a process!")
+      (format #t "This is not a process!~%")
       (let* ((command-prefix (process-engine-command-prefix engine))
              (derivation-builder (process-engine-derivation-builder engine))
              (output (derivation->script (derivation-builder proc))))
         (when stand-alone? (format #t "# Please run the following:~%~%"))
         (format #t "~@[~a ~]~a~%" command-prefix output))))
 
-(define (process->script->run proc engine)
+(define* (process->script->run proc engine #:key (stand-alone? #t))
   "Builds a derivation of PROC and runs the resulting script."
   (if (not (process? proc))
-      (display "This is not a process!")
+      (format #t "This is not a process!~%")
       (let* ((command-prefix (process-engine-command-prefix engine))
              (derivation-builder (process-engine-derivation-builder engine))
              (output (derivation->script (derivation-builder proc))))

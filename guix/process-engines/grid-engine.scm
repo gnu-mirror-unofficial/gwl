@@ -31,7 +31,7 @@
 PROCEDURE's imported modules in its search path."
   (let* ((name (process-full-name proc))
          (exp (process-procedure proc))
-         (out (process-output-path proc))
+         ;(out (process-output-path proc))
          (time (complexity-time (process-complexity proc)))
          (space (complexity-space (process-complexity proc)))
          (threads (complexity-threads (process-complexity proc)))
@@ -41,8 +41,8 @@ PROCEDURE's imported modules in its search path."
                                (quotient (remainder time 3600) 60) ; Minutes
                                (remainder time 60)) #f)) ; Seconds
          (space-str   (if space (format #f "-l h_vmem=~a" space) ""))
-         (threads-str (if threads (format #f "-pe threaded ~a" threads) ""))
-         (out-str (if out (format #f "(setenv \"out\" ~s)" out) "")))
+         (threads-str (if threads (format #f "-pe threaded ~a" threads) "")))
+         ;(out-str (if out (format #f "(setenv \"out\" ~s)" out) ""))
     (mlet %store-monad ((set-load-path
                          (load-path-expression (gexp-modules exp))))
       (gexp->derivation
@@ -67,7 +67,7 @@ PROCEDURE's imported modules in its search path."
             ;; The destination can be outside of the store.
             ;; Note: We have to mount this location when building inside
             ;; a container.
-            (format port "~a" (ungexp out-str))
+            ;;(format port "~a" (ungexp out-str))
             ;; Change to the correct output directory.
             ;; We use the pretty-printer so that users can debug their
             ;; procedures more easily.
@@ -78,9 +78,9 @@ PROCEDURE's imported modules in its search path."
             (format port ";; Actual code from the procedure.~%~a~%"
                     (with-output-to-string
                       (lambda _ (pretty-print '(ungexp exp)))))
-            (format port ";; Write a 'completed' file.~%")
-            (format port "(call-with-output-file ~s (const #t))~%"
-                    (string-append (ungexp out) "/JOB_DONE"))
+            ;;(format port ";; Write a 'completed' file.~%")
+            ;;(format port "(call-with-output-file ~s (const #t))~%"
+            ;;        (string-append (ungexp out) "/JOB_DONE"))
             (format port "EOF~%")
             (format port "~a/bin/guile -c \"$CODE\"~%" (ungexp guile))
             (chmod port #o555))))))))

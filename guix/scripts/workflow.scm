@@ -52,6 +52,7 @@ Run multiple predefined computational process in a workflow.\n"))
   -h, --help             display this help and exit"))
   (display (_ "
   -V, --version          display version information and exit"))
+  (newline)
   (newline))
 
 (define (show-available-workflows args)
