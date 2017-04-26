@@ -42,7 +42,7 @@ autoreconf -ivf && ./configure && make
 
 # Add the 'workflow' and 'process' subcommands to GNU Guix
 CURRENT_DIR=`pwd`
-export \"GUILE_LOAD_PATH=$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
+export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
           (p (strong "Command 1") ": Get the workflow management extension "
              "for GNU Guix."))
 
