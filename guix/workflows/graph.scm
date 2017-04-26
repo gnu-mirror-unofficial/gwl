@@ -1,7 +1,9 @@
 (define-module (guix workflows graph)
   #:use-module (ice-9 format)
   #:use-module (guix workflows)
+  #:use-module (guix workflows utils)
   #:use-module (guix processes)
+  #:use-module (guix packages)
   #:export (workflow->dot))
 
 ;;; ---------------------------------------------------------------------------

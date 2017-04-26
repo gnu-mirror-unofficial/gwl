@@ -16,6 +16,7 @@
 
 (define-module (www pages workflow-viewer)
   #:use-module (guix workflows)
+  #:use-module (guix workflows graph)
   #:use-module (guix processes)
   #:use-module (guix packages)
   #:use-module (gnu workflows)
