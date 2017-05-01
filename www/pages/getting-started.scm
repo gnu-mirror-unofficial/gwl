@@ -37,7 +37,7 @@
                      "# Get the code
 git clone https://git.roelj.com/guix/gwl.git && cd gwl/
 
-# Configure and compile the code
+# (Optional) Configure and compile the code
 autoreconf -ivf && ./configure && make
 
 # Add the 'workflow' and 'process' subcommands to GNU Guix
@@ -74,7 +74,7 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
         " would be something to describe in a process.")
      (p "Each " (em "process") " can run on a different machine, so "
         "keeping " (em "processes") " small will help reduce the time "
-        "it takes to run many of them.")
+        "it takes to run many of them in parallel.")
      (p "For combining multiple " (em "processes") " we can use a "
         (em "workflow") " which describes how a bunch of processes "
         "relate to each other (" (em "process A") " should run after "
@@ -86,9 +86,13 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
         "Secondly, the GWL is implemented in an existing language called "
         (em "Scheme") ".  This means it has all the benefits of a programming "
         "language, like code comments, functions and re-usable modules.  In "
-        "fact, it is built on top of a package manager, which means the "
-        "workflow definitions in this language can build all required programs "
-        "to run all processes in the workflow.")
+        "fact, one of those re-usable modules is a package manager, which "
+        "means the workflow definitions in this language automatically take "
+        "care of installing all required programs to run all processes in "
+        "the workflow.")
+
+     (p "Without further ado, let's look at the definition of a "
+        (code "process") ".")
 
      (h3 "Defining processes")
      (div (@ (class "figure"))
@@ -193,8 +197,7 @@ entire workflows, let's have a little more fun with them.")
      (p "So, we would like to run " (code "hello-world") ", but instead of
 writing the output to " (code "/output/path/for/hello-world") ", we would like to
 write it to " (code "/home/bob") ".  Do we have to duplicate the entire description?")
-     (p "Of course we don't!  This is the Scheme programming language, so we can use 
-inheritance to make our changes:")
+     (p "Fortunately, we don't.  We can use inheritance to make our changes:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
