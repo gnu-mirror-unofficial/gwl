@@ -27,12 +27,8 @@
   #:use-module (guix monads)
   #:use-module (guix packages)
   #:use-module (ice-9 format)
-  #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 vlist)
   #:use-module (srfi srfi-9 gnu)
-  #:use-module (srfi srfi-35)
-  #:use-module (srfi srfi-34)
   #:export (process
             process?
             process-name
