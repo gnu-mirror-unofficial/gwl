@@ -25,7 +25,7 @@
     ("/getting-started" "Getting started")
     ;("/designer" "Workflow designer")
     ("/workflow-viewer" "Workflow viewer")
-    ("/status" "System status")
+    ;("/status" "System status")
     ("/help" "Help")))
 
 (define (page-partial-main-menu request-path)
