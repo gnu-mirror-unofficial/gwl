@@ -41,7 +41,7 @@
   #:use-module (guix processes)
   #:use-module (guix workflows)
   #:use-module (guix gexp))"))
-          (p (strong "Figure 3") ": Defining a Scheme module."))
+          (p (strong "Figure 4") ": Defining a Scheme module."))
 
      (p "The first line " (code "(define-module (my first workflow))") " "
         "tells the Scheme interpreter (the program that runs this code) "
@@ -94,7 +94,7 @@
           (newline))))
    (synopsis \"A friendly greeter.\")
    (description \"This process has something to say.\")))"))
-          (p (strong "Figure 4") ": A function to create process definitions."))
+          (p (strong "Figure 5") ": A function to create process definitions."))
 
      (p "Notice how we use " (code "(define ...)") " instead of "
         (code "(define-public ...)") " for the function.")
@@ -104,7 +104,7 @@
                      "(define-public hello-alice (make-hello-process \"hello-alice\" \"/home/alice\"))
 (define-public hello-bob (make-hello-process \"hello-bob\" \"/home/bob\"))
 (define-public hello-world (make-hello-process \"hello-world\" \"/home/world\"))"))
-          (p (strong "Figure 5") ": Three process definitions."))
+          (p (strong "Figure 6") ": Three process definitions."))
 
      (p "Now that we have three processes — " (code "hello-alice") ", "
         (code "hello-bob") ", and " (code "hello-world") " — we can "
@@ -123,7 +123,7 @@
     (synopsis \"A friendly greeting workflow.\")
     (description \"This workflow greets Alice, Bob and the world, making
 sure that the world will be greeted first.\")))"))
-          (p (strong "Figure 6") ": A workflow definition."))
+          (p (strong "Figure 7") ": A workflow definition."))
 
      (p "This " (code "workflow") " can be run on your local computer using "
         "the following command: ")

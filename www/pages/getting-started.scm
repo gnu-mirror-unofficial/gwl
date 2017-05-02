@@ -107,12 +107,12 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
               (time 3))) ; Three seconds
    (procedure
     #~(with-output-to-file (string-append #$output-path \"/hello-world.txt\")
-          (lambda _ (format #t \"Hello world~%\"))))
+        (lambda _ (format #t \"Hello world~%\"))))
    (synopsis \"A friendly greeter.\")
    (description \"This process has something to say to the world.\")))"))
-          (p (strong "Figure 1") ": An example process definition."))
+          (p (strong "Figure 2") ": An example process definition."))
 
-     (p "In the code displayed in " (em "Figure 1") " we defined a Scheme "
+     (p "In the code displayed in " (em "Figure 2") " we defined a Scheme "
         "variable named " (code "hello-world") " to be a description of a "
         (code "process") " record type.  Apart from the "(em "name") ", "
         (em "version") ", " (em "synopsis") ", and " (em "description") " "
@@ -154,7 +154,7 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
         (code "(* 2 (stat:size (stat \"/path/to/input/file\")))") ".")
 
      (h4 "Running the process")
-     (p "We could run the process defined in " (em "Figure 1") " with the "
+     (p "We could run the process defined in " (em "Figure 2") " with the "
         "command:")
 
      (div (@ (class "figure"))
@@ -205,7 +205,7 @@ write it to " (code "/home/bob") ".  Do we have to duplicate the entire descript
   (process (inherit hello-world)
            (name \"hello-bob\")
            (output-path \"/home/bob\")))"))
-          (p (strong "Figure 2") ": Scheme code to reuse another process."))
+          (p (strong "Figure 3") ": Scheme code to reuse another process."))
 
      (p "And of course, we can turn the newly created " (code "hello-bob")
         " into a runnable script:")
