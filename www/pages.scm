@@ -73,4 +73,4 @@
            (div (@ (id "footer"))
                 (p "© 2017 Roel Janssen | "
                    (a (@ (href "https://git.roelj.com/guix/gwl"))
-                         "Download the source code of this page")) "."))))))
+                         "Download the source code of this page") ".")))))))

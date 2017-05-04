@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="151.96629mm"
+   height="53.318012mm"
+   viewBox="0 0 538.46324 188.92209"
+   id="svg3582"
+   version="1.1"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="what-is-gwl.svg"
+   inkscape:export-filename="/home/roel/AFSTUD/repository/92. Presentations/Functional-package-management.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
+  <defs
+     id="defs3584" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="633.21408"
+     inkscape:cy="61.968498"
+     inkscape:document-units="px"
+     inkscape:current-layer="g4637"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1920"
+     inkscape:window-y="26"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata3587">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-269.0837,-292.67644)">
+    <g
+       id="g4637"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300"
+       transform="translate(38.827738,79.549513)">
+      <g
+         id="g4106"
+         transform="translate(118.11888,-52.331161)">
+        <rect
+           ry="6.4285698"
+           y="385.78336"
+           x="113.13708"
+           height="67.596817"
+           width="250.52573"
+           id="rect4092"
+           style="fill:#f2f2f2;fill-opacity:1;stroke:#4d4d4d;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none" />
+        <text
+           id="text4096"
+           y="409.03717"
+           x="122.22846"
+           style="font-style:normal;font-weight:normal;font-size:6.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             style="font-size:16.25px"
+             y="409.03717"
+             x="122.22846"
+             id="tspan4094"
+             sodipodi:role="line">Computing environment</tspan></text>
+        <text
+           id="text4104"
+           y="425.7442"
+           x="121.3811"
+           style="font-style:normal;font-weight:normal;font-size:12.5px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             id="tspan4102"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans'"
+             y="425.7442"
+             x="121.3811"
+             sodipodi:role="line">Your laptop or a computing cluster.  As long as</tspan><tspan
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans'"
+             y="441.51404"
+             x="121.3811"
+             sodipodi:role="line"
+             id="tspan4113">it can run GNU/Linux.</tspan></text>
+      </g>
+      <g
+         transform="rotate(-53.683362,447.45589,203.20576)"
+         id="g4127">
+        <path
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 388.43243,332.49095 c 0,0 -7.98568,-5.26269 -25.41185,-17.12555"
+           id="path4123"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+        <path
+           style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 365.93872,310.99087 -7.20405,10.36584 -2.21524,-10.59958 z"
+           id="path4125"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         transform="translate(399.36888,-114.20616)"
+         id="g4358-7">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none"
+           id="rect3336-6"
+           width="255.21324"
+           height="83.668243"
+           x="113.13707"
+           y="385.78336"
+           ry="6.4285698" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:6.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="122.22846"
+           y="409.03717"
+           id="text3338-2"><tspan
+             sodipodi:role="line"
+             id="tspan3340-5"
+             x="122.22846"
+             y="409.03717"
+             style="font-size:16.25px">GWL</tspan></text>
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:12.5px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="121.3811"
+           y="425.7442"
+           id="text4142-8"><tspan
+             sodipodi:role="line"
+             x="121.3811"
+             y="425.7442"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans'"
+             id="tspan4059">Glue between your scripts and the computing</tspan><tspan
+             sodipodi:role="line"
+             x="121.3811"
+             y="441.51404"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans'"
+             id="tspan4063">environment dealing with software dependency</tspan><tspan
+             sodipodi:role="line"
+             x="121.3811"
+             y="457.28387"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans'"
+             id="tspan4065">management and software deployment.</tspan></text>
+      </g>
+      <g
+         id="g4593"
+         transform="matrix(-0.59224719,-0.80575634,-0.80575634,0.59224719,977.10509,411.43761)">
+        <path
+           sodipodi:nodetypes="cc"
+           inkscape:connector-curvature="0"
+           id="path4595"
+           d="m 388.43243,332.49095 c 0,0 -7.98568,-5.26269 -25.41185,-17.12555"
+           style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+        <path
+           inkscape:connector-curvature="0"
+           id="path4597"
+           d="m 365.93872,310.99087 -7.20405,10.36584 -2.21524,-10.59958 z"
+           style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      </g>
+      <g
+         id="g4081"
+         transform="translate(118.11888,-171.65643)">
+        <rect
+           ry="6.4285698"
+           y="385.78336"
+           x="113.13708"
+           height="83.668236"
+           width="250.52574"
+           id="rect4067"
+           style="fill:#f2f2f2;fill-opacity:1;stroke:#4d4d4d;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none" />
+        <text
+           id="text4071"
+           y="409.03717"
+           x="122.22846"
+           style="font-style:normal;font-weight:normal;font-size:6.25px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             style="font-size:16.25px"
+             y="409.03717"
+             x="122.22846"
+             id="tspan4069"
+             sodipodi:role="line">Your code</tspan></text>
+        <text
+           id="text4079"
+           y="425.7442"
+           x="121.3811"
+           style="font-style:normal;font-weight:normal;font-size:12.5px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           xml:space="preserve"><tspan
+             id="tspan4077"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans'"
+             y="425.7442"
+             x="121.3811"
+             sodipodi:role="line">Any programming language (R, Python, Perl,</tspan><tspan
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans'"
+             y="441.51404"
+             x="121.3811"
+             sodipodi:role="line"
+             id="tspan4088">Ruby, C, C++, Java, ...) scripts or programs</tspan><tspan
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans'"
+             y="457.28387"
+             x="121.3811"
+             sodipodi:role="line"
+             id="tspan4090">performing steps of your grand data analysis.</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>

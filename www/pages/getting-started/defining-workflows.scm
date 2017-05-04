@@ -139,6 +139,9 @@ sure that the world will be greeted first.\")))"))
           (pre (code (@ (class "scheme"))
                "guix workflow --run=hello-workflow --engine=grid-engine"))
           (p (strong "Command 6") ": Run the workflow on a Grid cluster."))
+
+     (p "A graphical overview of this workflow is available in the "
+        (a (@ (href "/workflow-viewer")) "workflow viewer") ".")
      
      (h3 "Further reading")
 
