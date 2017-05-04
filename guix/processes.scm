@@ -206,6 +206,12 @@ with ENGINE."
   (module-ref (resolve-interface '(gnu packages commencement))
               'guile-final))
 
+(define %daemon-connection #f)
+(define (open-or-reuse-connection)
+  (unless %daemon-connection
+    (set! %daemon-connection (open-connection)))
+  %daemon-connection)
+
 ;;; ---------------------------------------------------------------------------
 ;;; DERIVATIONS AND SCRIPTS FUNCTIONS
 ;;; ---------------------------------------------------------------------------
@@ -213,7 +219,7 @@ with ENGINE."
 (define* (derivation->script drv #:optional (build? #t))
   "Write the output of a derivation DRV to a file.  When BUILD? is
 set to #f, it only returns the output path."
-  (let ((store (open-connection)))
+  (let ((store (open-or-reuse-connection)))
     (run-with-store store
       (mlet %store-monad ((drv drv))
         (when build? (build-derivations store (list drv)))

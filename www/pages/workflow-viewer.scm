@@ -27,13 +27,19 @@
   #:use-module (www config)
   #:export (page-workflow-viewer))
 
+(define %daemon-connection #f)
+(define (open-or-reuse-connection)
+  (unless %daemon-connection
+    (set! %daemon-connection (open-connection)))
+  %daemon-connection)
+
 (define (workflow-graph-svg-object workflow-name)
   "Return the SXML to render an SVG containing the graph of WORKFLOW-NAME."
   (let ((workflow-list (find-workflow-by-full-name workflow-name)))
     (if (null? workflow-list)
         `(p "Sorry, I could not render graph.")
         (let* ((workflow (car workflow-list))
-               (store (open-connection))
+               (store (open-or-reuse-connection))
                (dot-bin (string-append (package-output store graphviz) "/bin/dot"))
                (web-path (string-append "/static/graphs/" workflow-name ".svg"))
                (dot-file (string-append %www-root  "/static/graphs/" workflow-name))
