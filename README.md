@@ -29,7 +29,7 @@ Now you're all set.
 
 To compile the GWL source code, run these commands from the project's directory:
 ```bash
-guix environment guix
+guix environment guix --ad-hoc guix
 autoreconf -vfi
 ./configure
 make
