@@ -240,7 +240,9 @@ user needs to run."
              (derivation-builder (process-engine-derivation-builder engine))
              (output (derivation->script (derivation-builder proc)))
              (restrictions-func (process-engine-restrictions-string engine))
-             (restrictions (restrictions-func proc workflow)))
+             (restrictions (if (not (null? workflow))
+                               (restrictions-func proc workflow)
+                               #f)))
         (when stand-alone? (format #t "# Please run the following:~%~%"))
         (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output))))
 
@@ -253,6 +255,8 @@ user needs to run."
              (derivation-builder (process-engine-derivation-builder engine))
              (output (derivation->script (derivation-builder proc)))
              (restrictions-func (process-engine-restrictions-string engine))
-             (restrictions (restrictions-func proc workflow)))
+             (restrictions (if (not (null? workflow))
+                               (restrictions-func proc workflow)
+                               #f)))
         (system (format #f "~@[~a ~]~@[~a ~]~a~%"
                         command-prefix restrictions output)))))
