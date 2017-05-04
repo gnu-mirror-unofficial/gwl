@@ -224,22 +224,29 @@ set to #f, it only returns the output path."
                     (process-procedure proc)
                     #:guile-for-build guile))
 
-(define* (process->script proc engine #:key (stand-alone? #t))
+(define* (process->script proc engine #:key (stand-alone? #t)
+                                            (workflow '()))
   "Builds a derivation of PROC and displays the commands a
 user needs to run."
   (if (not (process? proc))
       (format #t "This is not a process!~%")
       (let* ((command-prefix (process-engine-command-prefix engine))
              (derivation-builder (process-engine-derivation-builder engine))
-             (output (derivation->script (derivation-builder proc))))
+             (output (derivation->script (derivation-builder proc)))
+             (restrictions-func (process-engine-restrictions-string engine))
+             (restrictions (restrictions-func proc workflow)))
         (when stand-alone? (format #t "# Please run the following:~%~%"))
-        (format #t "~@[~a ~]~a~%" command-prefix output))))
+        (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output))))
 
-(define* (process->script->run proc engine #:key (stand-alone? #t))
+(define* (process->script->run proc engine #:key (stand-alone? #t)
+                                                 (workflow '()))
   "Builds a derivation of PROC and runs the resulting script."
   (if (not (process? proc))
       (format #t "This is not a process!~%")
       (let* ((command-prefix (process-engine-command-prefix engine))
              (derivation-builder (process-engine-derivation-builder engine))
-             (output (derivation->script (derivation-builder proc))))
-        (system (format #f "~@[~a ~]~a~%" command-prefix output)))))
+             (output (derivation->script (derivation-builder proc)))
+             (restrictions-func (process-engine-restrictions-string engine))
+             (restrictions (restrictions-func proc workflow)))
+        (system (format #f "~@[~a ~]~@[~a ~]~a~%"
+                        command-prefix restrictions output)))))

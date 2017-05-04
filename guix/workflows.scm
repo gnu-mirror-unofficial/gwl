@@ -131,7 +131,9 @@ processes that can be executed in parallel."
           (if parallel?
               (for-each (lambda (step)
                           (for-each (lambda (process)
-                                      (function process engine #:stand-alone? #f))
+                                      (function process engine
+                                                #:stand-alone? #f
+                                                #:workflow workflow))
                                     ;; By reversing the order of the processes in STEP
                                     ;; we keep the output order the same as the order
                                     ;; of the sequential function.

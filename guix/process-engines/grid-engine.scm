@@ -19,12 +19,34 @@
 (define-module (guix process-engines grid-engine)
   #:use-module (guix process-engines)
   #:use-module (guix processes)
+  #:use-module (guix workflows)
   #:use-module (guix gexp)
   #:use-module (guix store)
   #:use-module (guix monads)
   #:use-module (gnu packages bash)
   #:use-module (ice-9 pretty-print)
   #:export (grid-engine))
+
+(define (sanitize-sge-job-name name)
+  (string-map
+   (lambda (x) (if (or (eq? x #\/) (eq? x #\:) (eq? x #\@)
+                       (eq? x #\\) (eq? x #\*) (eq? x #\?)) #\- x)) name))
+
+(define (process-job-name proc)
+  "Returns a valid job name for PROC."
+  (string-append "gwl-"
+                 (sanitize-sge-job-name
+                  (process-full-name proc))))
+
+(define (process->grid-engine-restrictions-string proc workflow)
+  (let ((restrictions (assoc-ref (workflow-restrictions workflow) proc)))
+    (string-append "-N " (process-job-name proc) " "
+      (if restrictions
+          (format #f "~{-hold_jid ~a ~}"
+                  (map (lambda (proc)
+                         (process-job-name proc))
+                       restrictions))
+          ""))))
 
 (define* (process->grid-engine-derivation proc #:key (guile (default-guile)))
   "Return an executable script that runs the PROCEDURE described in PROC, with
@@ -89,4 +111,5 @@ PROCEDURE's imported modules in its search path."
   (process-engine
    (name "grid-engine")
    (derivation-builder process->grid-engine-derivation)
-   (command-prefix "qsub")))
+   (command-prefix "qsub")
+   (restrictions-string process->grid-engine-restrictions-string)))

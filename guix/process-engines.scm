@@ -24,7 +24,8 @@
             process-engine?
             process-engine-name
             process-engine-derivation-builder
-            process-engine-command-prefix))
+            process-engine-command-prefix
+            process-engine-restrictions-string))
 
 ;;; ---------------------------------------------------------------------------
 ;;; RECORD TYPES
@@ -39,7 +40,9 @@
 
   (name                 process-engine-name)
   (derivation-builder   process-engine-derivation-builder)
-  (command-prefix       process-engine-command-prefix (default #f)))
+  (command-prefix       process-engine-command-prefix (default #f))
+  (restrictions-string  process-engine-restrictions-string
+                        (default (lambda (proc workflow) ""))))
 
 (define (print-process-engine engine port)
   "Write a concise representation of PROCESS-ENGINE to PORT."
