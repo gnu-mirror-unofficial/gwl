@@ -30,27 +30,27 @@
   #:export (guix-workflow))
 
 (define (show-help)
-  (display (_ "Usage: guix workflow [OPTION]...
+  (display (G_ "Usage: guix workflow [OPTION]...
 Run multiple predefined computational process in a workflow.\n"))
-  (display (_ "
+  (display (G_ "
   -i, --input=LOCATION   set LOCATION as input for a workflow"))
-  (display (_ "
+  (display (G_ "
   -o, --output=LOCATION  set LOCATION as output for a workflow"))
-  (display (_ "
+  (display (G_ "
   -e, --engine=ENGINE    set ENGINE for offloading to a cluster"))
-  (display (_ "
+  (display (G_ "
   -l, --list-available   list available processes"))
-  (display (_ "
+  (display (G_ "
   -p, --prepare=WORKFLOW Prepare to run WORKFLOW."))
-  (display (_ "
+  (display (G_ "
   -r, --run=WORKFLOW     Run WORKFLOW."))
-  (display (_ "
+  (display (G_ "
   -s, --search=REGEXP    search in synopsis and description using REGEXP"))
-  (display (_ "
+  (display (G_ "
   -w, --web-interface    Start the web interface"))
-  (display (_ "
+  (display (G_ "
   -h, --help             display this help and exit"))
-  (display (_ "
+  (display (G_ "
   -V, --version          display version information and exit"))
   (newline)
   (newline))
@@ -119,10 +119,10 @@ Run multiple predefined computational process in a workflow.\n"))
     ;; Return the alist of option values.
     (args-fold* args %options
                 (lambda (opt name arg result)
-                  (leave (_ "~A: unrecognized option~%") name))
+                  (leave (G_ "~A: unrecognized option~%") name))
                 (lambda (arg result)
                   (when (assq 'argument result)
-                    (leave (_ "~A: extraneous argument~%") arg))
+                    (leave (G_ "~A: extraneous argument~%") arg))
 
                   (alist-cons 'argument arg result))
                 %default-options))

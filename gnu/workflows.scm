@@ -21,6 +21,7 @@
   #:use-module (guix utils)
   #:use-module (guix combinators)
   #:use-module (guix workflows)
+  #:use-module (guix discovery)
   #:use-module (ice-9 vlist)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
