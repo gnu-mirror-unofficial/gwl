@@ -29,29 +29,30 @@
   #:export (guix-process))
 
 (define (show-help)
-  (display (G_ "Usage: guix process [OPTION]...
-Run a predefined computational process.\n"))
-  (display (G_ "
-  -i, --input=LOCATION   set LOCATION as input for a workflow"))
-  (display (G_ "
-  -o, --output=LOCATION  set LOCATION as output for a workflow"))
-  (display (G_ "
-  -e, --engine=ENGINE    set ENGINE for offloading to a cluster"))
-  ;; (display (G_ "
+  (display "Usage: guix process [OPTION]...
+Run a predefined computational process.")
+  (newline)
+  (display "
+  -i, --input=LOCATION   set LOCATION as input for a workflow")
+  (display "
+  -o, --output=LOCATION  set LOCATION as output for a workflow")
+  (display "
+  -e, --engine=ENGINE    set ENGINE for offloading to a cluster")
+  ;; (display "
   ;; -l, --list-available-engines
-  ;;                        list available engines for offloading"))
-  (display (G_ "
-  -l, --list-available   list available processes"))
-  (display (G_ "
-  -p, --prepare=PROCESS      Prepare the running of a PROCESS."))
-  (display (G_ "
-  -r, --run=PROCESS      Run PROCESS."))
-  (display (G_ "
-  -s, --search=REGEXP    search in synopsis and description using REGEXP."))
-  (display (G_ "
-  -h, --help             display this help and exit"))
-  (display (G_ "
-  -V, --version          display version information and exit"))
+  ;;                        list available engines for offloading")
+  (display "
+  -l, --list-available   list available processes")
+  (display "
+  -p, --prepare=PROCESS      Prepare the running of a PROCESS.")
+  (display "
+  -r, --run=PROCESS      Run PROCESS.")
+  (display "
+  -s, --search=REGEXP    search in synopsis and description using REGEXP.")
+  (display "
+  -h, --help             display this help and exit")
+  (display "
+  -V, --version          display version information and exit")
   (newline)
   (newline))
 

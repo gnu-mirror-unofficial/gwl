@@ -30,28 +30,29 @@
   #:export (guix-workflow))
 
 (define (show-help)
-  (display (G_ "Usage: guix workflow [OPTION]...
-Run multiple predefined computational process in a workflow.\n"))
-  (display (G_ "
-  -i, --input=LOCATION   set LOCATION as input for a workflow"))
-  (display (G_ "
-  -o, --output=LOCATION  set LOCATION as output for a workflow"))
-  (display (G_ "
-  -e, --engine=ENGINE    set ENGINE for offloading to a cluster"))
-  (display (G_ "
-  -l, --list-available   list available processes"))
-  (display (G_ "
-  -p, --prepare=WORKFLOW Prepare to run WORKFLOW."))
-  (display (G_ "
-  -r, --run=WORKFLOW     Run WORKFLOW."))
-  (display (G_ "
-  -s, --search=REGEXP    search in synopsis and description using REGEXP"))
-  (display (G_ "
-  -w, --web-interface    Start the web interface"))
-  (display (G_ "
-  -h, --help             display this help and exit"))
-  (display (G_ "
-  -V, --version          display version information and exit"))
+  (display "Usage: guix workflow [OPTION]...
+Run multiple predefined computational process in a workflow.")
+  (newline)
+  (display "
+  -i, --input=LOCATION   set LOCATION as input for a workflow")
+  (display "
+  -o, --output=LOCATION  set LOCATION as output for a workflow")
+  (display "
+  -e, --engine=ENGINE    set ENGINE for offloading to a cluster")
+  (display "
+  -l, --list-available   list available processes")
+  (display "
+  -p, --prepare=WORKFLOW Prepare to run WORKFLOW.")
+  (display "
+  -r, --run=WORKFLOW     Run WORKFLOW.")
+  (display "
+  -s, --search=REGEXP    search in synopsis and description using REGEXP")
+  (display "
+  -w, --web-interface    Start the web interface")
+  (display "
+  -h, --help             display this help and exit")
+  (display "
+  -V, --version          display version information and exit")
   (newline)
   (newline))
 
