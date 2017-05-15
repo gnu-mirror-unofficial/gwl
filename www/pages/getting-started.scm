@@ -166,22 +166,19 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
              (p (strong "Command 2") ": Running a process (stage 1)."))
 
      (p "For " (code "guix") " to find our process definition, we need to add "
-        "it to a Scheme module, and let " (code "guix") " find that module. "
-        "We will learn how to do that in the second part of this tutorial.")
+        "it to a Scheme module, and let " (code "guix") " find that module by "
+        "adding it to the " (code "GUIX_WORKFLOW_PATH") " environment variable."
+        "  We will learn how to do that in the second part of this tutorial.")
 
-     (p "Back to the output of the command, we find that it hasn't actually "
-        "executed the code we wrote in the process definition.  Instead, it "
-        "has generated a script that will run the actual code for us. "
-        "This two-step mechanism to execute a command allows us to use a "
-        "different execution engine.  For example, we can let " (code "guix")
-        " produce a script for " (em "Grid Engine") " by running:")
+     (p "Instead of running it directly, we can specify an execution engine.  "
+        "For example, we can let " (code "guix") " run processes on a "
+        (em "Grid Engine") " cluster by running:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "bash"))
                      "guix process --run=hello-world --engine=grid-engine
-# Please run the following:
-
-qsub /gnu/store/gi1k8r1dhbmwaxhyqgyqh4vc5y5ih6h7-hello-world-0.1"))
+Your job 7961546 (\"gi1k8r1dhbmwaxhyqgyqh4vc5y5ih6h7-hello-world-0.1\") has
+been submitted"))
           (p (strong "Command 3") ": Using Grid Engine with GWL."))
 
      (p "Notice that the command to execute the script has changed to use "
