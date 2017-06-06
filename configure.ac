@@ -15,7 +15,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program. If not, see <http://www.gnu.org/licenses/>.
 dnl -*- Autoconf -*-
 
-AC_INIT(gwl, 0.0.2)
+AC_INIT(gwl, 0.0.3)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([color-tests -Wall -Wno-portability foreign])
 AM_SILENT_RULES([yes])
@@ -25,7 +25,7 @@ GUILE_PROGS
 if $GUILE_TOOLS | grep -q compile; then
    true
 else
-   AC_MSG_ERROR([Guile 2.0 required.])
+   AC_MSG_ERROR([Guile 2.2 required.])
 fi
 
 AC_CONFIG_FILES([Makefile])
