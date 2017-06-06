@@ -17,8 +17,10 @@
 (define-module (www config)
   #:export (%www-root
             %www-max-file-size
-            %www-listen-port))
+            %www-listen-port
+            %www-static-root))
 
 (define %www-root (dirname (search-path %load-path "web-interface.scm")))
+(define %www-static-root %www-root)
 (define %www-max-file-size 250000000)
 (define %www-listen-port 5000)

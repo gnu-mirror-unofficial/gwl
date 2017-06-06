@@ -31,7 +31,7 @@
             [(string= extension "ttf")  '(application/font-sfnt)]
             [(#t '(text/plain))])))
 
-  (let ((full-path (string-append %www-root "/" path)))
+  (let ((full-path (string-append %www-static-root "/" path)))
     (if (not (file-exists? full-path))
         (values '((content-type . (text/html)))
                 (with-output-to-string (lambda _ (sxml->xml page-error-404))))
