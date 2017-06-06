@@ -4,7 +4,7 @@
   #:use-module (web response)
   #:use-module (web uri)
   #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 iconv)
+  #:use-module (rnrs bytevectors)
   #:use-module (rnrs io ports)
   #:use-module (sxml simple)
   #:use-module (www util)
@@ -87,9 +87,8 @@
                                       (sxml->xml (display-function
                                                   request-path
                                                   #:post-data
-                                                  (bytevector->string
-                                                   request-body
-                                                   "utf8")) port)
+                                                  (utf8->string
+                                                   request-body)) port)
                                       (sxml->xml (display-function request-path) port)))
                                 (sxml->xml (page-error-404 request-path) port)))))))))))
 
