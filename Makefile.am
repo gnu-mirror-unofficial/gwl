@@ -21,6 +21,8 @@ moddir=$(prefix)/share/guile/site/2.2
 godir=$(libdir)/guile/2.2/ccache
 
 SOURCES =                                               \
+  gnu/processes.scm                                     \
+  gnu/workflows.scm                                     \
   guix/processes.scm                                    \
   guix/process-engines.scm                              \
   guix/process-engines/bash-engine.scm                  \
