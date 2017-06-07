@@ -25,6 +25,7 @@
   #:use-module (guix monads)
   #:use-module (gnu packages bash)
   #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 format)
   #:export (grid-engine))
 
 (define (sanitize-sge-job-name name)

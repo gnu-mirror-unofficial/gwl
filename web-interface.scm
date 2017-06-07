@@ -34,7 +34,7 @@
   (let ((full-path (string-append %www-static-root "/" path)))
     (if (not (file-exists? full-path))
         (values '((content-type . (text/html)))
-                (with-output-to-string (lambda _ (sxml->xml page-error-404))))
+                (with-output-to-string (lambda _ (sxml->xml (page-error-404 path)))))
         ;; Do not handle files larger than %maximum-file-size.
         ;; Please increase the file size if your server can handle it.
         (let ((file-stat (stat full-path)))
@@ -59,7 +59,7 @@
   (let ((request-path (uri-path (request-uri request))))
     (if (and (> (string-length request-path) 7)
              (string= (string-take request-path 8) "/static/"))
-        (request-file-handler request-path)
+        (request-file-handler (substring request-path 8))
         (begin
           (format #t "~a ~a~%" (request-method request) request-path)
           (values '((content-type . (text/html)))

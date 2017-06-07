@@ -30,6 +30,7 @@ SOURCES =                                               \
   guix/workflows.scm                                    \
   guix/workflows/execution-order.scm                    \
   guix/workflows/utils.scm                              \
+  guix/workflows/graph.scm                              \
   guix/scripts/workflow.scm                             \
   guix/scripts/process.scm                              \
   web-interface.scm                                     \
