@@ -54,7 +54,10 @@ PROCEDURE's imported modules in its search path."
                       "~%;; Code to create a proper Guile environment.~%~a~%"
                       (with-output-to-string
                         (lambda _ (pretty-print '(ungexp set-load-path)))))
-              (format port ";; Actual code from the procedure.~%~a~%"
+              (format port
+                      "~%;; Set the current working directory.~%(chdir ~s)~%"
+                      '(ungexp (getcwd)))
+              (format port "~%;; Actual code from the procedure.~%~a~%"
                       (with-output-to-string
                         (lambda _ (pretty-print '(ungexp exp)))))
               (format port "EOF~%")
