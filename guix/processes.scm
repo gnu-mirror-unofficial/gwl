@@ -57,6 +57,13 @@
             process->script
             process->script->run
 
+            ;; Convenience functions
+            gigabytes
+            megabytes
+            kilobytes
+            minutes
+            hours
+
             ;; For the lack of a better place.
             default-guile))
 
@@ -87,19 +94,7 @@
   (package-inputs   process-package-inputs (default #f))
   (data-inputs      process-data-inputs (default #f))
 
-  ;; Settings are an associated list representing (key . value) for which
-  ;; command-line arguments will be available.
-  ;;
-  ;; So, (process (name "test") ...
-  ;;              (settings '((width 200) (height 400))))
-  ;;
-  ;; will enable:
-  ;; $ guix process --run=test --width=600 --height=1200
-  ;;
-  ;; Options can be discovered using:
-  ;; $ guix process --list-options=test
-  ;;(settings         process-settings (default #f))
-
+  ;; Outputs can be anything, but are mostly files (I guess).
   (output-path      process-output-path (default #f))
   (outputs          process-output (default #f))
 
@@ -251,12 +246,27 @@ user needs to run."
   "Builds a derivation of PROC and runs the resulting script."
   (if (not (process? proc))
       (format #t "This is not a process!~%")
-      (let* ((command-prefix (process-engine-command-prefix engine))
-             (derivation-builder (process-engine-derivation-builder engine))
-             (output (derivation->script (derivation-builder proc)))
-             (restrictions-func (process-engine-restrictions-string engine))
-             (restrictions (if (not (null? workflow))
-                               (restrictions-func proc workflow)
-                               #f)))
-        (system (format #f "~@[~a ~]~@[~a ~]~a~%"
-                        command-prefix restrictions output)))))
+      (system (with-output-to-string
+                (lambda _
+                  (process->script proc engine
+                                   #:workflow workflow
+                                   #:stand-alone? #f))))))
+
+;;; ---------------------------------------------------------------------------
+;;; CONVENIENCE FUNCTIONS
+;;; ---------------------------------------------------------------------------
+
+(define (gigabytes number)
+  (* number 1024 1024 1024))
+
+(define (megabytes number)
+  (* number 1024 1024))
+
+(define (kilobytes number)
+  (* number 1024))
+
+(define (minutes number)
+  (* number 60))
+
+(define (hours number)
+  (* number 3600))
