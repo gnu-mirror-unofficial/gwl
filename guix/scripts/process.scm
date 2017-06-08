@@ -61,7 +61,9 @@ Run a predefined computational process.")
   (format #t "Available processes:~%")
   (let ((processes (fold-processes
                      (lambda (p r)
-                       (vhash-cons (process-full-name p) p r))
+                       (vhash-cons (format #f "~a (~a)"
+                                           (process-name p)
+                                           (process-version p)) p r))
                      vlist-null)))
     (vlist-for-each (lambda (pair)
                       (format #t "  * ~a~%" (car pair)))
