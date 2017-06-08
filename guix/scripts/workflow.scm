@@ -60,9 +60,11 @@ Run multiple predefined computational process in a workflow.")
   "Display available workflows."
   (format #t "Available workflows:~%")
   (let ((wfs (fold-workflows
-                     (lambda (p r)
-                       (vhash-cons (workflow-full-name p) p r))
-                     vlist-null)))
+              (lambda (p r)
+                (vhash-cons (format #f "~a (~a)"
+                                    (workflow-name p)
+                                    (workflow-version p)) p r))
+              vlist-null)))
     (vlist-for-each (lambda (pair)
                       (format #t "  * ~a~%" (car pair)))
                     wfs))
