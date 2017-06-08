@@ -41,8 +41,10 @@
   ;; name or a pair whose car is a directory and whose cdr is a sub-directory
   ;; to narrow the search.
   (let* ((not-colon   (char-set-complement (char-set #\:)))
-         (environment (string-tokenize (or (getenv "GUIX_WORKFLOW_PATH") "")
-                                       not-colon)))
+         (environment (cons
+                       (getcwd)
+                       (string-tokenize (or (getenv "GUIX_WORKFLOW_PATH") "")
+                                        not-colon))))
     (for-each (lambda (directory)
                 (set! %load-path (cons directory %load-path))
                 (set! %load-compiled-path
