@@ -235,9 +235,7 @@ user needs to run."
              (derivation-builder (process-engine-derivation-builder engine))
              (output (derivation->script (derivation-builder proc)))
              (restrictions-func (process-engine-restrictions-string engine))
-             (restrictions (if (not (null? workflow))
-                               (restrictions-func proc workflow)
-                               #f)))
+             (restrictions (restrictions-func proc workflow)))
         (when stand-alone? (format #t "# Please run the following:~%~%"))
         (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output))))
 

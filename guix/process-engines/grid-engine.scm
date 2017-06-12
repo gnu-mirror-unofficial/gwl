@@ -40,7 +40,9 @@
                   (process-full-name proc))))
 
 (define (process->grid-engine-restrictions-string proc workflow)
-  (let ((restrictions (assoc-ref (workflow-restrictions workflow) proc)))
+  (let ((restrictions (if (workflow? workflow)
+                          (assoc-ref (workflow-restrictions workflow) proc)
+                          #f)))
     (string-append "-N " (process-job-name proc) " "
       (if restrictions
           (format #f "~{-hold_jid ~a ~}"
