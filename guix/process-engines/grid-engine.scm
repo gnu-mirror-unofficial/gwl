@@ -111,7 +111,8 @@ PROCEDURE's imported modules in its search path."
             ;;        (string-append (ungexp out) "/JOB_DONE"))
             (format port "EOF~%")
             (format port "~a/bin/guile -c \"$CODE\"~%" (ungexp guile))
-            (chmod port #o555))))))))
+            (chmod port #o555))))
+       #:graft? #f))))
 
 (define grid-engine
   (process-engine

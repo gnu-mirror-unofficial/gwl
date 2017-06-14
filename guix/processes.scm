@@ -223,7 +223,8 @@ set to #f, it only returns the output path."
 (define* (process->derivation proc #:key (guile (default-guile)))
   (gexp->derivation (process-full-name proc)
                     (process-procedure proc)
-                    #:guile-for-build guile))
+                    #:guile-for-build guile
+                    #:graft? #f))
 
 (define* (process->script proc engine #:key (stand-alone? #t)
                                             (workflow '()))

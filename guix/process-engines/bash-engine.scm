@@ -62,7 +62,8 @@ PROCEDURE's imported modules in its search path."
                         (lambda _ (pretty-print '(ungexp exp)))))
               (format port "EOF~%")
               (format port "~a/bin/guile -c \"$CODE\"~%" (ungexp guile))
-              (chmod port #o555)))))))))
+              (chmod port #o555))))
+         #:graft? #f)))))
 
 (define bash-engine
   (process-engine
