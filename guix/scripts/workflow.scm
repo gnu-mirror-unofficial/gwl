@@ -22,6 +22,7 @@
   #:use-module (guix scripts)
   #:use-module (guix utils)
   #:use-module (guix workflows)
+  #:use-module (guix workflows graph)
   #:use-module (gnu workflows)
   #:use-module (ice-9 match)
   #:use-module (ice-9 vlist)
@@ -47,6 +48,8 @@ Run multiple predefined computational process in a workflow.")
   -r, --run=WORKFLOW     Run WORKFLOW.")
   (display "
   -s, --search=REGEXP    search in synopsis and description using REGEXP")
+  (display "
+  -g, --graph=WORKFLOW   Output the workflow in Dot-format.")
   (display "
   -w, --web-interface    Start the web interface")
   (display "
@@ -98,6 +101,11 @@ Run multiple predefined computational process in a workflow.")
                   (alist-cons 'query 'run
                               (alist-cons 'value arg
                                           (alist-delete 'run result)))))
+        (option '(#\g "graph") #t #f
+                (lambda (opt name arg result)
+                  (alist-cons 'query 'graph
+                              (alist-cons 'value arg
+                                          (alist-delete 'graph result)))))
         (option '(#\s "search") #t #f
                 (lambda (opt name arg result)
                   (alist-cons 'query 'search
@@ -187,6 +195,17 @@ Run multiple predefined computational process in a workflow.")
                    (if (not engine-symbol)
                        (format #t "The engine ~s is not available." engine-name)
                        (workflow-run wf engine-symbol))))))
+       #t)
+      ('graph
+       (let* ((wfs (find-workflow-by-name (assoc-ref opts 'value)))
+              (wf (if (null? wfs) '() (car wfs))))
+         (if (null? wf)
+             (begin
+               (display "Could not find the workflow to graph.")
+               (newline))
+             (begin
+               (display (workflow->dot wf))
+               (newline))))
        #t)
       ;; Handle (or don't handle) anything else.
       ;; ----------------------------------------------------------------------
