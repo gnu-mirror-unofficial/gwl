@@ -51,7 +51,7 @@
         "variable "  (code "GUIX_WORKFLOW_PATH") " to the path of this directory "
         "structure.  For example, when we place the " (code "workflow.scm")
         " file in " (code "/home/alice/my/first/") ", we must set "
-        (code "GUIX_WORKFLOW_PATH") " to " (code "/home/alice") ", if we want"
+        (code "GUIX_WORKFLOW_PATH") " to " (code "/home/alice") ", if we want "
         "GNU Guix to be able to find it.")
 
      (p "The lines starting with " (code "#:use-module") " import other Scheme "
@@ -140,18 +140,30 @@ sure that the world will be greeted first.\")))"))
                "guix workflow --run=hello-workflow --engine=grid-engine"))
           (p (strong "Command 6") ": Run the workflow on a Grid cluster."))
 
-     (p "A graphical overview of this workflow is available in the "
-        (a (@ (href "/workflow-viewer")) "workflow viewer") ".")
-     
-     (h3 "Further reading")
+     (p "A graphical overview of this workflow can be produced using "
+        (code "guix workflow --graph=hello-workflow") " and is also available "
+        "in the " (a (@ (href "/workflow-viewer")) "workflow viewer") ".")
 
-     (p "There's a “real-world” workflow example available in the "
-        (a (@ (href "https://github.com/UMCUGenetics/guix-performance-test"))
-           "guix-performance-test") " repository.  The workflow language is "
-           "an extension to " (a (@ (href "http://www.gnu.org/software/guix/"))
-           "GNU Guix") ", which is written in "
-           (a (@ (href "http://www.gnu.org/software/guile")) "GNU Guile Scheme")
-           ".  Other than reading more, you can "
-           (a (@ (href "mailto:R.R.E.Janssen-10@umcutrecht.nl"))
-              "send me an e-mail") "."))
+     (h3 "Real-world usage")
+
+     (p "The next page will consider running external programs, your own "
+        "scripts, and defining processes based on a sample list — the things "
+        "we need doing real-world stuff.")
+
+     (div (@ (style "text-align: center"))
+          (div (@ (class "action-button"))
+               (a (@ (href "/getting-started/real-world-usage"))
+                  "Real-world usage →")))
+
+     ;; (p "There's a “real-world” workflow example available in the "
+     ;;    (a (@ (href "https://github.com/UMCUGenetics/guix-performance-test"))
+     ;;       "guix-performance-test") " repository.  The workflow language is "
+     ;;       "an extension to " (a (@ (href "http://www.gnu.org/software/guix/"))
+     ;;       "GNU Guix") ", which is written in "
+     ;;       (a (@ (href "http://www.gnu.org/software/guile")) "GNU Guile Scheme")
+     ;;       ".  Other than reading more, you can "
+     ;;       (a (@ (href "mailto:R.R.E.Janssen-10@umcutrecht.nl"))
+     ;;          "send me an e-mail") ".")
+
+     ())
    #:dependencies '(highlight)))

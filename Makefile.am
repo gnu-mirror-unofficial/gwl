@@ -40,6 +40,7 @@ SOURCES =                                               \
   www/pages/error.scm                                   \
   www/pages/getting-started.scm                         \
   www/pages/getting-started/defining-workflows.scm      \
+  www/pages/getting-started/real-world-usage.scm        \
   www/pages/welcome.scm                                 \
   www/pages/workflow-viewer.scm
 

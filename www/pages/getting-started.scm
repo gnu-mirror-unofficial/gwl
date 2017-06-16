@@ -37,9 +37,6 @@
                      "# Get the code
 git clone https://git.roelj.com/guix/gwl.git && cd gwl/
 
-# (Optional) Configure and compile the code
-autoreconf -ivf && ./configure && make
-
 # Add the 'workflow' and 'process' subcommands to GNU Guix
 CURRENT_DIR=`pwd`
 export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
@@ -52,8 +49,8 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
         (a (@ (href "https://www.gnu.org/software/emacs")) "GNU Emacs")
         " has excellent support for interactively running the code in "
         "the rest of the tutorial.")
-     
-     (h3 "Let's get started")
+
+     (h3 "The concepts to work with")
      (p "Before diving into the code samples, there are a "
         "few things we need to know about the workflow language.  First, "
         "there are two concepts we need to understand: " (em "processes")
@@ -101,12 +98,12 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
   (process
    (name \"hello-world\")
    (version \"0.1\")
-   (output-path \"/output/path/for/hello-world\")
+   (output-path \"/output/path/for/hello-world/hello-world.txt\")
    (run-time (complexity
-              (space (* 1024 1024 5)) ; Five megabytes
+              (space (megabytes 5)) ; Five megabytes
               (time 3))) ; Three seconds
    (procedure
-    #~(with-output-to-file (string-append #$output-path \"/hello-world.txt\")
+    #~(with-output-to-file #$output-path
         (lambda _ (format #t \"Hello world~%\"))))
    (synopsis \"A friendly greeter.\")
    (description \"This process has something to say to the world.\")))"))
@@ -135,7 +132,7 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
      (p "The template that remains after translating the variables into values "
         "is (or must be) valid Scheme code.  This code can be executed on the "
         "computing cluster, or your local machine.")
-     
+
      (h4 "Run-time complexity")
      (p "The run-time complexity of a process describes how much time and how "
         "much memory is needed to run it.  We could just write static numbers, "
@@ -154,7 +151,7 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
         (code "(* 2 (stat:size (stat \"/path/to/input/file\")))") ".")
 
      (h4 "Running the process")
-     (p "We could run the process defined in " (em "Figure 2") " with the "
+     (p "We can run the process defined in " (em "Figure 2") " with the "
         "command:")
 
      (div (@ (class "figure"))
@@ -167,8 +164,10 @@ export GUILE_LOAD_PATH=\"$CURRENT_DIR${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH\""))
 
      (p "For " (code "guix") " to find our process definition, we need to add "
         "it to a Scheme module, and let " (code "guix") " find that module by "
-        "adding it to the " (code "GUIX_WORKFLOW_PATH") " environment variable."
-        "  We will learn how to do that in the second part of this tutorial.")
+        "either moving into the directory where your Scheme module is stored, "
+        " or by adding it to the " (code "GUIX_WORKFLOW_PATH") " environment "
+        "variable.  We will learn how to do that in the second part of this "
+        "tutorial.")
 
      (p "Instead of running it directly, we can specify an execution engine.  "
         "For example, we can let " (code "guix") " run processes on a "
@@ -181,10 +180,8 @@ Your job 7961546 (\"gi1k8r1dhbmwaxhyqgyqh4vc5y5ih6h7-hello-world-0.1\") has
 been submitted"))
           (p (strong "Command 3") ": Using Grid Engine with GWL."))
 
-     (p "Notice that the command to execute the script has changed to use "
-        (code "qsub") " with which we can queue the job on a Grid Engine "
-        " computing cluster.")
-     
+     (h3 "Wrapping up the first part, and moving on")
+
      (p "In the GWL " (em "processes") " are the building blocks for your
 workflow definition.  Before we start to combine the building blocks to form
 entire workflows, let's have a little more fun with them.")
