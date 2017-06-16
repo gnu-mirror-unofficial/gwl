@@ -164,10 +164,10 @@ code {
 
 div.action-button {
     display: inline-block;
-    font-size: 15pt;
+    font-size: 16pt;
     font-weight: bold;
     text-transform: uppercase;
-    background: #cccccc;
+    background: #d38d5f;
     padding: 4pt;
     -webkit-border-radius: 4pt;
     -moz-border-radius: 4pt;
@@ -185,5 +185,5 @@ div.action-button a:hover {
 }
 
 div.action-button:hover {
-    background: #999999;
+    background: #a05a2c;
 }
