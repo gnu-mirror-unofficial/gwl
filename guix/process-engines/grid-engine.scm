@@ -66,7 +66,8 @@ PROCEDURE's imported modules in its search path."
                                (quotient (remainder time 3600) 60) ; Minutes
                                (remainder time 60)) #f)) ; Seconds
          (space-str   (if space (format #f "-l h_vmem=~a" space) ""))
-         (threads-str (if threads (format #f "-pe threaded ~a" threads) "")))
+         (threads-str (if threads (format #f "-pe threaded ~a" threads) ""))
+         (logs-directory (string-append (getcwd) "/logs")))
          ;(out-str (if out (format #f "(setenv \"out\" ~s)" out) ""))
     (mlet %store-monad ((set-load-path
                          (load-path-expression (gexp-modules exp))))
@@ -85,6 +86,10 @@ PROCEDURE's imported modules in its search path."
                     (ungexp space-str)
                     (ungexp time-str)
                     (ungexp threads-str))
+            ;; Write logs to the 'logs' subdirectory of the workflow output.
+            (format port "#$ -o ~a~%#$ -e ~a~%"
+                    (ungexp logs-directory)
+                    (ungexp logs-directory))
             ;; Now that we've written all of the SGE shell code,
             ;; We can start writing the Scheme code.
             ;; We rely on Bash for this to work.
@@ -103,6 +108,10 @@ PROCEDURE's imported modules in its search path."
             (format port
                     "~%;; Set the current working directory.~%(chdir ~s)~%"
                     '(ungexp (getcwd)))
+            (format port "~%;; Create the 'logs' directory.~%")
+            (format port "(catch #t (lambda _ (mkdir ~s))~%"
+                    (ungexp logs-directory))
+            (format port "          (lambda (key . parameters) #t))~%")
             (format port "~%;; Actual code from the procedure.~%~a~%"
                     (with-output-to-string
                       (lambda _ (pretty-print '(ungexp exp)))))
