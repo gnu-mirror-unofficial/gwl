@@ -61,15 +61,18 @@ PROCEDURE's imported modules in its search path."
          (exp (process-procedure proc))
          ;(out (process-output-path proc))
          (packages (process-package-inputs proc))
-         (time (complexity-time (process-complexity proc)))
-         (space (complexity-space (process-complexity proc)))
+         (time (if (process-complexity proc)
+                   (complexity-time (process-complexity proc)) 0))
+         (space (if (process-complexity proc)
+                    (complexity-space (process-complexity proc)) 0))
          (threads (complexity-threads (process-complexity proc)))
          (time-str (if time
                        (format #f "-l h_rt=~a:~a:~a"
                                (quotient time 3600) ; Hours
                                (quotient (remainder time 3600) 60) ; Minutes
                                (remainder time 60)) #f)) ; Seconds
-         (space-str   (if space (format #f "-l h_vmem=~a" space) ""))
+         (space-str   (if space (format #f "-l h_vmem=~a"
+                                        (+ space (megabytes 65))) ""))
          (threads-str (if threads (format #f "-pe threaded ~a" threads) ""))
          (logs-directory (string-append (getcwd) "/logs")))
          ;(out-str (if out (format #f "(setenv \"out\" ~s)" out) ""))
@@ -93,9 +96,11 @@ PROCEDURE's imported modules in its search path."
                     (ungexp time-str)
                     (ungexp threads-str))
             ;; Write logs to the 'logs' subdirectory of the workflow output.
-            (format port "#$ -o ~a~%#$ -e ~a~%"
+            (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%"
                     (ungexp logs-directory)
-                    (ungexp logs-directory))
+                    (ungexp name)
+                    (ungexp logs-directory)
+                    (ungexp name))
             ;; Load the profile that contains the programs for this script.
             (format port "source ~a/etc/profile~%" (ungexp profile))
             ;; Now that we've written all of the SGE shell code,
