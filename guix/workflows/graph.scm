@@ -45,8 +45,8 @@
             (string-upcase pretty-name)
             (process-synopsis proc)
             (if (process-package-inputs proc)
-                (map (lambda (pair)
-                       (package-full-name (cadr pair)))
+                (map (lambda (item)
+                       (package-full-name item))
                      (process-package-inputs proc))
                 '("-")))))
 

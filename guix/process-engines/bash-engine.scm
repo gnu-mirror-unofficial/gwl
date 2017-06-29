@@ -22,8 +22,11 @@
   #:use-module (guix gexp)
   #:use-module (guix store)
   #:use-module (guix monads)
+  #:use-module (guix profiles)
+  #:use-module (guix derivations)
   #:use-module (gnu packages bash)
   #:use-module (ice-9 pretty-print)
+  #:use-module (srfi srfi-1)
   #:export (bash-engine))
 
 (define* (process->bash-engine-derivation proc #:key (guile (default-guile)))
@@ -31,10 +34,13 @@
 PROCEDURE's imported modules in its search path."
   (let ((name (process-full-name proc))
         (exp (process-procedure proc))
-        (out (process-output-path proc)))
+        (out (process-output-path proc))
+        (packages (process-package-inputs proc)))
     (let ((out-str (if out (format #f "(setenv \"out\" ~s)" out) "")))
       (mlet %store-monad ((set-load-path
-                           (load-path-expression (gexp-modules exp))))
+                           (load-path-expression (gexp-modules exp)))
+                          (profile (profile-derivation
+                                    (packages->manifest packages))))
         (gexp->derivation
          name
          (gexp
@@ -42,6 +48,8 @@ PROCEDURE's imported modules in its search path."
             (lambda (port)
               (use-modules (ice-9 pretty-print))
               (format port "#!~a/bin/bash~%" (ungexp bash))
+              ;; Load the profile that contains the programs for this script.
+              (format port "source ~a/etc/profile~%" (ungexp profile))
               ;; Now that we've written all of the shell code,
               ;; We can start writing the Scheme code.
               ;; We rely on Bash for this to work.

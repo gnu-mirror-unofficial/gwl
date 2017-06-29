@@ -23,9 +23,12 @@
   #:use-module (guix gexp)
   #:use-module (guix store)
   #:use-module (guix monads)
+  #:use-module (guix profiles)
+  #:use-module (guix derivations)
   #:use-module (gnu packages bash)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 format)
+  #:use-module (srfi srfi-1)
   #:export (grid-engine))
 
 (define (sanitize-sge-job-name name)
@@ -57,6 +60,7 @@ PROCEDURE's imported modules in its search path."
   (let* ((name (process-full-name proc))
          (exp (process-procedure proc))
          ;(out (process-output-path proc))
+         (packages (process-package-inputs proc))
          (time (complexity-time (process-complexity proc)))
          (space (complexity-space (process-complexity proc)))
          (threads (complexity-threads (process-complexity proc)))
@@ -70,7 +74,9 @@ PROCEDURE's imported modules in its search path."
          (logs-directory (string-append (getcwd) "/logs")))
          ;(out-str (if out (format #f "(setenv \"out\" ~s)" out) ""))
     (mlet %store-monad ((set-load-path
-                         (load-path-expression (gexp-modules exp))))
+                         (load-path-expression (gexp-modules exp)))
+                        (profile (profile-derivation
+                                    (packages->manifest packages))))
       (gexp->derivation
        name
        (gexp
@@ -90,6 +96,8 @@ PROCEDURE's imported modules in its search path."
             (format port "#$ -o ~a~%#$ -e ~a~%"
                     (ungexp logs-directory)
                     (ungexp logs-directory))
+            ;; Load the profile that contains the programs for this script.
+            (format port "source ~a/etc/profile~%" (ungexp profile))
             ;; Now that we've written all of the SGE shell code,
             ;; We can start writing the Scheme code.
             ;; We rely on Bash for this to work.

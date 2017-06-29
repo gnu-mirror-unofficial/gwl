@@ -55,9 +55,9 @@
 
   ;; Basic information about the workflow
   (name workflow-name)
-  (version workflow-version)
-  (synopsis workflow-synopsis)
-  (description workflow-description)
+  (version workflow-version           (default ""))
+  (synopsis workflow-synopsis         (default ""))
+  (description workflow-description   (default ""))
 
   ;; The input and output of a workfow will be passed to each starting process.
   ;; This can be files or directories, depending on what the workflow expects.

@@ -86,19 +86,19 @@
   process?
 
   (name             process-name)
-  (version          process-version)
-  (synopsis         process-synopsis)
-  (description      process-description)
+  (version          process-version        (default ""))
+  (synopsis         process-synopsis       (default ""))
+  (description      process-description    (default ""))
 
   ;; Inputs can be packages, files, and settings.
-  (package-inputs   process-package-inputs (default #f))
-  (data-inputs      process-data-inputs (default #f))
+  (package-inputs   process-package-inputs (default '()))
+  (data-inputs      process-data-inputs    (default #f))
 
   ;; Outputs can be anything, but are mostly files (I guess).
-  (output-path      process-output-path (default #f))
-  (outputs          process-output (default #f))
+  (output-path      process-output-path    (default #f))
+  (outputs          process-output         (default #f))
 
-  (run-time         process-complexity)
+  (run-time         process-complexity     (default #f))
   (procedure        process-procedure))
 
 (define (print-process process port)
