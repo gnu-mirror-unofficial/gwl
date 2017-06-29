@@ -76,6 +76,11 @@ PROCEDURE's imported modules in its search path."
          (threads-str (if threads (format #f "-pe threaded ~a" threads) ""))
          (logs-directory (string-append (getcwd) "/logs")))
          ;(out-str (if out (format #f "(setenv \"out\" ~s)" out) ""))
+    ;; Attempt to create the logs directory.  It's fine when it already
+    ;; exists.
+    (catch #t
+      (lambda _ (mkdir logs-directory))
+      (lambda (key . arguments) #t))
     (mlet %store-monad ((set-load-path
                          (load-path-expression (gexp-modules exp)))
                         (profile (profile-derivation
