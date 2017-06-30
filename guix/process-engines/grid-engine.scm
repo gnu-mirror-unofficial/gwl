@@ -95,13 +95,13 @@ PROCEDURE's imported modules in its search path."
             (format port "#!~a/bin/bash~%" (ungexp bash))
             ;; Write the SGE options to the header of the Bash script.
             (format port
-                    "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~%~]~%"
+                    "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
                     (ungexp bash)
                     (ungexp space-str)
                     (ungexp time-str)
                     (ungexp threads-str))
             ;; Write logs to the 'logs' subdirectory of the workflow output.
-            (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%"
+            (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
                     (ungexp logs-directory)
                     (ungexp name)
                     (ungexp logs-directory)
@@ -120,11 +120,11 @@ PROCEDURE's imported modules in its search path."
             ;; We use the pretty-printer so that users can debug their
             ;; procedures more easily.
             (format port
-                    "~%;; Code to create a proper Guile environment.~%~a~%"
+                    ";; Code to create a proper Guile environment.~%~a~%"
                     (with-output-to-string
                       (lambda _ (pretty-print '(ungexp set-load-path)))))
             (format port
-                    "~%;; Set the current working directory.~%(chdir ~s)~%"
+                    ";; Set the current working directory.~%(chdir ~s)~%"
                     '(ungexp (getcwd)))
             (format port "~%;; Create the 'logs' directory.~%")
             (format port "(catch #t (lambda _ (mkdir ~s))~%"
