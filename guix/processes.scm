@@ -117,7 +117,9 @@
 
 (define (process-full-name proc)
   "Returns the name and version of PROC."
-  (string-append (process-name proc) "-" (process-version proc)))
+  (if (string= (process-version proc) "")
+      (string-append (process-name proc) "-" (process-version proc))
+      (process-name proc)))
 
 (set-record-type-printer! <process> print-process)
 

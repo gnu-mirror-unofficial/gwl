@@ -85,7 +85,9 @@
 
 (define (workflow-full-name arg)
   "Writes the name and version as a single string of PROCESS to PORT."
-  (string-append (workflow-name arg) "-" (workflow-version arg)))
+  (if (string= (workflow-version arg) "")
+      (string-append (workflow-name arg) "-" (workflow-version arg))
+      (workflow-name arg)))
 
 (define (print-workflow workflow port)
   "Write a decent human-representation of a workflow of WORKFLOW to PORT."
