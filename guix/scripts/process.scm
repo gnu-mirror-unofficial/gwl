@@ -187,4 +187,4 @@ Run a predefined computational process.")
        #t)
       ;; Handle (or don't handle) anything else.
       ;; ----------------------------------------------------------------------
-      (#f #t))))
+      (_ #t))))

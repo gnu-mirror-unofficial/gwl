@@ -211,4 +211,4 @@ Run multiple predefined computational process in a workflow.")
        #t)
       ;; Handle (or don't handle) anything else.
       ;; ----------------------------------------------------------------------
-      (#f #t))))
+      (_ #t))))
