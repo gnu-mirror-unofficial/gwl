@@ -234,13 +234,23 @@ set to #f, it only returns the output path."
 user needs to run."
   (if (not (process? proc))
       (format #t "This is not a process!~%")
-      (let* ((command-prefix (process-engine-command-prefix engine))
-             (derivation-builder (process-engine-derivation-builder engine))
-             (output (derivation->script (derivation-builder proc)))
-             (restrictions-func (process-engine-restrictions-string engine))
-             (restrictions (restrictions-func proc workflow)))
-        (when stand-alone? (format #t "# Please run the following:~%~%"))
-        (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output))))
+      (catch #t
+        (lambda _
+          (let* ((command-prefix (process-engine-command-prefix engine))
+                 (derivation-builder (process-engine-derivation-builder engine))
+                 (output (derivation->script (derivation-builder proc)))
+                 (restrictions-func (process-engine-restrictions-string engine))
+                 (restrictions (restrictions-func proc workflow)))
+            (when stand-alone? (format #t "# Please run the following:~%~%"))
+            (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output)))
+        (lambda (key . args)
+          (match key
+            ('missing-runtime
+             (format #t "Error in process '~a':~%  ~a~%"
+                     (process-full-name proc) (car args)))
+            (_
+             (format #t "Unknown error in process '~a'.~%"
+                     (process-full-name proc))))))))
 
 (define* (process->script->run proc engine #:key (stand-alone? #t)
                                                  (workflow '()))

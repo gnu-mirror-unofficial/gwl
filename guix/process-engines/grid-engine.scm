@@ -57,89 +57,89 @@
 (define* (process->grid-engine-derivation proc #:key (guile (default-guile)))
   "Return an executable script that runs the PROCEDURE described in PROC, with
 PROCEDURE's imported modules in its search path."
-  (let* ((name (process-full-name proc))
-         (exp (process-procedure proc))
-         ;(out (process-output-path proc))
-         (packages (process-package-inputs proc))
-         (time (if (process-complexity proc)
-                   (complexity-time (process-complexity proc)) 0))
-         (space (if (process-complexity proc)
-                    (complexity-space (process-complexity proc)) 0))
-         (threads (complexity-threads (process-complexity proc)))
-         (time-str (if time
-                       (format #f "-l h_rt=~a:~a:~a"
-                               (quotient time 3600) ; Hours
-                               (quotient (remainder time 3600) 60) ; Minutes
-                               (remainder time 60)) #f)) ; Seconds
-         (space-str   (if space (format #f "-l h_vmem=~a"
-                                        (+ space (megabytes 65))) ""))
-         (threads-str (if threads (format #f "-pe threaded ~a" threads) ""))
-         (logs-directory (string-append (getcwd) "/logs")))
-         ;(out-str (if out (format #f "(setenv \"out\" ~s)" out) ""))
-    ;; Attempt to create the logs directory.  It's fine when it already
-    ;; exists.
-    (catch #t
-      (lambda _ (mkdir logs-directory))
-      (lambda (key . arguments) #t))
-    (mlet %store-monad ((set-load-path
-                         (load-path-expression (gexp-modules exp)))
-                        (profile (profile-derivation
-                                    (packages->manifest packages))))
-      (gexp->derivation
-       name
-       (gexp
-        (call-with-output-file (ungexp output)
-          (lambda (port)
-            (use-modules (ice-9 pretty-print)
-                         (ice-9 format))
-            (format port "#!~a/bin/bash~%" (ungexp bash))
-            ;; Write the SGE options to the header of the Bash script.
-            (format port
-                    "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
-                    (ungexp bash)
-                    (ungexp space-str)
-                    (ungexp time-str)
-                    (ungexp threads-str))
-            ;; Write logs to the 'logs' subdirectory of the workflow output.
-            (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
-                    (ungexp logs-directory)
-                    (ungexp name)
-                    (ungexp logs-directory)
-                    (ungexp name))
-            ;; Load the profile that contains the programs for this script.
-            (format port "source ~a/etc/profile~%" (ungexp profile))
-            ;; Now that we've written all of the SGE shell code,
-            ;; We can start writing the Scheme code.
-            ;; We rely on Bash for this to work.
-            (format port "read -d '' CODE <<EOF~%")
-            ;; The destination can be outside of the store.
-            ;; Note: We have to mount this location when building inside
-            ;; a container.
-            ;;(format port "~a" (ungexp out-str))
-            ;; Change to the correct output directory.
-            ;; We use the pretty-printer so that users can debug their
-            ;; procedures more easily.
-            (format port
-                    ";; Code to create a proper Guile environment.~%~a~%"
-                    (with-output-to-string
-                      (lambda _ (pretty-print '(ungexp set-load-path)))))
-            (format port
-                    ";; Set the current working directory.~%(chdir ~s)~%"
-                    '(ungexp (getcwd)))
-            (format port "~%;; Create the 'logs' directory.~%")
-            (format port "(catch #t (lambda _ (mkdir ~s))~%"
-                    (ungexp logs-directory))
-            (format port "          (lambda (key . parameters) #t))~%")
-            (format port "~%;; Actual code from the procedure.~%~a~%"
-                    (with-output-to-string
-                      (lambda _ (pretty-print '(ungexp exp)))))
-            ;;(format port ";; Write a 'completed' file.~%")
-            ;;(format port "(call-with-output-file ~s (const #t))~%"
-            ;;        (string-append (ungexp out) "/JOB_DONE"))
-            (format port "EOF~%")
-            (format port "~a/bin/guile -c \"$CODE\"~%" (ungexp guile))
-            (chmod port #o555))))
-       #:graft? #f))))
+  (if (not (process-complexity proc))
+      (throw 'missing-runtime
+             "Please set the run-time information for this process.")
+      (let* ((name (process-full-name proc))
+             (exp (process-procedure proc))
+                                        ;(out (process-output-path proc))
+             (packages (process-package-inputs proc))
+             (time     (complexity-time (process-complexity proc)))
+             (space    (complexity-space (process-complexity proc)))
+             (threads  (complexity-threads (process-complexity proc)))
+             (time-str (if time
+                           (format #f "-l h_rt=~a:~a:~a"
+                                   (quotient time 3600) ; Hours
+                                   (quotient (remainder time 3600) 60) ; Minutes
+                                   (remainder time 60)) #f)) ; Seconds
+             (space-str   (if space (format #f "-l h_vmem=~a"
+                                            (+ space (megabytes 65))) ""))
+             (threads-str (if threads (format #f "-pe threaded ~a" threads) ""))
+             (logs-directory (string-append (getcwd) "/logs")))
+        ;; Attempt to create the logs directory.  It's fine when it already
+        ;; exists.
+        (catch #t
+          (lambda _ (mkdir logs-directory))
+          (lambda (key . arguments) #t))
+        (mlet %store-monad ((set-load-path
+                             (load-path-expression (gexp-modules exp)))
+                            (profile (profile-derivation
+                                      (packages->manifest packages))))
+          (gexp->derivation
+           name
+           (gexp
+            (call-with-output-file (ungexp output)
+              (lambda (port)
+                (use-modules (ice-9 pretty-print)
+                             (ice-9 format))
+                (format port "#!~a/bin/bash~%" (ungexp bash))
+                ;; Write the SGE options to the header of the Bash script.
+                (format port
+                        "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
+                        (ungexp bash)
+                        (ungexp space-str)
+                        (ungexp time-str)
+                        (ungexp threads-str))
+                ;; Write logs to the 'logs' subdirectory of the workflow output.
+                (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
+                        (ungexp logs-directory)
+                        (ungexp name)
+                        (ungexp logs-directory)
+                        (ungexp name))
+                ;; Load the profile that contains the programs for this script.
+                (format port "source ~a/etc/profile~%" (ungexp profile))
+                ;; Now that we've written all of the SGE shell code,
+                ;; We can start writing the Scheme code.
+                ;; We rely on Bash for this to work.
+                (format port "read -d '' CODE <<EOF~%")
+                ;; The destination can be outside of the store.
+                ;; Note: We have to mount this location when building inside
+                ;; a container.
+                ;;(format port "~a" (ungexp out-str))
+                ;; Change to the correct output directory.
+                ;; We use the pretty-printer so that users can debug their
+                ;; procedures more easily.
+                (format port
+                        ";; Code to create a proper Guile environment.~%~a~%"
+                        (with-output-to-string
+                          (lambda _ (pretty-print '(ungexp set-load-path)))))
+                (format port
+                        ";; Set the current working directory.~%(chdir ~s)~%"
+                        '(ungexp (getcwd)))
+                (format port "~%;; Create the 'logs' directory.~%")
+                (format port "(catch #t (lambda _ (mkdir ~s))~%"
+                        (ungexp logs-directory))
+                (format port "          (lambda (key . parameters) #t))~%")
+                (format port "~%;; Actual code from the procedure.~%~a~%"
+                        (with-output-to-string
+                          (lambda _ (pretty-print '(ungexp exp)))))
+                ;;(format port ";; Write a 'completed' file.~%")
+                ;;(format port "(call-with-output-file ~s (const #t))~%"
+                ;;        (string-append (ungexp out) "/JOB_DONE"))
+                (format port "EOF~%")
+                (format port "~a/bin/guile -c \"$CODE\"~%" (ungexp guile))
+                (chmod port #o555))))
+           #:graft? #f)))))
 
 (define grid-engine
   (process-engine
