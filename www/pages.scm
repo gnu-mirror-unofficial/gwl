@@ -46,7 +46,7 @@
                (type "image/x-icon")
                (href "/static/favicon.ico")))
       ,(if (memq 'highlight dependencies)
-         `((link (@ (rel "stylesheet") (href "/static/highlight/styles/androidstudio.css")))
+         `((link (@ (rel "stylesheet") (href "/static/highlight/styles/github.css")))
            (script (@ (src "/static/highlight/highlight.pack.js")) "")
            (script "hljs.initHighlightingOnLoad();"))
          `())
