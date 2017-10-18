@@ -14,11 +14,11 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www pages designer)
+(define-module (gwl www pages designer)
   #:use-module (guix processes)
   #:use-module (gnu processes)
   #:use-module (ice-9 vlist)
-  #:use-module (www pages)
+  #:use-module (gwl www pages)
   #:export (page-designer))
 
 (define (page-designer request-path)

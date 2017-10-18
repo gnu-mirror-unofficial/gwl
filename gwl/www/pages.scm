@@ -14,7 +14,7 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www pages)
+(define-module (gwl www pages)
   #:use-module (srfi srfi-1)
   #:export (page-root-template))
 

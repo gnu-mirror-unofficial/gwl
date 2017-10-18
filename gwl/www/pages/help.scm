@@ -14,11 +14,13 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www pages status)
-  #:use-module (www pages)
-  #:export (page-status))
+(define-module (gwl www pages help)
+  #:use-module (gwl www pages)
+  #:export (page-help))
 
-(define (page-status request-path)
-  (page-root-template "System status" request-path
-   `((h2 "System status")
-     (p "System checks are currently not implemented."))))
+(define (page-help request-path)
+  (page-root-template "Help" request-path
+                      `((h2 "Help")
+                        (p "For questions and feedback, please contact "
+                           (a (@ (href "mailto:R.R.E.Janssen-10@umcutrecht.nl"))
+                              "Roel Janssen") "."))))

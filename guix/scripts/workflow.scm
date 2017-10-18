@@ -17,7 +17,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix scripts workflow)
-  #:use-module (web-interface)
+  #:use-module (gwl web-interface)
   #:use-module (guix ui)
   #:use-module (guix scripts)
   #:use-module (guix utils)

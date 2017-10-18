@@ -154,24 +154,18 @@
                               (process-procedure proc))))
       (return (callback drv)))))
 
-(define (process-outputs proc engine)
-  "Return the output location(s) of process PROC when the derivation is built
-with ENGINE."
+(define (process-outputs proc)
+  "Return the output location(s) of process PROC."
   
   (define (compose-location folder file)
-    (if file
-        (string-append folder "/" file)
-        folder))
+    (cond
+     ((and file folder)  (string-append folder "/" file))
+     (file file)
+     (else folder)))
 
-  (define (get-store-location)
-    (let ((derivation-builder (process-engine-derivation-builder engine)))
-      (derivation->script (derivation-builder proc) #f)))
-
-  (let ((location (process-output-path proc))
-        (produces (process-output proc)))
-    (if location
-        (compose-location location produces)
-        (compose-location (get-store-location) produces))))
+  (let ((path (process-output-path proc))
+        (file (process-output proc)))
+    (compose-location path file)))
 
 (define (process-takes-available proc)
   "Returns #t when inputs exist, #f otherwise."

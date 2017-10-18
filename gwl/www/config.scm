@@ -14,13 +14,16 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www pages help)
-  #:use-module (www pages)
-  #:export (page-help))
+(define-module (gwl www config)
+  #:export (%www-root
+            %www-max-file-size
+            %www-listen-port
+            %www-static-root))
 
-(define (page-help request-path)
-  (page-root-template "Help" request-path
-                      `((h2 "Help")
-                        (p "For questions and feedback, please contact "
-                           (a (@ (href "mailto:R.R.E.Janssen-10@umcutrecht.nl"))
-                              "Roel Janssen") "."))))
+(define %www-root (dirname (search-path
+                            (map (lambda (path)
+                                   (string-append path "/gwl"))
+                                 %load-path) "web-interface.scm")))
+(define %www-static-root (string-append %www-root "/"))
+(define %www-max-file-size 2500000000)
+(define %www-listen-port 5000)

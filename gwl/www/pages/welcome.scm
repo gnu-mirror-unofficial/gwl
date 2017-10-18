@@ -14,8 +14,8 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www pages welcome)
-  #:use-module (www pages)
+(define-module (gwl www pages welcome)
+  #:use-module (gwl www pages)
   #:export (page-welcome))
 
 (define (page-welcome request-path)

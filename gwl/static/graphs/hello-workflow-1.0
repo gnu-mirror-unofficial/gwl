@@ -1,0 +1,11 @@
+digraph G {
+  graph [bgcolor=transparent, fontsize=24];
+ "hello-alice-1.0" [shape=box,style="rounded,filled",fillcolor="#ffd42a",label=<<FONT POINT-SIZE="14"><U>HELLO ALICE</U></FONT><BR/><FONT POINT-SIZE="12">A friendly greeter.<BR/><BR/>Uses: -.</FONT>>];
+ "hello-bob-1.0" [shape=box,style="rounded,filled",fillcolor="#ff9955",label=<<FONT POINT-SIZE="14"><U>HELLO BOB</U></FONT><BR/><FONT POINT-SIZE="12">A friendly greeter.<BR/><BR/>Uses: -.</FONT>>];
+ "hello-world-1.0" [shape=box,style="rounded,filled",fillcolor="#d38d5f",label=<<FONT POINT-SIZE="14"><U>HELLO WORLD</U></FONT><BR/><FONT POINT-SIZE="12">A friendly greeter.<BR/><BR/>Uses: -.</FONT>>];
+
+"hello-world-1.0" -> "hello-alice-1.0"
+
+"hello-world-1.0" -> "hello-bob-1.0"
+
+}

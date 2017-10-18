@@ -1,4 +1,5 @@
-;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2016  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2016  Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -14,20 +15,13 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www pages error)
-  #:use-module (www pages)
-  #:use-module (www config)
-  #:export (page-error-404
-            page-error-filesize
-            page-error))
+(define-module (gwl www util)
+  #:use-module (srfi srfi-1)
+  #:export (file-extension
+            string-replace-occurrence))
 
-(define (page-error-404 request-path)
-  (page-root-template "Oops!" request-path
-   `(p "The page you tried to reach cannot be found.")))
+(define (file-extension file-name)
+  (last (string-split file-name #\.)))
 
-(define (page-error-filesize request-path)
-  (page-root-template "Oops!" request-path
-   `(p ,(format #f "The maximum file size has been set to ~a megabytes."
-                (/ %www-max-file-size 1000000)))))
-
-(define page-error page-error-404)
+(define (string-replace-occurrence str occurence alternative)
+  (string-map (lambda (x) (if (eq? x occurrence) alternative x)) str))

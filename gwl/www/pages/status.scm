@@ -14,13 +14,11 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www config)
-  #:export (%www-root
-            %www-max-file-size
-            %www-listen-port
-            %www-static-root))
+(define-module (gwl www pages status)
+  #:use-module (gwl www pages)
+  #:export (page-status))
 
-(define %www-root (dirname (search-path %load-path "web-interface.scm")))
-(define %www-static-root (string-append %www-root "/static"))
-(define %www-max-file-size 250000000)
-(define %www-listen-port 5000)
+(define (page-status request-path)
+  (page-root-template "System status" request-path
+   `((h2 "System status")
+     (p "System checks are currently not implemented."))))

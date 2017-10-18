@@ -14,8 +14,8 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www pages getting-started defining-workflows)
-  #:use-module (www pages)
+(define-module (gwl www pages getting-started defining-workflows)
+  #:use-module (gwl www pages)
   #:export (page-getting-started-defining-workflows))
 
 (define (page-getting-started-defining-workflows request-path)

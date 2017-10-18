@@ -14,8 +14,8 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(define-module (www pages getting-started real-world-usage)
-  #:use-module (www pages)
+(define-module (gwl www pages getting-started real-world-usage)
+  #:use-module (gwl www pages)
   #:export (page-getting-started-real-world-usage))
 
 (define (page-getting-started-real-world-usage request-path)

@@ -32,20 +32,17 @@ body,html {
     padding: 0pt;
     margin: 0pt;
     font-family: 'Roboto', sans-serif;
-    font-size: 11pt;
+    font-size: 13pt;
     color: #000000;
     background-color: #bcd35f;
     background-image: url('/static/images/background.png');
 }
 
 #wrapper {
-    max-width: 900pt;
+    max-width: 1000pt;
     margin: auto;
     padding: 0pt;
     margin: 0pt auto auto auto;
-}
-
-#header {
 }
 
 #header .title { padding: 5pt 5pt 0pt 5pt; }
@@ -64,7 +61,7 @@ body,html {
     border-radius: 4pt 4pt 0pt 0pt;
     text-transform: uppercase;
     text-decoration: none;
-    font-size: small;
+    font-size: 0.85em;
 }
 
 #header .menu li.active {
@@ -91,7 +88,7 @@ a:hover { color: #555555; }
 #content h4 { margin: 0pt; padding-top: 5pt; border-bottom: solid thin #ccc; }
 #content ul { padding: 0pt 0pt 0pt 10pt; margin: 0pt 0pt 0pt 10pt; }
 #content li { line-height: 1.5em; }
-#content pre { padding: 0pt; margin: 0pt; }
+#content pre { margin: 5pt; padding: 0pt; }
 #content table {
     border-spacing: 0pt;
     padding: 0pt;
@@ -144,7 +141,7 @@ div.figure {
     -moz-border-radius: 4pt;
     border-radius: 4pt;
     border: solid thin #cccccc;
-    background: #d0d0d0/*#dfe6df*/;
+    background: #cccccc/*#dfe6df*/;
     margin: 0pt 5pt 5pt 5pt;
 }
 
@@ -161,36 +158,24 @@ div.inline-figure {
     padding: 0.5em;
 }
 
-pre code {
-    border: none;
-    margin: 0;
-    padding: 0;
-}
-
-pre .bash, .scheme {
+pre {
+    background-color: #f9f9f9;
     text-align: left;
     font-family: 'FiraMono', monospace;
-    font-size: 10pt;
     font-style: normal;
-    border: none;
-    border-bottom: solid thin #cccccc;
     padding: 0.5em;
-    -webkit-border-radius: 4pt 4pt 0pt 0pt;
-    -moz-border-radius: 4pt 4pt 0pt 0pt;
-    border-radius: 4pt 4pt 0pt 0pt;
+    -webkit-border-radius: 5pt;
+    -moz-border-radius: 5pt;
+    border-radius: 5pt;
+    border: solid 1pt #cccccc;
 }
 
 code {
-    text-align: left;
     font-family: 'FiraMono', monospace;
-    font-size: 10pt;
     font-style: normal;
-    background: #f8f8f8;
-    border: solid thin #eeeeee;
-    -webkit-border-radius: 2pt;
-    -moz-border-radius: 2pt;
-    border-radius: 2pt;
-    padding: 1pt;
+    -webkit-border-radius: 4pt;
+    -moz-border-radius: 4pt;
+    border-radius: 4pt;
 }
 
 div.action-button {
