@@ -64,6 +64,8 @@
             minutes
             hours
 
+            define-dynamically
+
             ;; For the lack of a better place.
             default-guile))
 
@@ -283,3 +285,7 @@ user needs to run."
 
 (define (hours number)
   (* number 3600))
+
+(define-syntax-rule
+  (define-dynamically name value)
+  (primitive-eval `(define-public ,name ,value)))
