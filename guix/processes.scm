@@ -242,9 +242,17 @@ user needs to run."
             ('missing-runtime
              (format #t "Error in process '~a':~%  ~a~%"
                      (process-full-name proc) (car args)))
+            ('match-error
+             (let ((inputs (process-package-inputs proc)))
+               (format #t "Error in process '~a':~%  ~a~%"
+                       (process-full-name proc)
+                       (if (and (not (null? inputs))
+                                (not (process? (car inputs))))
+                           "Please unquote the value of 'package-inputs'."
+                           (car args)))))
             (_
-             (format #t "Unknown error in process '~a'.~%"
-                     (process-full-name proc))))))))
+             (format #t "Unknown error in process '~a':~%  ~s.~%"
+                     (process-full-name proc) (car args))))))))
 
 (define* (process->script->run proc engine #:key (stand-alone? #t)
                                                  (workflow '()))
