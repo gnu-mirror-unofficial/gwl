@@ -26,20 +26,28 @@
     font-style: bold;
 }
 
+@media all {html {font-size: 16px;}}
+@media all and (max-width:1000px){html {font-size: 16px;}}
+@media all and (max-width:960px){html {font-size: 15px;}}
+@media all and (max-width:920px){html {font-size: 14px;}}
+@media all and (max-width:880px){html {font-size: 13px;}}
+@media all and (max-width:840px){html {font-size: 13px;}}
+@media all and (max-width:800px){html {font-size: 13px;}}
+@media all and (max-width:760px){html {font-size: 13px;}}
+
 body,html {
     width: 100%;
     height: 100%;
     padding: 0pt;
     margin: 0pt;
     font-family: 'Roboto', sans-serif;
-    font-size: 13pt;
     color: #000000;
     background-color: #bcd35f;
     background-image: url('/static/images/background.png');
 }
 
 #wrapper {
-    max-width: 1000pt;
+    max-width: 1260px;
     margin: auto;
     padding: 0pt;
     margin: 0pt auto auto auto;
@@ -88,7 +96,7 @@ a:hover { color: #555555; }
 #content h4 { margin: 0pt; padding-top: 5pt; border-bottom: solid thin #ccc; }
 #content ul { padding: 0pt 0pt 0pt 10pt; margin: 0pt 0pt 0pt 10pt; }
 #content li { line-height: 1.5em; }
-#content pre { margin: 5pt; padding: 0pt; }
+#content pre { margin: 5pt; padding: 5pt; }
 #content table {
     border-spacing: 0pt;
     padding: 0pt;
@@ -173,6 +181,7 @@ pre {
 code {
     font-family: 'FiraMono', monospace;
     font-style: normal;
+    font-size: 0.9em;
     -webkit-border-radius: 4pt;
     -moz-border-radius: 4pt;
     border-radius: 4pt;

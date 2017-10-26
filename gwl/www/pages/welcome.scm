@@ -20,23 +20,14 @@
 
 (define (page-welcome request-path)
   (page-root-template "GWL" request-path
-   `((h2 "A workflow management language empowered by GNU Guix")
+   `((h2 "A workflow management language extension for GNU Guix")
 
-     (p "This workflow language provides a lightweight framework to write "
-        "pipelines, and integrates with your computing cluster.  You can "
-        "develop in any programming language, and combine the resulting "
-        "scripts and programs with a "
+     (p "This workflow language provides an extension to GNU Guix's "
         (a (@ (href "https://arxiv.org/abs/1305.4584"))
-           "declarative language for package management") ", and the GWL.")
-
-     (div (@ (style "text-align: center;"))
-          (img (@ (src "/static/images/what-is-gwl.svg")
-                  (style "height: 175pt"))))
-
-     (p "So, with the GWL you are able to write pipelines that can be "
-        "reproduced on computers and computing clusters without dealing "
-        "with the details on those other clusters.")
-
+           "declarative language for package management") " to automate "
+           "execution of programs.  Additionally, GWL can use Grid Engine to "
+           "offload program execution.")
+     
      (div (@ (style "text-align: center"))
           (div (@ (class "action-button"))
                (a (@ (href "/getting-started"))

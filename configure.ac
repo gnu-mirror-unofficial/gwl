@@ -15,20 +15,20 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program. If not, see <http://www.gnu.org/licenses/>.
 dnl -*- Autoconf -*-
 
-AC_INIT(gwl, 0.0.9)
+AC_INIT(gwl, 0.1.0)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([color-tests -Wall -Wno-portability foreign])
 AM_SILENT_RULES([yes])
 
+GUILE_PKG([2.2])
 GUILE_PROGS
 
-if $GUILE_TOOLS | grep -q compile; then
-   true
-else
-   AC_MSG_ERROR([Guile 2.2 required.])
+if test "x$GUILD" = "x"; then
+   AC_MSG_ERROR(['guild' binary not found; please check your guile-2.2 installation.])
 fi
 
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([gwl/www/config.scm])
 AC_CONFIG_FILES([env], [chmod +x env])
 AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
 

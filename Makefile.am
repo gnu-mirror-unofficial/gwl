@@ -17,8 +17,8 @@
 
 include guile.am
 
-moddir=$(prefix)/share/guile/site/2.2
-godir=$(libdir)/guile/2.2/ccache
+moddir=$(prefix)/share/guile/site/@GUILE_EFFECTIVE_VERSION@
+godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/ccache
 
 SOURCES =                                                 \
   gnu/processes.scm                                       \
@@ -38,13 +38,12 @@ SOURCES =                                                 \
   gwl/www/util.scm                                        \
   gwl/www/pages.scm                                       \
   gwl/www/pages/error.scm                                 \
-  gwl/www/pages/getting-started.scm                       \
-  gwl/www/pages/getting-started/defining-workflows.scm    \
-  gwl/www/pages/getting-started/real-world-usage.scm      \
   gwl/www/pages/welcome.scm                               \
   gwl/www/pages/workflow-viewer.scm
 
-WWW_STATIC_RESOURCES =                                    \
+assetsdir = $(prefix)/share/@PACKAGE@
+nobase_dist_assets_DATA =                                 \
+  gwl/www/pages/getting-started.md                        \
   gwl/static/css/main.css                                 \
   gwl/static/fonts/FiraMono-Regular.ttf                   \
   gwl/static/fonts/Roboto-Bold.ttf                        \
@@ -52,30 +51,6 @@ WWW_STATIC_RESOURCES =                                    \
   gwl/static/fonts/Roboto-Light.ttf                       \
   gwl/static/fonts/OFL.txt                                \
   gwl/static/graphs/index.html                            \
-  gwl/static/images/g16.png                               \
-  gwl/static/images/grid.png                              \
-  gwl/static/images/grid.svg                              \
-  gwl/static/images/what-is-gwl.svg                       \
-  gwl/static/images/workflows-processes.svg               \
-  gwl/static/jquery/jquery-3.1.1.min.js                   \
-  gwl/static/jqueryui/external/jquery/jquery.js           \
-  gwl/static/jqueryui/images                              \
-  gwl/static/jqueryui/images/ui-icons_444444_256x240.png  \
-  gwl/static/jqueryui/images/ui-icons_555555_256x240.png  \
-  gwl/static/jqueryui/images/ui-icons_777620_256x240.png  \
-  gwl/static/jqueryui/images/ui-icons_777777_256x240.png  \
-  gwl/static/jqueryui/images/ui-icons_cc0000_256x240.png  \
-  gwl/static/jqueryui/images/ui-icons_ffffff_256x240.png  \
-  gwl/static/jqueryui/jquery-ui.css                       \
-  gwl/static/jqueryui/jquery-ui.js                        \
-  gwl/static/jqueryui/jquery-ui.min.css                   \
-  gwl/static/jqueryui/jquery-ui.min.js                    \
-  gwl/static/jqueryui/jquery-ui.structure.css             \
-  gwl/static/jqueryui/jquery-ui.structure.min.css         \
-  gwl/static/jqueryui/jquery-ui.theme.css                 \
-  gwl/static/jqueryui/jquery-ui.theme.min.css             \
-  gwl/static/highlight/highlight.pack.js                  \
-  gwl/static/highlight/LICENSE                            \
-  gwl/static/highlight/styles/github.css
+  gwl/static/images/grid.png
 
-EXTRA_DIST += env.in $(WWW_STATIC_RESOURCES)
+EXTRA_DIST += env.in

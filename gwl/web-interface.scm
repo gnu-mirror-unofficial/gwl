@@ -20,8 +20,7 @@
   (string-map (lambda (x) (if (eq? x occurrence) alternative x)) str))
 
 (define (request-markdown-handler request-path)
-  (format #t "Request path inside handler: ~s~%" request-path)
-  (let ((file (string-append %www-root "/www/pages" request-path ".md")))
+  (let ((file (string-append %www-static-root "/www/pages" request-path ".md")))
     (values
      '((content-type . (text/html)))
      (call-with-output-string
@@ -34,10 +33,7 @@
                        (basename request-path) #\- #\ ))
                      request-path
                      (call-with-input-file file
-                       (lambda (port) (commonmark->sxml port)))
-                     ;; Pages may contain code samples, so we have to
-                     ;; include the syntax-highlighting library.
-                     #:dependencies '(highlight)) port))))))
+                       (lambda (port) (commonmark->sxml port)))) port))))))
 
 (define (request-file-handler path)
   "This handler takes data from a file and sends that as a response."
@@ -55,8 +51,6 @@
             [(string= extension "pdf")  '(application/pdf)]
             [(string= extension "ttf")  '(application/font-sfnt)]
             [(#t '(text/plain))])))
-
-  (format #t "Using static file handler for ~s~%" path)
 
   (let ((full-path (string-append %www-static-root "/" path)))
     (if (not (file-exists? full-path))
@@ -114,16 +108,15 @@
                               (sxml->xml (display-function request-path) port)))
                         (sxml->xml (page-error-404 request-path) port))))))))
 
-
 (define (request-handler request request-body)
   (let ((request-path (uri-path (request-uri request))))
-    (format #t "~a ~a~%" (request-method request) request-path)
     (cond
      ((and (> (string-length request-path) 7)
            (string= (string-take request-path 8) "/static/"))
       (request-file-handler request-path))
      ((and (not (string= "/" request-path))
-           (access? (string-append %www-root "/www/pages" request-path ".md") F_OK))
+           (access? (string-append %www-static-root "/www/pages"
+                                   request-path ".md") F_OK))
       (request-markdown-handler request-path))
      (else
       (request-scheme-page-handler request request-body request-path)))))
