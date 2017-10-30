@@ -23,5 +23,5 @@
 (define (file-extension file-name)
   (last (string-split file-name #\.)))
 
-(define (string-replace-occurrence str occurence alternative)
+(define (string-replace-occurrence str occurrence alternative)
   (string-map (lambda (x) (if (eq? x occurrence) alternative x)) str))

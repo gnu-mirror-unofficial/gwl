@@ -16,9 +16,6 @@
 
   #:export (run-web-interface))
 
-(define (string-replace-occurrence str occurrence alternative)
-  (string-map (lambda (x) (if (eq? x occurrence) alternative x)) str))
-
 (define (request-markdown-handler request-path)
   (let ((file (string-append %www-static-root "/www/pages" request-path ".md")))
     (values
