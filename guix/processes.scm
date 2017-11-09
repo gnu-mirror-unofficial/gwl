@@ -253,8 +253,8 @@ user needs to run."
                            "Please unquote the value of 'package-inputs'."
                            (car args)))))
             (_
-             (format #t "Unknown error in process '~a':~%  ~s.~%"
-                     (process-full-name proc) (car args))))))))
+             (format #t "Unknown error in process '~a':~%  ~s: ~s.~%"
+                     (process-full-name proc) key (car args))))))))
 
 (define* (process->script->run proc engine #:key (stand-alone? #t)
                                                  (workflow '()))
