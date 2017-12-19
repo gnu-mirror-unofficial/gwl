@@ -53,7 +53,7 @@ PROCEDURE's imported modules in its search path."
               ;; Now that we've written all of the shell code,
               ;; We can start writing the Scheme code.
               ;; We rely on Bash for this to work.
-              (format port "read -d '' CODE <<EOF~%")
+              (format port "read -r -d '' CODE <<EOF~%")
               ;; The destination can be outside of the store.
               ;; TODO: We have to mount this location when building inside
               ;; a container.
