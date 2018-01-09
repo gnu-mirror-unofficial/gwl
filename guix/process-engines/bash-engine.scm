@@ -1,5 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2017 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -33,7 +34,7 @@
   "Return an executable script that runs the PROCEDURE described in PROC, with
 PROCEDURE's imported modules in its search path."
   (let ((name (process-full-name proc))
-        (exp (process-procedure proc))
+        (exp (procedure->gexp proc))
         (out (process-output-path proc))
         (packages (process-package-inputs proc)))
     (let ((out-str (if out (format #f "(setenv \"out\" ~s)" out) "")))
