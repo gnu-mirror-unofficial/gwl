@@ -72,6 +72,7 @@
 
             ;; Syntactic sugar
             procedure->gexp
+            process:
 
             ;; For the lack of a better place.
             default-guile))
@@ -109,6 +110,22 @@
 
   (run-time         process-complexity     (default #f))
   (procedure        process-procedure))
+
+;; Shorter syntax, which is especially useful when wisp is used.
+(define-syntax process:
+  (lambda (x)
+    (syntax-case x ()
+      ((_ (id . args) rest ...)
+       #'(define-public id
+           (lambda* args
+             (process
+              (name (symbol->string (syntax->datum #'id)))
+              rest ...))))
+      ((_ id rest ...)
+       #'(define-public id
+           (process
+            (name (symbol->string (syntax->datum #'id)))
+            rest ...))))))
 
 (define (print-process process port)
   "Write a concise representation of PROCESS to PORT."
