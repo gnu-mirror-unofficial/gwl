@@ -1,5 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2016, 2017 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -28,10 +29,6 @@
   #:export (fold-processes
             find-processes
             find-process-by-name))
-
-(define %distro-root-directory
- ;; Absolute file name of the module hierarchy.
- (dirname (search-path %load-path "guix.scm")))
 
 (define (fold-processes proc init)
   "Call (PROC PROCESS RESULT) for each available process, using INIT as

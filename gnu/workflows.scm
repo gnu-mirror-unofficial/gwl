@@ -32,10 +32,6 @@
             find-workflow-by-name
             find-workflow-by-full-name))
 
-(define %distro-root-directory
- ;; Absolute file name of the module hierarchy.
- (dirname (search-path %load-path "guix.scm")))
-
 (define %workflow-module-path
   ;; Search path for process modules.  Each item must be either a directory
   ;; name or a pair whose car is a directory and whose cdr is a sub-directory
