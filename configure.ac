@@ -27,6 +27,8 @@ if test "x$GUILD" = "x"; then
    AC_MSG_ERROR(['guild' binary not found; please check your guile-2.2 installation.])
 fi
 
+GUILE_MODULE_AVAILABLE([have_wisp], [(language wisp spec)])
+
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([gwl/www/config.scm])
 AC_CONFIG_FILES([env], [chmod +x env])
