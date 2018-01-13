@@ -1,5 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2017 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -25,7 +26,8 @@
             process-engine-name
             process-engine-derivation-builder
             process-engine-command-prefix
-            process-engine-restrictions-string))
+            process-engine-restrictions-string
+            find-engine-by-name))
 
 ;;; ---------------------------------------------------------------------------
 ;;; RECORD TYPES
@@ -51,3 +53,11 @@
      (simple-format port "#<process-engine ~a>" (process-engine-name engine)))))
 
 (set-record-type-printer! <process-engine> print-process-engine)
+
+(define (find-engine-by-name name)
+  "Find the process engine corresponding to NAME."
+  (let* ((engine-symbol (string->symbol name)))
+    (false-if-exception (module-ref
+                         (resolve-interface
+                          `(guix process-engines ,engine-symbol))
+                         engine-symbol))))
