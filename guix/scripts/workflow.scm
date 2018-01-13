@@ -1,5 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2016, 2017 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -21,6 +22,7 @@
   #:use-module (guix ui)
   #:use-module (guix scripts)
   #:use-module (guix utils)
+  #:use-module (guix process-engines)
   #:use-module (guix workflows)
   #:use-module (guix workflows graph)
   #:use-module (gnu workflows)
@@ -159,20 +161,15 @@ Run multiple predefined computational process in a workflow.")
               (wf (if (null? wfs) '() (car wfs)))
               (engine-name (assoc-ref opts 'engine))
               (wf-name (assoc-ref opts 'value)))
-         (if (or (eq? engine-name #f)
-                 (eq? wf-name #f))
-             (format #t "Please provide --engine and --run arguments.~%")
-             (if (not (workflow? wf))
-                 (format #t "Cannot find a workflow with name ~s.~%" wf-name)
-                 (let ((engine-symbol
-                        (module-ref
-                         (resolve-interface
-                          (append '(guix process-engines)
-                                  (list (string->symbol engine-name))))
-                         (string->symbol engine-name))))
-                   (if (not engine-symbol)
-                       (format #t "The engine ~s is not available." engine-name)
-                       (workflow-prepare wf engine-symbol))))))
+         (when (or (not engine-name)
+                   (not wf-name))
+           (leave (G_ "Please provide --engine and --run arguments.~%")))
+         (when (not (workflow? wf))
+           (leave (G_ "Cannot find a workflow with name ~s.~%") wf-name))
+         (let ((engine (find-engine-by-name engine-name)))
+           (when (not engine)
+             (leave (G_ "The engine ~s is not available.~%") engine-name))
+           (workflow-prepare wf engine)))
        #t)
       ;; Handle running processes.
       ;; ----------------------------------------------------------------------
@@ -183,28 +180,21 @@ Run multiple predefined computational process in a workflow.")
               (wf (if (null? wfs) '() (car wfs)))
               (engine-name (assoc-ref opts 'engine))
               (wf-name (assoc-ref opts 'value)))
-         (if (or (eq? engine-name #f)
-                 (eq? wf-name #f))
-             (format #t "Please provide --engine and --run arguments.~%")
-             (if (not (workflow? wf))
-                 (format #t "Cannot find a workflow with name ~s.~%" wf-name)
-                 (let ((engine-symbol
-                        (module-ref
-                         (resolve-interface
-                          (append '(guix process-engines)
-                                  (list (string->symbol engine-name))))
-                         (string->symbol engine-name))))
-                   (if (not engine-symbol)
-                       (format #t "The engine ~s is not available." engine-name)
-                       (workflow-run wf engine-symbol))))))
+         (when (or (not engine-name)
+                   (not wf-name))
+           (leave (G_ "Please provide --engine and --run arguments.~%")))
+         (when (not (workflow? wf))
+           (leave (G_ "Cannot find a workflow with name ~s.~%") wf-name))
+         (let ((engine (find-engine-by-name engine-name)))
+           (when (not engine)
+             (leave (G_ "The engine ~s is not available.~%") engine-name))
+           (workflow-run wf engine)))
        #t)
       ('graph
        (let* ((wfs (find-workflow-by-name (assoc-ref opts 'value)))
               (wf (if (null? wfs) '() (car wfs))))
          (if (null? wf)
-             (begin
-               (display "Could not find the workflow to graph.")
-               (newline))
+             (leave (G_ "Could not find the workflow to graph.~%"))
              (begin
                (display (workflow->dot wf))
                (newline))))
