@@ -27,6 +27,7 @@ SOURCES =                                                 \
   guix/process-engines.scm                                \
   guix/process-engines/bash-engine.scm                    \
   guix/process-engines/grid-engine.scm                    \
+  guix/process-engines/simple-engine.scm                  \
   guix/workflows.scm                                      \
   guix/workflows/execution-order.scm                      \
   guix/workflows/utils.scm                                \
