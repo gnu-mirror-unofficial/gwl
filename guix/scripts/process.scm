@@ -1,5 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2016, 2017 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -21,6 +22,7 @@
   #:use-module (guix scripts)
   #:use-module (guix utils)
   #:use-module (guix processes)
+  #:use-module (guix process-engines)
   #:use-module (gnu processes)
   #:use-module (ice-9 match)
   #:use-module (ice-9 vlist)
@@ -148,42 +150,28 @@ Run a predefined computational process.")
               (proc (if (null? procs) '() (car procs)))
               (engine-name (assoc-ref opts 'engine))
               (proc-name (assoc-ref opts 'value)))
-         ;; Use "bash" as the default engine.
-         (when (eq? engine-name #f) (set! engine-name "bash"))
-         (if (eq? proc-name #f)
-             (format #t "Please provide --engine and --run arguments.~%")
-             (if (not (process? proc))
-                 (format #t "Cannot find a process with name ~s.~%" proc-name)
-                 (let ((engine-symbol
-                        (module-ref
-                         (resolve-interface
-                          (append '(guix process-engines)
-                                  (list (string->symbol engine-name))))
-                         (string->symbol engine-name))))
-                   (if (not engine-symbol)
-                       (format #t "The engine ~s is not available." engine-name)
-                       (process->script proc engine-symbol))))))
+         (when (not proc-name)
+           (leave (G_ "Please provide --engine and --run arguments.~%")))
+         (when (not (process? proc))
+           (leave (G_ "Cannot find a process with name ~s.~%") proc-name))
+         (let ((engine (find-engine-by-name engine-name)))
+           (when (not engine)
+             (leave (G_ "The engine ~s is not available.~%") engine-name))
+           (process->script proc engine)))
        #t)
       ('run
        (let* ((procs (find-process-by-name (assoc-ref opts 'value)))
               (proc (if (null? procs) '() (car procs)))
               (engine-name (assoc-ref opts 'engine))
               (proc-name (assoc-ref opts 'value)))
-         ;; Use "bash" as the default engine.
-         (when (eq? engine-name #f) (set! engine-name "bash"))
-         (if (eq? proc-name #f)
-             (format #t "Please provide --engine and --run arguments.~%")
-             (if (not (process? proc))
-                 (format #t "Cannot find a process with name ~s.~%" proc-name)
-                 (let ((engine-symbol
-                        (module-ref
-                         (resolve-interface
-                          (append '(guix process-engines)
-                                  (list (string->symbol engine-name))))
-                         (string->symbol engine-name))))
-                   (if (not engine-symbol)
-                       (format #t "The engine ~s is not available." engine-name)
-                       (process->script->run proc engine-symbol))))))
+         (when (not proc-name)
+           (leave (G_ "Please provide --engine and --run arguments.~%")))
+         (when (not (process? proc))
+           (leave (G_ "Cannot find a process with name ~s.~%") proc-name))
+         (let ((engine (find-engine-by-name engine-name)))
+           (when (not engine)
+             (leave (G_ "The engine ~s is not available.~%") engine-name))
+           (process->script->run proc engine)))
        #t)
       ;; Handle (or don't handle) anything else.
       ;; ----------------------------------------------------------------------
