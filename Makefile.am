@@ -54,4 +54,8 @@ nobase_dist_assets_DATA =                                 \
   gwl/static/graphs/index.html                            \
   gwl/static/images/grid.png
 
-EXTRA_DIST += env.in
+info_TEXINFOS = doc/gwl.texi
+
+EXTRA_DIST +=      \
+  env.in           \
+  doc/fdl-1.3.texi

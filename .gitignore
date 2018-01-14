@@ -10,3 +10,4 @@ configure
 env
 pre-inst-env
 static/graphs/
+doc/gwl.info
