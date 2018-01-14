@@ -20,6 +20,7 @@
 (define-module (guix processes)
   #:use-module (guix process-engines)
   #:use-module (guix utils)
+  #:use-module (guix ui)
   #:use-module (guix build utils)
   #:use-module (guix records)
   #:use-module (guix store)
@@ -369,33 +370,34 @@ set to #f, it only returns the output path."
                                             (workflow '()))
   "Builds a derivation of PROC and displays the commands a
 user needs to run."
-  (if (not (process? proc))
-      (format #t "This is not a process!~%")
-      (catch #t
-        (lambda _
-          (let* ((command-prefix (process-engine-command-prefix engine))
-                 (derivation-builder (process-engine-derivation-builder engine))
-                 (output (derivation->script (derivation-builder proc)))
-                 (restrictions-func (process-engine-restrictions-string engine))
-                 (restrictions (restrictions-func proc workflow)))
-            (when stand-alone? (format #t "# Please run the following:~%~%"))
-            (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output)))
-        (lambda (key . args)
-          (match key
-            ('missing-runtime
-             (format #t "Error in process '~a':~%  ~a~%"
-                     (process-full-name proc) (car args)))
-            ('match-error
-             (let ((inputs (process-package-inputs proc)))
-               (format #t "Error in process '~a':~%  ~a~%"
-                       (process-full-name proc)
-                       (if (and (not (null? inputs))
-                                (not (process? (car inputs))))
-                           "Please unquote the value of 'package-inputs'."
-                           (car args)))))
-            (_
-             (format #t "Unknown error in process '~a':~%  ~s: ~s.~%"
-                     (process-full-name proc) key (car args))))))))
+  (when (not (process? proc))
+    (leave (G_ "This is not a process!~%")))
+  (catch #t
+    (lambda _
+      (let* ((command-prefix (process-engine-command-prefix engine))
+             (derivation-builder (process-engine-derivation-builder engine))
+             (output (derivation->script (derivation-builder proc)))
+             (restrictions-func (process-engine-restrictions-string engine))
+             (restrictions (restrictions-func proc workflow)))
+        (when stand-alone? (format #t "# Please run the following:~%~%"))
+        (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output)))
+    (lambda (key . args)
+      (match key
+        ('missing-runtime
+         (leave (G_ "Error in process '~a':~%  ~a~%")
+                (process-full-name proc) (car args)))
+        ;; TODO: This could be a different error
+        ('match-error
+         (let ((inputs (process-package-inputs proc)))
+           (leave (G_ "Error in process '~a':~%  ~a~%")
+                  (process-full-name proc)
+                  (if (and (not (null? inputs))
+                           (not (process? (car inputs))))
+                      "Please unquote the value of 'package-inputs'."
+                      (car args)))))
+        (_
+         (leave (G_ "Unknown error in process '~a':~%  ~s: ~s.~%")
+                (process-full-name proc) key args))))))
 
 (define* (process->script->run proc engine #:key (stand-alone? #t)
                                                  (workflow '()))
