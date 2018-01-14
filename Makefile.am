@@ -59,3 +59,14 @@ info_TEXINFOS = doc/gwl.texi
 EXTRA_DIST +=      \
   env.in           \
   doc/fdl-1.3.texi
+
+dist-hook: $(distdir)/ChangeLog
+gen-ChangeLog $(distdir)/ChangeLog:
+	$(AM_V_GEN)if test -d .git; then				\
+	  $(top_srcdir)/build-aux/gitlog-to-changelog	\
+	    > $(distdir)/cl-t;							\
+	  rm -f $(distdir)/ChangeLog;					\
+	  mv $(distdir)/cl-t $(distdir)/ChangeLog;		\
+	fi
+
+.PHONY: gen-ChangeLog
