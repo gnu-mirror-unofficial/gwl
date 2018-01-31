@@ -1,0 +1,29 @@
+                                                              -*- org -*-
+#+TITLE: GWL NEWS – history of user-visible changes
+#+STARTUP: content hidestars
+
+Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+* Changes in 0.1.1 (since 0.1.0)
+  * Disable interpreting shell escape characters.
+  * Show more information in error messages.
+* Changes in 0.1.0 (since 0.0.9)
+  * Improve readability of text in the web interface.
+  * Make the “run-time” field optional for “process” descriptions.
+  * Hide version information in process and workflow overviews.
+  * Don't rely on G-Expressions -- generate Guix profiles instead.
+* Changes in 0.0.9 (since 0.8.0)
+  * Disable grafts.
+* Changes in 0.0.8 (since 0.0.7)
+  * Pass a name in Grid Engine commands.
+* Changes in 0.0.7 (since 0.0.6)
+  * Maintain the current working directory when computing remotely.
+* Changes in 0.0.6 (since 0.0.5)
+  * Fix bugs in the web interface.
+* Changes in 0.0.5 (since 0.0.2)
+* Changes in 0.0.3 (since 0.0.1)
+  * Keep GWL compatible with Guix changes.
