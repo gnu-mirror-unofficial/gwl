@@ -248,7 +248,7 @@ user needs to run."
            (leave (G_ "Error in process '~a':~%  ~a~%")
                   (process-full-name proc)
                   (if (and (not (null? inputs))
-                           (not (process? (car inputs))))
+                           (not (package? (car inputs))))
                       "Please unquote the value of 'package-inputs'."
                       (car args)))))
         (_
