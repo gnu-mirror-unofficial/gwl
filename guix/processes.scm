@@ -1,5 +1,5 @@
-;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; GNU Guix --- Functional package management for GNU
+;;; Copyright © 2017 Roel Janssen <roel@gnu.org>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -27,9 +27,6 @@
   #:use-module (guix packages)
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 rdelim)
-  #:use-module (ice-9 textual-ports)
-  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9 gnu)
   #:export (process
             process?
@@ -68,10 +65,6 @@
 
             define-dynamically
 
-            ;; Syntactic sugar
-            procedure->gexp
-            process:
-
             ;; For the lack of a better place.
             default-guile))
 
@@ -108,22 +101,6 @@
 
   (run-time         process-complexity     (default #f))
   (procedure        process-procedure))
-
-;; Shorter syntax, which is especially useful when wisp is used.
-(define-syntax process:
-  (lambda (x)
-    (syntax-case x ()
-      ((_ (id . args) rest ...)
-       #'(define-public id
-           (lambda* args
-             (process
-              (name (symbol->string (syntax->datum #'id)))
-              rest ...))))
-      ((_ id rest ...)
-       #'(define-public id
-           (process
-            (name (symbol->string (syntax->datum #'id)))
-            rest ...))))))
 
 (define (print-process process port)
   "Write a concise representation of PROCESS to PORT."
@@ -168,123 +145,6 @@
                     time space threads))))
 
 ;;; ---------------------------------------------------------------------------
-;;; Syntactic sugar
-;;; ---------------------------------------------------------------------------
-
-(eval-when (expand load compile eval)
-  (define (reader-extension-inline-code chr port)
-    "When this reader macro is registered for CHR it reads all
-characters between Rmarkdown-flavored code delimiters from PORT and
-returns a pair of the specified language and the code as a string.
-
-Here is an example when CHR is the backtick:
-
-    #---{python}print(\"hello\")---
-    => (python . \"print(\\\"hello\\\"))
-"
-    (define delim-begin "--")
-    (define delim-language-begin "{")
-    (define delim-language-end "}")
-    (define delim-end "---")
-    (define delim-end-first (substring/shared delim-end 0 1))
-    (define delim-end-rest (substring/shared delim-end 1))
-    (define (read-chunk)
-      (get-string-n port (- (string-length delim-end) 1)))
-
-    (let ((chunk (get-string-n port (string-length delim-begin))))
-      (unless (string= chunk delim-begin)
-        (throw 'inline-code-delimiter-not-found)))
-
-    ;; Throw away a single newline character
-    (let ((next (lookahead-char port)))
-      (when (eqv? next #\newline)
-        (read-char port)))
-
-    ;; This character must be the begin of the language declaration
-    (let ((next (lookahead-char port)))
-      (if (string=? (string next) delim-language-begin)
-          (read-char port)
-          (throw 'inline-code-language-declaration-not-found)))
-
-    (let ((language (read-delimited delim-language-end port)))
-      (when (string-null? language)
-        (throw 'inline-code-language-undefined))
-      (let search-delim ((acc (list (read-delimited delim-end-first port)))
-                         (chunk (read-chunk)))
-        (if (string= chunk delim-end-rest)
-            `(cons ',(string->symbol language)
-                   ,(string-join (reverse! acc) delim-end-first))
-            (begin
-              (unget-string port chunk)
-              (search-delim (cons (read-delimited delim-end-first port) acc)
-                            (read-chunk)))))))
-  ;; Support syntactic sugar
-  (read-hash-extend #\- reader-extension-inline-code))
-
-(define (procedure->gexp process)
-  "Transform the procedure of PROCESS to a G-expression."
-  (define (process->python-meta)
-    (format #f "\
-GWL = {
-  'name': ~s,
-  'synopsis': ~s,
-  'description': ~s,
-  'data-inputs': [~{~s,~}],
-  'output-path': ~s,
-  'outputs': [~{~s,~}],
-  'run-time': ~s
-}
-"
-            (process-name process)
-            (process-synopsis process)
-            (process-description process)
-            (match (process-data-inputs process)
-              ((? list? lst) lst)
-              (item (list item)))
-            (or (process-output-path process) "")
-            (or (process-outputs process) (list))
-            (or (process-complexity process) "")))
-  (define (process->R-meta)
-    (format #f "\
-GWL <- list(\
-  'name'=~s,\
-  'synopsis'=~s,\
-  'description'=~s,\
-  'data-inputs'=c(~s),\
-  'output-path'=~s,\
-  'outputs'=c(~s),\
-  'run-time'=~s\
-)"
-            (process-name process)
-            (process-synopsis process)
-            (process-description process)
-            (string-join (match (process-data-inputs process)
-                           ((? list? lst) lst)
-                           (item (list item)))
-                         ",")
-            (or (process-output-path process) "")
-            (string-join (or (process-outputs process) (list)) ",")
-            (or (process-complexity process) "")))
-  (match (process-procedure process)
-    ((? gexp? g) g)
-    (('python . code)
-     #~(system* "python3"
-                "-c" #$(string-append (process->python-meta) code)))
-    (('python2 . code)
-     #~(system* "python"
-                "-c" #$(string-append (process->python-meta) code)))
-    (('r . code)
-     (let ((args (append-map (lambda (line)
-                               (list "-e" line))
-                             (cons (process->R-meta)
-                                   (filter (negate string-null?)
-                                           (string-split code #\newline))))))
-       #~(apply system* "Rscript" #$args)))
-    ((unknown . _)
-     (error (format #f "language ~a not supported" unknown)))
-    (whatever (error (format #f "unknown procedure: ~a" whatever)))))
-
-;;; ---------------------------------------------------------------------------
 ;;; ADDITIONAL FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
@@ -292,7 +152,7 @@ GWL <- list(\
   (run-with-store store
     (mlet %store-monad ((drv (gexp-transformation
                               (process-full-name proc)
-                              (procedure->gexp proc))))
+                              (process-procedure proc))))
       (return (callback drv)))))
 
 (define (process-outputs proc)
@@ -359,7 +219,7 @@ set to #f, it only returns the output path."
 
 (define* (process->derivation proc #:key (guile (default-guile)))
   (gexp->derivation (process-full-name proc)
-                    (procedure->gexp proc)
+                    (process-procedure proc)
                     #:guile-for-build guile
                     #:graft? #f))
 

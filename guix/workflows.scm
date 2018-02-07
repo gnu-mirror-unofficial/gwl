@@ -40,10 +40,7 @@
 
             workflow-run-order
             workflow-prepare
-            workflow-run
-
-            ;; Syntactic sugar
-            workflow:))
+            workflow-run))
 
 ;;; ---------------------------------------------------------------------------
 ;;; RECORD TYPES
@@ -82,16 +79,6 @@
   ;; When a workflow requires additional code to execute, it can be
   ;; specified in the following field.
   (execution workflow-execution       (default #f)))
-
-;; Shorter syntax, which is especially useful when wisp is used.
-(define-syntax workflow:
-  (lambda (x)
-    (syntax-case x ()
-      ((_ id rest ...)
-       #'(define-public id
-           (workflow
-            (name (symbol->string (syntax->datum #'id)))
-            rest ...))))))
 
 (define (workflow-full-name arg)
   "Writes the name and version as a single string of PROCESS to PORT."
