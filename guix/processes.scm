@@ -376,7 +376,6 @@ user needs to run."
              (output (derivation->script (derivation-builder proc)))
              (restrictions-func (process-engine-restrictions-string engine))
              (restrictions (restrictions-func proc workflow)))
-        (when stand-alone? (format #t "# Please run the following:~%~%"))
         (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output)))
     (lambda (key . args)
       (match key
