@@ -41,7 +41,7 @@
   (derivation-builder   process-engine-derivation-builder)
   (command-prefix       process-engine-command-prefix (default #f))
   (restrictions-string  process-engine-restrictions-string
-                        (default (lambda (proc workflow) #f))))
+                        (default (const #f))))
 
 (define (print-process-engine engine port)
   "Write a concise representation of PROCESS-ENGINE to PORT."
