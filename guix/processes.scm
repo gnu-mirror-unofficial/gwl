@@ -42,9 +42,7 @@
 
             process-outputs
             process-output-path
-            process-execute
             process-takes-available
-            process-execute-deferred
             print-process-record
 
             complexity
@@ -62,6 +60,10 @@
             kilobytes
             minutes
             hours
+
+            process-space
+            process-time
+            process-threads
 
             define-dynamically
 
@@ -288,3 +290,15 @@ user needs to run."
 (define-syntax-rule
   (define-dynamically name value)
   (primitive-eval `(define-public ,name ,value)))
+
+(define-syntax-rule
+  (process-space proc)
+  (complexity-space (process-runtime proc)))
+
+(define-syntax-rule
+  (process-time proc)
+  (complexity-time (process-runtime proc)))
+
+(define-syntax-rule
+  (process-threads proc)
+  (complexity-threads (process-runtime proc)))
