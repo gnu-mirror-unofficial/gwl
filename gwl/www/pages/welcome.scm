@@ -18,17 +18,21 @@
   #:use-module (gwl www pages)
   #:export (page-welcome))
 
+(define %gwl-repository "https://git.savannah.gnu.org/cgit/gwl.git/tree/")
+
 (define (page-welcome request-path)
-  (page-root-template "GWL" request-path
+  (page-root-template "Guix Workflow Language" request-path
    `((h2 "A workflow management language extension for GNU Guix")
 
      (p "This workflow language provides an extension to GNU Guix's "
         (a (@ (href "https://arxiv.org/abs/1305.4584"))
            "declarative language for package management") " to automate "
-           "execution of programs.  Additionally, GWL can use Grid Engine to "
-           "offload program execution.")
-     
+           "execution of programs.  Additionally, GNU GWL can use "
+           (a (@ (href ,(string-append %gwl-repository "guix/process-engines")))
+              "process engines") " to integrate with various computing "
+           "environments.")
+
      (div (@ (style "text-align: center"))
           (div (@ (class "action-button"))
                (a (@ (href "/getting-started"))
-                  "Get started →"))))))
+                  "Get started"))))))

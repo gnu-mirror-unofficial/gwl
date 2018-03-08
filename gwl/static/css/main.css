@@ -26,47 +26,48 @@
     font-style: bold;
 }
 
-@media all {html {font-size: 16px;}}
-@media all and (max-width:1000px){html {font-size: 16px;}}
-@media all and (max-width:960px){html {font-size: 15px;}}
-@media all and (max-width:920px){html {font-size: 14px;}}
-@media all and (max-width:880px){html {font-size: 13px;}}
-@media all and (max-width:840px){html {font-size: 13px;}}
-@media all and (max-width:800px){html {font-size: 13px;}}
-@media all and (max-width:760px){html {font-size: 13px;}}
+@media all {html {font-size: 20px;}}
+@media all and (max-width:1260px){html {font-size: 20px;}}
+@media all and (max-width:1000px){html {font-size: 20px;}}
+@media all and (max-width:960px){html {font-size: 19px;}}
+@media all and (max-width:920px){html {font-size: 18px;}}
+@media all and (max-width:880px){html {font-size: 17px;}}
+@media all and (max-width:840px){html {font-size: 16px;}}
+@media all and (max-width:800px){html {font-size: 16px;}}
+@media all and (max-width:760px){html {font-size: 16px;}}
 
 body,html {
     width: 100%;
     height: 100%;
-    padding: 0pt;
-    margin: 0pt;
+    padding: 0px;
+    margin: 0px;
     font-family: 'Roboto', sans-serif;
     color: #000000;
-    background-color: #bcd35f;
-    background-image: url('/static/images/background.png');
+    background-color: #53676c;
 }
 
 #wrapper {
-    max-width: 1260px;
+    width: 100%;
     margin: auto;
-    padding: 0pt;
-    margin: 0pt auto auto auto;
+    padding: 0px;
+    margin: 0px auto auto auto;
 }
 
-#header .title { padding: 5pt 5pt 0pt 5pt; }
-#header .title h1 { padding: 0pt; margin: 0pt; }
+#header { background: #dbe2e3; }
+#header .title { padding: 5px 5px 0px 5px; }
+#header .title h1 { padding: 0px; margin: 0px; text-align: center; }
 
-#header .menu { padding: 5pt 5pt 0pt 5pt; }
-#header .menu ul { display: inline-block; padding: 0pt; margin: 0pt; }
+#header .menu { padding: 5px 5px 0px 5px; }
+#header .menu ul { display: inline-block; padding: 0px; margin: 0px; }
 #header .menu li {
     display: inline-block;
     list-style-type: none;
-    margin: 0pt;
-    margin: 0pt 10pt 0pt 0pt;
-    padding: 2pt 2pt 0pt 2pt;
-    -webkit-border-radius: 4pt 4pt 0pt 0pt;
-    -moz-border-radius: 4pt 4pt 0pt 0pt;
-    border-radius: 4pt 4pt 0pt 0pt;
+    margin: 0px;
+    margin: 0px 10px 0px 0px;
+    padding: 2px 2px 0px 2px;
+    -webkit-border-radius: 8px 8px 0px 0px;
+    -moz-border-radius: 8px 8px 0px 0px;
+    border-radius: 8px 8px 0px 0px;
     text-transform: uppercase;
     text-decoration: none;
     font-size: 0.85em;
@@ -74,65 +75,65 @@ body,html {
 
 #header .menu li.active {
     background: #ffffff;
-    padding: 5pt 5pt 2pt 5pt;
+    padding: 5px 5px 2px 5px;
 }
 
 a { color: #000000; }
 a:hover { color: #555555; }
 
 #content {
-    padding: 10pt;
+    padding: 10px;
     background: #ffffff;
     line-height: 1.5;
     text-align: justify;
     text-justify: inter-word;
-    -webkit-border-radius: 4pt;
-    -moz-border-radius: 4pt;
-    border-radius: 4pt;
+    -moz-box-shadow: 0 0 50px -30px #000000;
+    -webkit-box-shadow: 0 0 50px -30px #000000;
+    box-shadow: 0 0 50px -30px #000000;
 }
-#content p { margin: 0pt; padding: 5pt; }
-#content h2 { margin: 0pt; padding-bottom: 5pt; }
-#content h3 { margin: 0pt; padding-top: 5pt; width: 100%; border-bottom: solid thin #000; }
-#content h4 { margin: 0pt; padding-top: 5pt; border-bottom: solid thin #ccc; }
-#content ul { padding: 0pt 0pt 0pt 10pt; margin: 0pt 0pt 0pt 10pt; }
+#content p { margin: 0px; padding: 5px; }
+#content h2 { margin: 0px; padding-bottom: 5px; }
+#content h3 { margin: 0px; padding-top: 5px; width: 100%; border-bottom: solid thin #000; }
+#content h4 { margin: 0px; padding-top: 5px; border-bottom: solid thin #ccc; }
+#content ul { padding: 0px 0px 0px 10px; margin: 0px 0px 0px 10px; }
 #content li { line-height: 1.5em; }
-#content pre { margin: 5pt; padding: 5pt; }
+#content pre { margin: 5px; padding: 5px; }
 #content table {
-    border-spacing: 0pt;
-    padding: 0pt;
-    -webkit-border-radius: 4pt;
-    -moz-border-radius: 4pt;
-    border-radius: 4pt;
+    border-spacing: 0px;
+    padding: 0px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
 }
 
 #content table th {
-    padding: 4pt;
+    padding: 8px;
     color: #eeeeee;
     background: #000000;
 }
 
 #content table th:nth-child(1) {
-    -webkit-border-radius: 4pt 0pt 0pt 0pt;
-    -moz-border-radius: 4pt 0pt 0pt 0pt;
-    border-radius: 4pt 0pt 0pt 0pt;
+    -webkit-border-radius: 8px 0px 0px 0px;
+    -moz-border-radius: 8px 0px 0px 0px;
+    border-radius: 8px 0px 0px 0px;
 }
 
 #content table th:nth-last-child(1) {
-    -webkit-border-radius: 0pt 4pt 0pt 0pt;
-    -moz-border-radius: 0pt 4pt 0pt 0pt;
-    border-radius: 0pt 4pt 0pt 0pt;
+    -webkit-border-radius: 0px 8px 0px 0px;
+    -moz-border-radius: 0px 8px 0px 0px;
+    border-radius: 0px 8px 0px 0px;
 }
 
-#content table td { padding: 2pt 4pt 2pt 4pt; }
+#content table td { padding: 2px 8px 2px 8px; }
 #content table tr:nth-child(even) td { background: #cccccc; }
 #content table tr:nth-child(odd) td { background: #eeeeee; }
 #footer { width: 100% font-size: small; text-align: center; }
 
 #workarea {
-    border: solid 2pt #000000;
-    -webkit-border-radius: 4pt;
-    -moz-border-radius: 4pt;
-    border-radius: 4pt;
+    border: solid 2px #000000;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
     background-image: url('/static/images/grid.png');
     background-repeat: repeat;
     background-color: #eeeeee;
@@ -145,12 +146,10 @@ div.figure {
     font-style: italic;
     font-size: smaller;
     text-indent: 0;
-    -webkit-border-radius: 4pt;
-    -moz-border-radius: 4pt;
-    border-radius: 4pt;
-    border: solid thin #cccccc;
-    background: #cccccc/*#dfe6df*/;
-    margin: 0pt 5pt 5pt 5pt;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    margin: 0px 5px 5px 5px;
 }
 
 div.inline-figure {
@@ -158,9 +157,9 @@ div.inline-figure {
     font-style: italic;
     font-size: smaller;
     text-indent: 0;
-    -webkit-border-radius: 4pt;
-    -moz-border-radius: 4pt;
-    border-radius: 4pt;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
     border: solid thin #cccccc;
     margin: 0.5em;
     padding: 0.5em;
@@ -172,43 +171,45 @@ pre {
     font-family: 'FiraMono', monospace;
     font-style: normal;
     padding: 0.5em;
-    -webkit-border-radius: 5pt;
-    -moz-border-radius: 5pt;
-    border-radius: 5pt;
-    border: solid 1pt #cccccc;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    border: solid 2px #ccc;
 }
 
 code {
     font-family: 'FiraMono', monospace;
     font-style: normal;
     font-size: 0.9em;
-    -webkit-border-radius: 4pt;
-    -moz-border-radius: 4pt;
-    border-radius: 4pt;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
 }
 
 div.action-button {
     display: inline-block;
-    font-size: 16pt;
+    font-size: 25px;
     font-weight: bold;
     text-transform: uppercase;
     background: #d38d5f;
-    padding: 4pt;
-    -webkit-border-radius: 4pt;
-    -moz-border-radius: 4pt;
-    border-radius: 4pt;
-    border: solid 2pt #000000;
-}
-
-div.action-button a {
-    text-decoration: none;
+    padding: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    border: solid 2px #000000;
 }
 
 div.action-button a:hover {
-    text-decoration: none;
     color: #111111;
 }
 
 div.action-button:hover {
     background: #a05a2c;
 }
+
+.syntax-open { color: #555555; }
+.syntax-close { color: #555555; }
+.syntax-string { color: #aa0000; }
+.syntax-symbol { color: #000000; }
+.syntax-special { color: #000000; text-decoration: underline; }
+.syntax-comment { color: #aaaaaa; }

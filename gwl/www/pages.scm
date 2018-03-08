@@ -18,24 +18,22 @@
   #:use-module (srfi srfi-1)
   #:export (page-root-template))
 
-(define page-title-prefix "GWL | ")
+(define page-title-prefix "Guix Workflow Language | ")
 
 (define pages
-  '(("/" "Home")
+  '(("/"                "Home")
     ("/getting-started" "Getting started")
-    ;("/designer" "Workflow designer")
-    ("/workflow-viewer" "Workflow viewer")
-    ;("/status" "System status")
-    ("/help" "Help")))
+    ("/beyond-started"  "Beyond started")
+    ;("/workflow-viewer" "Workflow viewer")
+    ("/community"       "Community")))
 
 (define (page-partial-main-menu request-path)
-  `(ul
-    ,(map
-      (lambda (item)
-        (if (string= (substring (car item) 1) (car (string-split (substring request-path 1) #\/)))
-            `(li (@ (class "active")) ,(cadr item))
-            `(li (a (@ (href ,(car item))) ,(cadr item)))))
-      pages)))
+  `(ul ,(map (lambda (item)
+               (if (string= (substring (car item) 1)
+                            (car (string-split (substring request-path 1) #\/)))
+                   `(li (@ (class "active")) ,(cadr item))
+                   `(li (a (@ (href ,(car item))) ,(cadr item)))))
+             pages)))
 
 (define* (page-root-template title request-path content-tree #:key (dependencies '()))
   `((html (@ (lang "en"))
@@ -64,6 +62,5 @@
            (div (@ (id "content"))
                 ,content-tree)
            (div (@ (id "footer"))
-                (p "© 2017 Roel Janssen | "
-                   (a (@ (href "https://git.roelj.com/guix/gwl"))
-                         "Download the source code of this page") ".")))))))
+                (p (a (@ (href "https://git.sv.gnu.org/cgit/gwl.git"))
+                      "Download the source code of this page") ".")))))))

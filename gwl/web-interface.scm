@@ -23,7 +23,6 @@
   #:use-module (rnrs bytevectors)
   #:use-module (rnrs io ports)
   #:use-module (sxml simple)
-  #:use-module (commonmark)
   #:use-module (gwl www util)
   #:use-module (gwl www config)
   #:use-module (gwl www pages)
@@ -32,28 +31,12 @@
 
   #:export (run-web-interface))
 
-(define (request-markdown-handler request-path)
-  (let ((file (string-append %www-static-root "/www/pages" request-path ".md")))
-    (values
-     '((content-type . (text/html)))
-     (call-with-output-string
-       (lambda (port)
-         (set-port-encoding! port "utf8")
-         (format port "<!DOCTYPE html>~%")
-         (sxml->xml (page-root-template
-                     (string-capitalize
-                      (string-replace-occurrence
-                       (basename request-path) #\- #\ ))
-                     request-path
-                     (call-with-input-file file
-                       (lambda (port) (commonmark->sxml port)))) port))))))
-
 (define (request-file-handler path)
   "This handler takes data from a file and sends that as a response."
 
   (define (response-content-type path)
     "This function returns the content type of a file based on its extension."
-    (let ((extension (substring path (1+ (string-rindex path #\.)))))
+    (let ((extension (file-extension path)))
       (cond [(string= extension "css")  '(text/css)]
             [(string= extension "js")   '(application/javascript)]
             [(string= extension "json") '(application/javascript)]
@@ -127,18 +110,13 @@
      ((and (> (string-length request-path) 7)
            (string= (string-take request-path 8) "/static/"))
       (request-file-handler request-path))
-     ((and (not (string= "/" request-path))
-           (access? (string-append %www-static-root "/www/pages"
-                                   request-path ".md") F_OK))
-      (request-markdown-handler request-path))
      (else
       (request-scheme-page-handler request request-body request-path)))))
 
 (define (run-web-interface)
   (format #t "GWL web service is running at http://127.0.0.1:~a~%"
           %www-listen-port)
-  (display "Press C-c C-c to quit.")
-  (newline)
+  (format #t "Press C-c C-c to quit.~%")
   (run-server request-handler 'http
               `(#:port ,%www-listen-port
                 #:addr ,INADDR_ANY)))

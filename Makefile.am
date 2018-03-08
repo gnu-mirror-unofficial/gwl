@@ -1,5 +1,5 @@
 # gwl - Workflow management extension for GNU Guix
-# Copyright © 2017 Roel Janssen <roel@gnu.org>
+# Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Affero General Public License
@@ -23,28 +23,29 @@ godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/ccache
 SOURCES =                                                 \
   gnu/processes.scm                                       \
   gnu/workflows.scm                                       \
-  guix/processes.scm                                      \
   guix/process-engines.scm                                \
   guix/process-engines/bash-engine.scm                    \
   guix/process-engines/grid-engine.scm                    \
   guix/process-engines/simple-engine.scm                  \
+  guix/processes.scm                                      \
+  guix/scripts/process.scm                                \
+  guix/scripts/workflow.scm                               \
   guix/workflows.scm                                      \
   guix/workflows/execution-order.scm                      \
-  guix/workflows/utils.scm                                \
   guix/workflows/graph.scm                                \
-  guix/scripts/workflow.scm                               \
-  guix/scripts/process.scm                                \
+  guix/workflows/utils.scm                                \
   gwl/web-interface.scm                                   \
   gwl/www/config.scm                                      \
-  gwl/www/util.scm                                        \
   gwl/www/pages.scm                                       \
+  gwl/www/pages/beyond-started.scm                        \
   gwl/www/pages/error.scm                                 \
+  gwl/www/pages/getting-started.scm                       \
   gwl/www/pages/welcome.scm                               \
-  gwl/www/pages/workflow-viewer.scm
+  gwl/www/pages/workflow-viewer.scm                       \
+  gwl/www/util.scm
 
 assetsdir = $(prefix)/share/@PACKAGE@
 nobase_dist_assets_DATA =                                 \
-  gwl/www/pages/getting-started.md                        \
   gwl/static/css/main.css                                 \
   gwl/static/fonts/FiraMono-Regular.ttf                   \
   gwl/static/fonts/Roboto-Bold.ttf                        \
