@@ -67,6 +67,9 @@
 
             define-dynamically
 
+            processes-filter
+            processes-filter-by-name
+
             ;; For the lack of a better place.
             default-guile))
 
@@ -302,3 +305,17 @@ user needs to run."
 (define-syntax-rule
   (process-threads proc)
   (complexity-threads (process-runtime proc)))
+
+(define (processes-filter processes filter)
+  "Returns a list of PROCESSES after applying FILTER.  FILTER
+is a function that takes a process and returns the process to include it
+of #f to exclude it."
+  (delete #f (map filter processes)))
+
+(define (processes-filter-by-name processes name)
+  "Returns a list of PROCESSES whose name (partially) matches NAME."
+  (delete #f (map (lambda (proc)
+                    (if (and (process? proc)
+                             (string-contains (process-name proc) name))
+                        proc #f))
+                  processes)))
