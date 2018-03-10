@@ -33,7 +33,7 @@
         " job script to get to the details of how processes work.")
 
      (p "This section builds on the knowledge from the previous section, so"
-        "if you haven't read that, now is the time to "
+        " if you haven't read that, now is the time to "
         (a (@ (href "/getting-started")) "get started") ".")
 
      (h3 "Defining workflows")
@@ -96,7 +96,7 @@
      (p "We can make the inputs and outputs for a process variable, so that"
         " the same procedure can serve for multiple inputs and outputs."
         " Instead of writing a process directly, we can write a function that"
-        "will return a process.  This is what it looks like:")
+        " will return a process.  This is what it looks like:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
