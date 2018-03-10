@@ -194,11 +194,12 @@
      (p "Guile Scheme provides the utilities to express " (code "restrictions")
         " in a concise and clear way, like we've seen with " (code "zip") ".")
 
-     (h3 "Further reading")
+     (h3 "Reusing workflows in new workflows")
 
-     (p "The " (a (@ (href "https://www.gnu.org/software/guile/learn/"))
-                  "GNU Guile") " and "
-               (a (@ (href "https://www.gnu.org/software/guix/manual/"))
-                  "GNU Guix")
-        " manuals are good places to learn the language and concepts on which GWL"
-        " builds."))))
+     (p "On the " (a (@ (href "/extended-start")) "next page") ", we will extend"
+        " " (code "dynamic-workflow") " in a new workflow.")
+
+     (div (@ (style "text-align: center"))
+          (div (@ (class "action-button"))
+               (a (@ (href "/extended-start"))
+                  "Go beyond beyond started"))))))

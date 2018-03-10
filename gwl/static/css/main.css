@@ -43,7 +43,7 @@ body,html {
     margin: 0px;
     font-family: 'Roboto', sans-serif;
     color: #000000;
-    background-color: #53676c;
+    background-color: #e2e2e2;
 }
 
 #wrapper {
@@ -53,7 +53,8 @@ body,html {
     margin: 0px auto auto auto;
 }
 
-#header { background: #dbe2e3; }
+#header { background: #1a1a1a; }
+#header .logo { padding: 60px 0px 30px 0px; margin: 0px; text-align: center; }
 #header .title { padding: 5px 5px 0px 5px; }
 #header .title h1 { padding: 0px; margin: 0px; text-align: center; }
 
@@ -70,13 +71,15 @@ body,html {
     border-radius: 8px 8px 0px 0px;
     text-transform: uppercase;
     text-decoration: none;
-    font-size: 0.85em;
 }
 
 #header .menu li.active {
     background: #ffffff;
-    padding: 5px 5px 2px 5px;
+    padding: 6px;
 }
+
+.menu a { color: #aaaaaa; }
+.menu a:hover { color: #666666; }
 
 a { color: #000000; }
 a:hover { color: #555555; }
@@ -188,15 +191,14 @@ code {
 
 div.action-button {
     display: inline-block;
-    font-size: 25px;
+    font-size: 28px;
     font-weight: bold;
     text-transform: uppercase;
-    background: #d38d5f;
-    padding: 8px;
+    background: #f7b22f;
+    padding: 8px 14px 8px 14px;
     -webkit-border-radius: 8px;
     -moz-border-radius: 8px;
     border-radius: 8px;
-    border: solid 2px #000000;
 }
 
 div.action-button a:hover {
@@ -204,7 +206,7 @@ div.action-button a:hover {
 }
 
 div.action-button:hover {
-    background: #a05a2c;
+    background: #f6bf57;
 }
 
 .syntax-open { color: #555555; }
@@ -213,3 +215,4 @@ div.action-button:hover {
 .syntax-symbol { color: #000000; }
 .syntax-special { color: #000000; text-decoration: underline; }
 .syntax-comment { color: #aaaaaa; }
+img { border: 0; outline: 0; }

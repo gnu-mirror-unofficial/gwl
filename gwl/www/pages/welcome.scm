@@ -24,15 +24,16 @@
   (page-root-template "Guix Workflow Language" request-path
    `((h2 "A workflow management language extension for GNU Guix")
 
-     (p "This workflow language provides an extension to GNU Guix's "
+     (p "The Guix Workflow Language (GWL) provides an extension to GNU Guix's "
         (a (@ (href "https://arxiv.org/abs/1305.4584"))
            "declarative language for package management") " to automate "
-           "execution of programs.  Additionally, GNU GWL can use "
+           "execution of programs.  Additionally, GWL can use "
            (a (@ (href ,(string-append %gwl-repository "guix/process-engines")))
               "process engines") " to integrate with various computing "
-           "environments.")
+              "environments.  As of February 11, 2018, GWL has become part of "
+              (a (@ (href "https://www.gnu.org")) "GNU") ".")
 
-     (div (@ (style "text-align: center"))
+     (div (@ (style "text-align: center;"))
           (div (@ (class "action-button"))
                (a (@ (href "/getting-started"))
                   "Get started"))))))

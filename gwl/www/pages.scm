@@ -24,6 +24,7 @@
   '(("/"                "Home")
     ("/getting-started" "Getting started")
     ("/beyond-started"  "Beyond started")
+    ("/extended-start"  "Extended start")
     ;("/workflow-viewer" "Workflow viewer")
     ("/community"       "Community")))
 
@@ -55,10 +56,8 @@
      (body
       (div (@ (id "wrapper"))
            (div (@ (id "header"))
-                (div (@ (class "title"))
-                     (h1 ,title))
-                (div (@ (class "menu"))
-                     ,(page-partial-main-menu request-path)))
+                (div (@ (class "logo")) (img (@ (src "/static/images/logo.png") (alt "Guix Workflow Language"))))
+                (div (@ (class "menu")) ,(page-partial-main-menu request-path)))
            (div (@ (id "content"))
                 ,content-tree)
            (div (@ (id "footer"))
