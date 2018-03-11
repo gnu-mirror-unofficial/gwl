@@ -28,32 +28,21 @@
   #:export (guix-process))
 
 (define (show-help)
-  (display "Usage: guix process [OPTION]...
-Run a predefined computational process.")
-  (newline)
-  (display "
-  -i, --input=LOCATION   set LOCATION as input for a workflow")
-  (display "
-  -o, --output=LOCATION  set LOCATION as output for a workflow")
-  (display "
-  -e, --engine=ENGINE    set ENGINE for offloading to a cluster")
-  ;; (display "
-  ;; -l, --list-available-engines
-  ;;                        list available engines for offloading")
-  (display "
-  -l, --list-available   list available processes")
-  (display "
-  -p, --prepare=PROCESS      Prepare the running of a PROCESS.")
-  (display "
-  -r, --run=PROCESS      Run PROCESS.")
-  (display "
-  -s, --search=REGEXP    search in synopsis and description using REGEXP.")
-  (display "
-  -h, --help             display this help and exit")
-  (display "
-  -V, --version          display version information and exit")
-  (newline)
-  (newline))
+  (for-each
+   (lambda (line) (display line) (newline))
+   '("Usage: guix process [OPTION]..."
+     "Run a predefined computational process."
+     ""
+     "  -i, --input=LOCATION   set LOCATION as input for a workflow"
+     "  -o, --output=LOCATION  set LOCATION as output for a workflow"
+     "  -e, --engine=ENGINE    set ENGINE for offloading to a cluster"
+     "  -l, --list-available   list available processes"
+     "  -p, --prepare=PROCESS  Prepare the running of a PROCESS"
+     "  -r, --run=PROCESS      Run PROCESS"
+     "  -s, --search=REGEXP    search in synopsis and description using REGEXP"
+     "  -h, --help             display this help and exit"
+     "  -V, --version          display version information and exit"
+     "")))
 
 (define (show-available-processes args)
   "Display available processes."
