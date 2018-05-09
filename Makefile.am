@@ -18,7 +18,7 @@
 include guile.am
 
 moddir=$(prefix)/share/guile/site/@GUILE_EFFECTIVE_VERSION@
-godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/ccache
+godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache
 
 SOURCES =                                                 \
   gnu/processes.scm                                       \
