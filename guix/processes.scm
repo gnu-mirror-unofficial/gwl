@@ -30,6 +30,7 @@
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 textual-ports)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
   #:export (process
             process?
@@ -72,6 +73,10 @@
 
             processes-filter
             processes-filter-by-name
+
+            code-snippet
+            code-snippet?
+            code-snippet-language
 
             ;; Syntactic sugar
             procedure->gexp
@@ -176,6 +181,12 @@
 ;;; Syntactic sugar
 ;;; ---------------------------------------------------------------------------
 
+(define-record-type <code-snippet>
+  (code-snippet language code)
+  code-snippet?
+  (language code-snippet-language)
+  (code     code-snippet-code))
+
 (eval-when (expand load compile eval)
   (define (reader-extension-inline-code chr port)
     "When this reader macro is registered for CHR it reads all
@@ -185,7 +196,7 @@ returns a pair of the specified language and the code as a string.
 Here is an example when CHR is the backtick:
 
     #---{python}print(\"hello\")---
-    => (python . \"print(\\\"hello\\\"))
+    => (code-snippet 'python \"print(\\\"hello\\\"))
 "
     (define delim-begin "--")
     (define delim-language-begin "{")
@@ -217,8 +228,8 @@ Here is an example when CHR is the backtick:
       (let search-delim ((acc (list (read-delimited delim-end-first port)))
                          (chunk (read-chunk)))
         (if (string= chunk delim-end-rest)
-            `(cons ',(string->symbol language)
-                   ,(string-join (reverse! acc) delim-end-first))
+            `(code-snippet ',(string->symbol language)
+                           ,(string-join (reverse! acc) delim-end-first))
             (begin
               (unget-string port chunk)
               (search-delim (cons (read-delimited delim-end-first port) acc)
@@ -227,7 +238,8 @@ Here is an example when CHR is the backtick:
   (read-hash-extend #\- reader-extension-inline-code))
 
 (define (procedure->gexp process)
-  "Transform the procedure of PROCESS to a G-expression."
+  "Transform the procedure of PROCESS to a G-expression or return the
+plain S-expression."
   (define (process->python-meta)
     (format #f "\
 GWL = {
@@ -272,22 +284,21 @@ GWL <- list(\
             (or (process-complexity process) "")))
   (match (process-procedure process)
     ((? gexp? g) g)
-    (('python . code)
+    ((? list? s) s)
+    (($ <code-snippet> 'python code)
      #~(system* "python3"
                 "-c" #$(string-append (process->python-meta) code)))
-    (('python2 . code)
+    (($ <code-snippet> 'python2 code)
      #~(system* "python"
                 "-c" #$(string-append (process->python-meta) code)))
-    (('r . code)
+    (($ <code-snippet> 'r code)
      (let ((args (append-map (lambda (line)
                                (list "-e" line))
                              (cons (process->R-meta)
                                    (filter (negate string-null?)
                                            (string-split code #\newline))))))
        #~(apply system* "Rscript" #$args)))
-    ((unknown . _)
-     (error (format #f "language ~a not supported" unknown)))
-    (whatever (error (format #f "unknown procedure: ~a" whatever)))))
+    (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; ADDITIONAL FUNCTIONS
