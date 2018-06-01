@@ -49,7 +49,11 @@ PROCEDURE's imported modules in its search path."
             (lambda (port)
               (use-modules (ice-9 pretty-print))
               (format port "#!~a/bin/bash~%" (ungexp bash))
-              ;; Load the profile that contains the programs for this script.
+              ;; Load the profile that contains the programs for this
+              ;; script.  Unset GUIX_PROFILE to ensure that the
+              ;; contents of this profile are loaded instead of the
+              ;; user's specified profile.
+              (format port "unset GUIX_PROFILE~%")
               (format port "source ~a/etc/profile~%" (ungexp profile))
               ;; Now that we've written all of the shell code,
               ;; We can start writing the Scheme code.
