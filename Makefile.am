@@ -58,6 +58,22 @@ nobase_dist_assets_DATA =                                 \
 
 info_TEXINFOS = doc/gwl.texi
 
+TEST_EXTENSIONS = .scm
+
+SCM_TESTS = \
+  tests/processes.scm
+
+TESTS = $(SCM_TESTS)
+
+AM_TESTS_ENVIRONMENT = abs_top_srcdir="$(abs_top_srcdir)" GUILE_AUTO_COMPILE=0
+
+SCM_LOG_DRIVER =                                          \
+  $(top_builddir)/env                                     \
+  $(GUILE) --no-auto-compile -e main                      \
+      $(top_srcdir)/build-aux/test-driver.scm
+
+AM_SCM_LOG_DRIVER_FLAGS = --brief=yes
+
 EXTRA_DIST +=      \
   env.in           \
   doc/fdl-1.3.texi
