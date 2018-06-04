@@ -72,6 +72,8 @@ extension to the Guix package manager.
 The Guix Workflow Language uses the GNU build system.  To install it
 from a release tarball just unpack it and run the usual commands:
 
+@cindex installing from source
+@cindex building from source
 @example
 ./configure
 make
@@ -86,15 +88,19 @@ then perform the above steps.
 @node Process Engines
 @chapter Process Engines
 
+@cindex executing processes
+@cindex simple-engine, Process Engine
 Once you have defined a workflow, there are different ways to run the
 processes it consists of.  The simplest way is to turn the workflow into
 a Guile script that sets up the desired environment and then executes
 the workflow processes on the current machine.  This is what the
 @code{simple-engine} does.
 
+@cindex bash-engine, Process Engine
 The legacy @code{bash-engine} achieves the same as the
 @code{simple-engine} but with a detour through Bash.
 
+@cindex grid-engine, Process Engine
 The @code{grid-engine} is similar to the @code{bash-engine} in that it
 generates a shell script, with the difference that it also includes
 resource variable definitions for submission to a Grid Engine scheduling
