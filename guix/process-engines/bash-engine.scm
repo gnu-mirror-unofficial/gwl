@@ -45,16 +45,16 @@ PROCEDURE's imported modules in its search path."
         (gexp->derivation
          name
          (gexp
-          (call-with-output-file (ungexp output)
+          (call-with-output-file #$output
             (lambda (port)
               (use-modules (ice-9 pretty-print))
-              (format port "#!~a/bin/bash~%" (ungexp bash))
+              (format port "#!~a/bin/bash~%" #$bash)
               ;; Load the profile that contains the programs for this
               ;; script.  Unset GUIX_PROFILE to ensure that the
               ;; contents of this profile are loaded instead of the
               ;; user's specified profile.
               (format port "unset GUIX_PROFILE~%")
-              (format port "source ~a/etc/profile~%" (ungexp profile))
+              (format port "source ~a/etc/profile~%" #$profile)
               ;; Now that we've written all of the shell code,
               ;; We can start writing the Scheme code.
               ;; We rely on Bash for this to work.
@@ -62,19 +62,19 @@ PROCEDURE's imported modules in its search path."
               ;; The destination can be outside of the store.
               ;; TODO: We have to mount this location when building inside
               ;; a container.
-              (format port "~a" (ungexp out-str))
+              (format port "~a" #$out-str)
               (format port
                       "~%;; Code to create a proper Guile environment.~%~a~%"
                       (with-output-to-string
-                        (lambda _ (pretty-print '(ungexp set-load-path)))))
+                        (lambda _ (pretty-print '#$set-load-path))))
               (format port
-                      "~%;; Set the current working directory.~%(chdir ~s)~%"
-                      '(ungexp (getcwd)))
+                      "~%;; Set the current working directory.~%~s~%"
+                      '(chdir #$(getcwd)))
               (format port "~%;; Actual code from the procedure.~%~a~%"
                       (with-output-to-string
-                        (lambda _ (pretty-print '(ungexp exp)))))
+                        (lambda _ (pretty-print '#$exp))))
               (format port "EOF~%")
-              (format port "~a/bin/guile -c \"$CODE\"~%" (ungexp guile))
+              (format port "~a/bin/guile -c \"$CODE\"~%" #$guile)
               (chmod port #o555))))
          #:graft? #f)))))
 
