@@ -107,7 +107,11 @@ PROCEDURE's imported modules in its search path."
                         (ungexp name)
                         (ungexp logs-directory)
                         (ungexp name))
-                ;; Load the profile that contains the programs for this script.
+                ;; Load the profile that contains the programs for this
+                ;; script.  Unset GUIX_PROFILE to ensure that the
+                ;; contents of this profile are loaded instead of the
+                ;; user's specified profile.
+                (format port "unset GUIX_PROFILE~%")
                 (format port "source ~a/etc/profile~%" (ungexp profile))
                 ;; Now that we've written all of the SGE shell code,
                 ;; We can start writing the Scheme code.
