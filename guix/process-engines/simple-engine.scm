@@ -60,7 +60,7 @@ in PROC, with PROCEDURE's imported modules in its search path."
                ;; The destination can be outside of the store.
                ;; TODO: We have to mount this location when building inside
                ;; a container.
-               (format port "~s" #$(if out '(setenv "out" out) ""))
+               (format port "~s" '#$(if out `(setenv "out" ,out) ""))
                (format port "~%;; Code to create a proper Guile environment.~%")
                (pretty-print '#$set-load-path port)
 
