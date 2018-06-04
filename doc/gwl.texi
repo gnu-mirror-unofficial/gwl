@@ -50,6 +50,7 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 @menu
 * Introduction::                What is this all about?
 * Installation::                Installing the GWL.
+* Process Engines::             Generating executable pipeline scripts.
 
 * Acknowledgments::             Thanks!
 * GNU Free Documentation License::  The license of this manual.
@@ -80,6 +81,25 @@ make install
 If you want to build the sources from the source repository you need to
 bootstrap the build system first.  Run @code{autoreconf -vif} first and
 then perform the above steps.
+
+@c *********************************************************************
+@node Process Engines
+@chapter Process Engines
+
+Once you have defined a workflow, there are different ways to run the
+processes it consists of.  The simplest way is to turn the workflow into
+a Guile script that sets up the desired environment and then executes
+the workflow processes on the current machine.  This is what the
+@code{simple-engine} does.
+
+The legacy @code{bash-engine} achieves the same as the
+@code{simple-engine} but with a detour through Bash.
+
+The @code{grid-engine} is similar to the @code{bash-engine} in that it
+generates a shell script, with the difference that it also includes
+resource variable definitions for submission to a Grid Engine scheduling
+system.  The resource variables are derived from the process complexity
+field.
 
 @c *********************************************************************
 @node Acknowledgments
