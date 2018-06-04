@@ -165,13 +165,10 @@
       ;; Handle running processes.
       ;; ----------------------------------------------------------------------
       ('graph
-       (let* ((wfs (find-workflow-by-name (assoc-ref opts 'value)))
-              (wf (if (null? wfs) '() (car wfs))))
-         (if (null? wf)
-             (leave (G_ "Could not find the workflow to graph.~%"))
-             (begin
-               (display (workflow->dot wf))
-               (newline))))
+       (match (find-workflow-by-name (assoc-ref opts 'value))
+         ((wf . rest)
+          (format #t "~a\n" (workflow->dot wf)))
+         (_ (leave (G_ "Could not find the workflow to graph.~%"))))
        #t)
       ;; Handle (or don't handle) anything else.
       ;; ----------------------------------------------------------------------
