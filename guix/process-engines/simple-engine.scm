@@ -39,52 +39,49 @@ in PROC, with PROCEDURE's imported modules in its search path."
          (out (process-output-path proc))
          (packages (process-package-inputs proc))
          (manifest (packages->manifest packages))
-         (search-paths (map (lambda (spec)
-                              (zip '(variable files separator type pattern) spec))
-                            (delete-duplicates
-                             (map search-path-specification->sexp
-                                  (cons $PATH
-                                        (append-map manifest-entry-search-paths
-                                                    (manifest-entries manifest))))))))
+         (search-paths (delete-duplicates
+                        (map search-path-specification->sexp
+                             (cons $PATH
+                                   (append-map manifest-entry-search-paths
+                                               (manifest-entries manifest)))))))
     (mlet %store-monad ((set-load-path
                          (load-path-expression (gexp-modules exp)))
                         (profile (profile-derivation manifest)))
       (gexp->derivation
        name
-       #~(call-with-output-file #$output
-           (lambda (port)
-             (use-modules (ice-9 pretty-print)
-                          (ice-9 format))
-             (format port "#!~a/bin/guile -s~%!#~%" #$guile)
-             ;; The destination can be outside of the store.
-             ;; TODO: We have to mount this location when building inside
-             ;; a container.
-             (format port "~s" #$(if out '(setenv "out" out) ""))
-             (format port "~%;; Code to create a proper Guile environment.~%")
-             (pretty-print '#$set-load-path port)
+       #~(begin
+           (use-modules (ice-9 pretty-print)
+                        (ice-9 format)
+                        (ice-9 match)
+                        (srfi srfi-26))
+           (call-with-output-file #$output
+             (lambda (port)
+               (format port "#!~a/bin/guile -s~%!#~%" #$guile)
+               ;; The destination can be outside of the store.
+               ;; TODO: We have to mount this location when building inside
+               ;; a container.
+               (format port "~s" #$(if out '(setenv "out" out) ""))
+               (format port "~%;; Code to create a proper Guile environment.~%")
+               (pretty-print '#$set-load-path port)
 
-             ;; Load the profile that contains the programs for this
-             ;; script.
-
-             ;; TODO: for some reason we can't use match-lambda here,
-             ;; which really would make this look much nicer.  Maybe
-             ;; it's because it uses macros?
-             (format port
-                     "~%;; Prepare environment~%~{~s~}"
-                     (map (lambda (spec)
-                            `(setenv ,(car (assoc-ref spec 'variable))
-                                     ,(string-join
-                                       (map (lambda (file)
-                                              (string-append #$profile "/" file))
-                                            (car (assoc-ref spec 'files)))
-                                       (car (assoc-ref spec 'separator)))))
-                          '#$search-paths))
-             (format port
-                     "~%;; Set the current working directory.~%~s~%"
-                     '(chdir #$(getcwd)))
-             (format port "~%;; Actual code from the procedure.~%")
-             (pretty-print '#$exp port)
-             (chmod port #o555)))
+               ;; Load the profile that contains the programs for this
+               ;; script.
+               (format port
+                       "~%;; Prepare environment~%~{~s~}"
+                       (map (match-lambda
+                              ((variable files separator type pattern)
+                               `(setenv ,variable
+                                        ,(string-join
+                                          (map (cut string-append #$profile "/" <>)
+                                               files)
+                                          separator))))
+                            '#$search-paths))
+               (format port
+                       "~%;; Set the current working directory.~%~s~%"
+                       '(chdir #$(getcwd)))
+               (format port "~%;; Actual code from the procedure.~%")
+               (pretty-print '#$exp port)
+               (chmod port #o555))))
        #:graft? #f))))
 
 (define simple-engine
