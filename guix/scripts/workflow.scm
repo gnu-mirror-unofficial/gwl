@@ -141,42 +141,29 @@
        #t)
       ;; Handle preparing to running processes.
       ;; ----------------------------------------------------------------------
-      ('prepare
+      ((and (or 'prepare 'run) action)
        ;; TODO: Deal with the situation wherein multiple processes
        ;; with the same name are defined.
-       (let* ((wfs (find-workflow-by-name (assoc-ref opts 'value)))
-              (wf (if (null? wfs) '() (car wfs)))
+       (let* ((wf (match (find-workflow-by-name (assoc-ref opts 'value))
+                    ((first . rest) first)
+                    (_ #f)))
               (engine-name (assoc-ref opts 'engine))
               (wf-name (assoc-ref opts 'value)))
          (when (or (not engine-name)
                    (not wf-name))
            (leave (G_ "Please provide --engine and --run arguments.~%")))
-         (when (not (workflow? wf))
+         (unless wf
            (leave (G_ "Cannot find a workflow with name ~s.~%") wf-name))
          (let ((engine (find-engine-by-name engine-name)))
            (when (not engine)
              (leave (G_ "The engine ~s is not available.~%") engine-name))
-           (workflow-prepare wf engine)))
+           ((case action
+              ((prepare) workflow-prepare)
+              ((run)     workflow-run))
+            wf engine)))
        #t)
       ;; Handle running processes.
       ;; ----------------------------------------------------------------------
-      ('run
-       ;; TODO: Deal with the situation wherein multiple processes
-       ;; with the same name are defined.
-       (let* ((wfs (find-workflow-by-name (assoc-ref opts 'value)))
-              (wf (if (null? wfs) '() (car wfs)))
-              (engine-name (assoc-ref opts 'engine))
-              (wf-name (assoc-ref opts 'value)))
-         (when (or (not engine-name)
-                   (not wf-name))
-           (leave (G_ "Please provide --engine and --run arguments.~%")))
-         (when (not (workflow? wf))
-           (leave (G_ "Cannot find a workflow with name ~s.~%") wf-name))
-         (let ((engine (find-engine-by-name engine-name)))
-           (when (not engine)
-             (leave (G_ "The engine ~s is not available.~%") engine-name))
-           (workflow-run wf engine)))
-       #t)
       ('graph
        (let* ((wfs (find-workflow-by-name (assoc-ref opts 'value)))
               (wf (if (null? wfs) '() (car wfs))))
