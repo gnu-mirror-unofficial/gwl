@@ -37,46 +37,45 @@ PROCEDURE's imported modules in its search path."
         (exp (procedure->gexp proc))
         (out (process-output-path proc))
         (packages (process-package-inputs proc)))
-    (let ((out-str (if out (format #f "(setenv \"out\" ~s)" out) "")))
-      (mlet %store-monad ((set-load-path
-                           (load-path-expression (gexp-modules exp)))
-                          (profile (profile-derivation
-                                    (packages->manifest packages))))
-        (gexp->derivation
-         name
-         (gexp
-          (call-with-output-file #$output
-            (lambda (port)
-              (use-modules (ice-9 pretty-print))
-              (format port "#!~a/bin/bash~%" #$bash)
-              ;; Load the profile that contains the programs for this
-              ;; script.  Unset GUIX_PROFILE to ensure that the
-              ;; contents of this profile are loaded instead of the
-              ;; user's specified profile.
-              (format port "unset GUIX_PROFILE~%")
-              (format port "source ~a/etc/profile~%" #$profile)
-              ;; Now that we've written all of the shell code,
-              ;; We can start writing the Scheme code.
-              ;; We rely on Bash for this to work.
-              (format port "read -r -d '' CODE <<EOF~%")
-              ;; The destination can be outside of the store.
-              ;; TODO: We have to mount this location when building inside
-              ;; a container.
-              (format port "~a" #$out-str)
-              (format port
-                      "~%;; Code to create a proper Guile environment.~%~a~%"
-                      (with-output-to-string
-                        (lambda _ (pretty-print '#$set-load-path))))
-              (format port
-                      "~%;; Set the current working directory.~%~s~%"
-                      '(chdir #$(getcwd)))
-              (format port "~%;; Actual code from the procedure.~%~a~%"
-                      (with-output-to-string
-                        (lambda _ (pretty-print '#$exp))))
-              (format port "EOF~%")
-              (format port "~a/bin/guile -c \"$CODE\"~%" #$guile)
-              (chmod port #o555))))
-         #:graft? #f)))))
+    (mlet %store-monad ((set-load-path
+                         (load-path-expression (gexp-modules exp)))
+                        (profile (profile-derivation
+                                  (packages->manifest packages))))
+      (gexp->derivation
+       name
+       (gexp
+        (call-with-output-file #$output
+          (lambda (port)
+            (use-modules (ice-9 pretty-print))
+            (format port "#!~a/bin/bash~%" #$bash)
+            ;; Load the profile that contains the programs for this
+            ;; script.  Unset GUIX_PROFILE to ensure that the
+            ;; contents of this profile are loaded instead of the
+            ;; user's specified profile.
+            (format port "unset GUIX_PROFILE~%")
+            (format port "source ~a/etc/profile~%" #$profile)
+            ;; Now that we've written all of the shell code,
+            ;; We can start writing the Scheme code.
+            ;; We rely on Bash for this to work.
+            (format port "read -r -d '' CODE <<EOF~%")
+            ;; The destination can be outside of the store.
+            ;; TODO: We have to mount this location when building inside
+            ;; a container.
+            (format port "~s" '#$(if out `(setenv "out" ,out) ""))
+            (format port
+                    "~%;; Code to create a proper Guile environment.~%~a~%"
+                    (with-output-to-string
+                      (lambda _ (pretty-print '#$set-load-path))))
+            (format port
+                    "~%;; Set the current working directory.~%~s~%"
+                    '(chdir #$(getcwd)))
+            (format port "~%;; Actual code from the procedure.~%~a~%"
+                    (with-output-to-string
+                      (lambda _ (pretty-print '#$exp))))
+            (format port "EOF~%")
+            (format port "~a/bin/guile -c \"$CODE\"~%" #$guile)
+            (chmod port #o555))))
+       #:graft? #f))))
 
 (define bash-engine
   (process-engine
