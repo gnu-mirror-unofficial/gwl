@@ -29,7 +29,7 @@ Documentation License''.
 @titlepage
 @title Guix Workflow Language Reference Manual
 @subtitle Reproducible Scientific Workflows based on Guix
-@author Ricardo Wurmus
+@author The developers of the GNU Guix Workflow Language
 
 @page
 @vskip 0pt plus 1filll
@@ -62,8 +62,22 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 @node Introduction
 @chapter Introduction
 
-This package provides the Guix Workflow Language, a scientific computing
-extension to the Guix package manager.
+This package provides the @dfn{Guix Workflow Language} (GWL), a
+scientific computing extension to the Guix package manager.
+
+In the GWL there are two concepts we need to know about: processes and
+workflows.  We describe a computation (running a program, or evaluating
+a Scheme expression) using a process.  A workflow describes how multiple
+processes relate to each other (e.g. ``process B must run after process
+A, and process C must run before process A'').
+
+To make processes and workflows available to the GWL via Scheme or the
+command line, we write them as @ref{Creating Guile Modules,,,guile,
+Guile Scheme modules}.  Processes or workflows can be run
+programmatically using the @code{process->script->run} and
+@code{workflow-run} procedures, or on the command line by using the
+@code{guix process} and @code{guix workflow} commands.
+
 
 @c *********************************************************************
 @node Installation
