@@ -33,9 +33,10 @@
   #:export (grid-engine))
 
 (define (sanitize-sge-job-name name)
-  (string-map
-   (lambda (x) (if (or (eq? x #\/) (eq? x #\:) (eq? x #\@)
-                       (eq? x #\\) (eq? x #\*) (eq? x #\?)) #\- x)) name))
+  (let ((bad-chars (char-set #\/ #\: #\@ #\\ #\* #\?)))
+    (string-map
+     (lambda (x)
+       (if (char-set-contains? bad-chars x) #\- x)) name)))
 
 (define (process-job-name proc)
   "Returns a valid job name for PROC."
