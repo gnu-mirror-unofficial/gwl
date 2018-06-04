@@ -134,10 +134,10 @@
       ;; Handle searching for a process.
       ;; ----------------------------------------------------------------------
       ('search
-       (let* ((procs (find-workflows (assoc-ref opts 'value))))
+       (let ((procs (find-workflows (assoc-ref opts 'value))))
          (unless (null? procs)
            (vlist-for-each (lambda (proc)
-                       (print-workflow-record (cdr proc) #t)) procs)))
+                             (print-workflow-record (cdr proc) #t)) procs)))
        #t)
       ;; Handle preparing to running processes.
       ;; ----------------------------------------------------------------------
