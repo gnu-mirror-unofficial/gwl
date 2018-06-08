@@ -63,7 +63,10 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 @chapter Introduction
 
 This package provides the @dfn{Guix Workflow Language} (GWL), a
-scientific computing extension to the Guix package manager.
+scientific computing extension to the Guix package manager.  It combines
+the specification of work units and their relationship to one another
+with the reproducible software deployment facilities of the functional
+package manager GNU Guix.
 
 In the GWL there are two concepts we need to know about: processes and
 workflows.  We describe a computation (running a program, or evaluating
