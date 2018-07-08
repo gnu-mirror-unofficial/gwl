@@ -45,9 +45,13 @@
          (environment (string-tokenize (or (getenv "GUIX_WORKFLOW_PATH") "")
                                        not-colon)))
     (for-each (lambda (directory)
-                (set! %load-path (cons directory %load-path))
+                ;; Put the workflow paths at the end because there are likely
+                ;; only few modules to load workflows and more modules to load
+                ;; other Guix-related stuff.  Putting the workflow path at the
+                ;; end of the load path may therefore be faster at run-time.
+                (set! %load-path (cons %load-path (list directory)))
                 (set! %load-compiled-path
-                      (cons directory %load-compiled-path)))
+                      (append %load-compiled-path (list directory))))
               environment)
     (make-parameter environment)))
 
