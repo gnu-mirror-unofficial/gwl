@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2017 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
 ;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -19,6 +19,7 @@
 
 (define-module (guix process-engines bash-engine)
   #:use-module (guix process-engines)
+  #:use-module (guix process-engines simple-engine)
   #:use-module (guix processes)
   #:use-module (guix gexp)
   #:use-module (guix store)
@@ -33,48 +34,20 @@
 (define* (process->bash-engine-derivation proc #:key (guile (default-guile)))
   "Return an executable script that runs the PROCEDURE described in PROC, with
 PROCEDURE's imported modules in its search path."
-  (let ((name (process-full-name proc))
-        (exp (procedure->gexp proc))
-        (out (process-output-path proc))
-        (packages (process-package-inputs proc)))
-    (mlet %store-monad ((set-load-path
-                         (load-path-expression (gexp-modules exp)))
-                        (profile (profile-derivation
-                                  (packages->manifest packages))))
+  (let* ((name               (process-full-name proc))
+         (prefix             (process-engine-command-prefix simple-engine))
+         (derivation-builder (process-engine-derivation-builder simple-engine))
+         (simple-out         (derivation->script
+                              (derivation-builder proc #:guile guile))))
+    (mlet %store-monad ()
       (gexp->derivation
        name
-       (gexp
-        (call-with-output-file #$output
-          (lambda (port)
-            (use-modules (ice-9 pretty-print))
-            (format port "#!~a/bin/bash~%" #$bash)
-            ;; Load the profile that contains the programs for this
-            ;; script.  Unset GUIX_PROFILE to ensure that the
-            ;; contents of this profile are loaded instead of the
-            ;; user's specified profile.
-            (format port "unset GUIX_PROFILE~%")
-            (format port "source ~a/etc/profile~%" #$profile)
-            ;; Now that we've written all of the shell code,
-            ;; We can start writing the Scheme code.
-            ;; We rely on Bash for this to work.
-            (format port "read -r -d '' CODE <<EOF~%")
-            ;; The destination can be outside of the store.
-            ;; TODO: We have to mount this location when building inside
-            ;; a container.
-            (format port "~s" '#$(if out `(setenv "out" ,out) ""))
-            (format port
-                    "~%;; Code to create a proper Guile environment.~%~a~%"
-                    (with-output-to-string
-                      (lambda _ (pretty-print '#$set-load-path))))
-            (format port
-                    "~%;; Set the current working directory.~%~s~%"
-                    '(chdir #$(getcwd)))
-            (format port "~%;; Actual code from the procedure.~%~a~%"
-                    (with-output-to-string
-                      (lambda _ (pretty-print '#$exp))))
-            (format port "EOF~%")
-            (format port "~a/bin/guile -c \"$CODE\"~%" #$guile)
-            (chmod port #o555))))
+       #~(call-with-output-file #$output
+           (lambda (port)
+             (use-modules (ice-9 format))
+             (format port "#!~a/bin/bash~%" #$bash)
+             (format port "~@[~a ~]~a~%" #$prefix #$simple-out)
+             (chmod port #o555)))
        #:graft? #f))))
 
 (define bash-engine

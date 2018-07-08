@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2017 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
 ;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
@@ -19,6 +19,7 @@
 
 (define-module (guix process-engines grid-engine)
   #:use-module (guix process-engines)
+  #:use-module (guix process-engines simple-engine)
   #:use-module (guix processes)
   #:use-module (guix workflows)
   #:use-module (guix gexp)
@@ -59,16 +60,17 @@
 (define* (process->grid-engine-derivation proc #:key (guile (default-guile)))
   "Return an executable script that runs the PROCEDURE described in PROC, with
 PROCEDURE's imported modules in its search path."
-  (if (not (process-complexity proc))
+  (if (not (process-run-time proc))
       (throw 'missing-runtime
              "Please set the run-time information for this process.")
-      (let* ((name (process-full-name proc))
-             (exp (procedure->gexp proc))
-                                        ;(out (process-output-path proc))
-             (packages (process-package-inputs proc))
-             (time     (complexity-time (process-complexity proc)))
-             (space    (complexity-space (process-complexity proc)))
-             (threads  (complexity-threads (process-complexity proc)))
+      (let* ((name               (process-full-name proc))
+             (prefix             (process-engine-command-prefix simple-engine))
+             (derivation-builder (process-engine-derivation-builder simple-engine))
+             (simple-out         (derivation->script
+                                  (derivation-builder proc #:guile guile)))
+             (time               (process-time proc))
+             (space              (process-space proc))
+             (threads            (process-threads proc))
              (time-str (if time
                            (format #f "-l h_rt=~a:~a:~a"
                                    (quotient time 3600) ; Hours
@@ -83,68 +85,28 @@ PROCEDURE's imported modules in its search path."
         (catch #t
           (lambda _ (mkdir logs-directory))
           (lambda (key . arguments) #t))
-        (mlet %store-monad ((set-load-path
-                             (load-path-expression (gexp-modules exp)))
-                            (profile (profile-derivation
-                                      (packages->manifest packages))))
+        (mlet %store-monad ()
           (gexp->derivation
            name
-           (gexp
-            (call-with-output-file (ungexp output)
-              (lambda (port)
-                (use-modules (ice-9 pretty-print)
-                             (ice-9 format))
-                (format port "#!~a/bin/bash~%" (ungexp bash))
-                ;; Write the SGE options to the header of the Bash script.
-                (format port
-                        "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
-                        (ungexp bash)
-                        (ungexp space-str)
-                        (ungexp time-str)
-                        (ungexp threads-str))
-                ;; Write logs to the 'logs' subdirectory of the workflow output.
-                (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
-                        (ungexp logs-directory)
-                        (ungexp name)
-                        (ungexp logs-directory)
-                        (ungexp name))
-                ;; Load the profile that contains the programs for this
-                ;; script.  Unset GUIX_PROFILE to ensure that the
-                ;; contents of this profile are loaded instead of the
-                ;; user's specified profile.
-                (format port "unset GUIX_PROFILE~%")
-                (format port "source ~a/etc/profile~%" (ungexp profile))
-                ;; Now that we've written all of the SGE shell code,
-                ;; We can start writing the Scheme code.
-                ;; We rely on Bash for this to work.
-                (format port "read -r -d '' CODE <<EOF~%")
-                ;; The destination can be outside of the store.
-                ;; Note: We have to mount this location when building inside
-                ;; a container.
-                ;;(format port "~a" (ungexp out-str))
-                ;; Change to the correct output directory.
-                ;; We use the pretty-printer so that users can debug their
-                ;; procedures more easily.
-                (format port
-                        ";; Code to create a proper Guile environment.~%~a~%"
-                        (with-output-to-string
-                          (lambda _ (pretty-print '(ungexp set-load-path)))))
-                (format port
-                        ";; Set the current working directory.~%(chdir ~s)~%"
-                        '(ungexp (getcwd)))
-                (format port "~%;; Create the 'logs' directory.~%")
-                (format port "(catch #t (lambda _ (mkdir ~s))~%"
-                        (ungexp logs-directory))
-                (format port "          (lambda (key . parameters) #t))~%")
-                (format port "~%;; Actual code from the procedure.~%~a~%"
-                        (with-output-to-string
-                          (lambda _ (pretty-print '(ungexp exp)))))
-                ;;(format port ";; Write a 'completed' file.~%")
-                ;;(format port "(call-with-output-file ~s (const #t))~%"
-                ;;        (string-append (ungexp out) "/JOB_DONE"))
-                (format port "EOF~%")
-                (format port "~a/bin/guile -c \"$CODE\"~%" (ungexp guile))
-                (chmod port #o555))))
+           #~(call-with-output-file #$output
+               (lambda (port)
+                 (use-modules (ice-9 format))
+                 (format port "#!~a/bin/bash~%" #$bash)
+                 ;; Write the SGE options to the header of the Bash script.
+                 (format port
+                         "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
+                         #$bash
+                         #$space-str
+                         #$time-str
+                         #$threads-str)
+                 ;; Write logs to the 'logs' subdirectory of the workflow output.
+                 (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
+                         #$logs-directory
+                         #$name
+                         #$logs-directory
+                         #$name)
+                 (format port "~@[~a ~]~a~%" #$prefix #$simple-out)
+                 (chmod port #o555)))
            #:graft? #f)))))
 
 (define grid-engine

@@ -39,7 +39,7 @@
             process-version
             process-package-inputs
             process-data-inputs
-            process-complexity
+            process-run-time
             process-procedure
             process-synopsis
             process-description
@@ -83,6 +83,7 @@
             process:
 
             ;; For the lack of a better place.
+            derivation->script
             default-guile))
 
 ;;; Commentary:
@@ -116,7 +117,7 @@
   (output-path      process-output-path    (default #f))
   (outputs          process-output         (default #f))
 
-  (run-time         process-complexity     (default #f))
+  (run-time         process-run-time       (default #f))
   (procedure        process-procedure))
 
 ;; Shorter syntax, which is especially useful when wisp is used.
@@ -260,7 +261,7 @@ GWL = {
               (item (list item)))
             (or (process-output-path process) "")
             (or (process-outputs process) (list))
-            (or (process-complexity process) "")))
+            (or (process-run-time process) "")))
   (define (process->R-meta)
     (format #f "\
 GWL <- list(\
@@ -281,7 +282,7 @@ GWL <- list(\
                          ",")
             (or (process-output-path process) "")
             (string-join (or (process-outputs process) (list)) ",")
-            (or (process-complexity process) "")))
+            (or (process-run-time process) "")))
   (match (process-procedure process)
     ((? gexp? g) g)
     ((? list? s) s)
@@ -447,15 +448,15 @@ user needs to run."
 
 (define-syntax-rule
   (process-space proc)
-  (complexity-space (process-runtime proc)))
+  (complexity-space (process-run-time proc)))
 
 (define-syntax-rule
   (process-time proc)
-  (complexity-time (process-runtime proc)))
+  (complexity-time (process-run-time proc)))
 
 (define-syntax-rule
   (process-threads proc)
-  (complexity-threads (process-runtime proc)))
+  (complexity-threads (process-run-time proc)))
 
 (define (processes-filter processes filter)
   "Returns a list of PROCESSES after applying FILTER.  FILTER
