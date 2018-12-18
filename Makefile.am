@@ -63,7 +63,12 @@ TEST_EXTENSIONS = .scm
 SCM_TESTS = \
   tests/processes.scm
 
+test_data = \
+  tests/data/test.wisp
+
 TESTS = $(SCM_TESTS)
+
+EXTRA_DIST += $(TESTS) $(test_data)
 
 AM_TESTS_ENVIRONMENT = abs_top_srcdir="$(abs_top_srcdir)" GUILE_AUTO_COMPILE=0
 
@@ -76,6 +81,7 @@ AM_SCM_LOG_DRIVER_FLAGS = --brief=yes
 
 EXTRA_DIST +=      \
   env.in           \
+  build-aux/test-driver.scm \
   doc/fdl-1.3.texi \
   doc/examples/simple.scm
 
