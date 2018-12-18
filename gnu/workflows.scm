@@ -49,7 +49,8 @@
                 ;; only few modules to load workflows and more modules to load
                 ;; other Guix-related stuff.  Putting the workflow path at the
                 ;; end of the load path may therefore be faster at run-time.
-                (set! %load-path (cons %load-path (list directory)))
+                (set! %load-path
+                      (append %load-path (list directory)))
                 (set! %load-compiled-path
                       (append %load-compiled-path (list directory))))
               environment)
