@@ -1,0 +1,38 @@
+-*- mode: org; coding: utf-8; -*-
+
+#+TITLE: Hacking on the Guix Workflow Language
+
+Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
+* Development environment
+
+You can use Guix to set up a development environment:
+
+#+BEGIN_SRC shell
+guix environment --ad-hoc \
+  autoconf automake pkg-config \
+  texinfo \
+  guile@2.2 guile-commonmark guile-wisp guile-syntax-highlight
+#+END_SRC
+
+* Commit access
+
+The Guix Workflow Language is [[https://savannah.gnu.org/projects/gwl][hosted on Savannah]].  All commits that
+are pushed to the central repository must be signed with an OpenPGP
+key, and the public key should be uploaded to your user account on
+Savannah and to public key servers, such as ‘pgp.mit.edu’.  To
+configure Git to automatically sign commits, run:
+
+#+BEGIN_SRC shell
+git config commit.gpgsign true
+git config user.signingkey CABBA6EA1DC0FF33
+#+END_SRC
+
+When pushing a commit on behalf of somebody else, please add a
+Signed-off-by line at the end of the commit log message (e.g. with
+‘git am --signoff’).  This improves tracking of who did what.
+
