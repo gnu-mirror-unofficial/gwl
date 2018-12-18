@@ -50,6 +50,7 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 @menu
 * Introduction::                What is this all about?
 * Installation::                Installing the GWL.
+* A Simple Workflow::           Show me what this looks like!
 * Process Engines::             Generating executable pipeline scripts.
 
 * Acknowledgments::             Thanks!
@@ -100,6 +101,25 @@ make install
 If you want to build the sources from the source repository you need to
 bootstrap the build system first.  Run @code{autoreconf -vif} first and
 then perform the above steps.
+
+
+@c *********************************************************************
+@node A Simple Workflow
+@chapter A Simple Workflow
+
+To get a little taste of what the workflow language looks like, let's
+start by writing a simple workflow.  The workflow language is a
+@dfn{domain specific language} (DSL) embedded in Guile Scheme.  If you
+prefer a white-space sensitive syntax like that of Python or YAML over
+the native syntax of Scheme, you can use the Wisp syntax extension,
+which will be introduced later.
+
+Here is a simple workflow example:
+
+@example
+@include examples/simple.scm
+@end example
+
 
 @c *********************************************************************
 @node Process Engines

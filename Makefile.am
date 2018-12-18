@@ -76,7 +76,8 @@ AM_SCM_LOG_DRIVER_FLAGS = --brief=yes
 
 EXTRA_DIST +=      \
   env.in           \
-  doc/fdl-1.3.texi
+  doc/fdl-1.3.texi \
+  doc/examples/simple.scm
 
 dist-hook: $(distdir)/ChangeLog
 gen-ChangeLog $(distdir)/ChangeLog:
