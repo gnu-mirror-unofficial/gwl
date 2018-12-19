@@ -178,6 +178,96 @@
      (simple-format port "<#complexity ~a sec, ~a bytes, ~a threads>"
                     time space threads))))
 
+
+;;; Support for embedding foreign language snippets
+
+(define-record-type* <language>
+  language
+  make-language
+  language?
+  (name          language-name)          ; symbol
+  (call          language-call))         ; procedure
+
+(define (python-process->meta process)
+  (format #f "\
+GWL = {
+  'name': ~s,
+  'synopsis': ~s,
+  'description': ~s,
+  'data-inputs': [~{~s,~}],
+  'output-path': ~s,
+  'outputs': [~{~s,~}],
+  'run-time': ~s
+}
+"
+          (process-name process)
+          (process-synopsis process)
+          (process-description process)
+          (match (process-data-inputs process)
+            ((? list? lst) lst)
+            (item (list item)))
+          (or (process-output-path process) "")
+          (or (process-outputs process) (list))
+          (or (process-run-time process) "")))
+
+(define (r-process->meta process)
+  (format #f "\
+GWL <- list(\
+  'name'=~s,\
+  'synopsis'=~s,\
+  'description'=~s,\
+  'data-inputs'=c(~s),\
+  'output-path'=~s,\
+  'outputs'=c(~s),\
+  'run-time'=~s\
+)"
+          (process-name process)
+          (process-synopsis process)
+          (process-description process)
+          (or (and=> (process-data-inputs process)
+                     (lambda (data-inputs)
+                       (string-join (match data-inputs
+                                      ((? list? lst) lst)
+                                      (item (list item)))
+                                    ",")))
+              "")
+          (or (process-output-path process) "")
+          (string-join (or (process-outputs process) (list)) ",")
+          (or (process-run-time process) "")))
+
+(define language-python3
+  (language
+   (name 'python)
+   (call (lambda (process code)
+           #~(system* "python3"
+                      "-c" #$(string-append
+                              (python-process->meta process) code))))))
+
+(define language-python2
+  (language
+   (name 'python2)
+   (call (lambda (process code)
+           #~(system* "python2"
+                      "-c" #$(string-append
+                              (python-process->meta process) code))))))
+
+(define language-r
+  (language
+   (name 'r)
+   (call (lambda (process code)
+           (let ((args (append-map (lambda (line)
+                                     (list "-e" line))
+                                   (cons (r-process->meta process)
+                                         (filter (negate string-null?)
+                                                 (string-split code #\newline))))))
+             #~(apply system* "Rscript" #$args))))))
+
+(define languages
+  (list language-python3
+        language-python2
+        language-r))
+
+
 ;;; ---------------------------------------------------------------------------
 ;;; Syntactic sugar
 ;;; ---------------------------------------------------------------------------
@@ -241,64 +331,16 @@ Here is an example when CHR is the backtick:
 (define (procedure->gexp process)
   "Transform the procedure of PROCESS to a G-expression or return the
 plain S-expression."
-  (define (process->python-meta)
-    (format #f "\
-GWL = {
-  'name': ~s,
-  'synopsis': ~s,
-  'description': ~s,
-  'data-inputs': [~{~s,~}],
-  'output-path': ~s,
-  'outputs': [~{~s,~}],
-  'run-time': ~s
-}
-"
-            (process-name process)
-            (process-synopsis process)
-            (process-description process)
-            (match (process-data-inputs process)
-              ((? list? lst) lst)
-              (item (list item)))
-            (or (process-output-path process) "")
-            (or (process-outputs process) (list))
-            (or (process-run-time process) "")))
-  (define (process->R-meta)
-    (format #f "\
-GWL <- list(\
-  'name'=~s,\
-  'synopsis'=~s,\
-  'description'=~s,\
-  'data-inputs'=c(~s),\
-  'output-path'=~s,\
-  'outputs'=c(~s),\
-  'run-time'=~s\
-)"
-            (process-name process)
-            (process-synopsis process)
-            (process-description process)
-            (string-join (match (process-data-inputs process)
-                           ((? list? lst) lst)
-                           (item (list item)))
-                         ",")
-            (or (process-output-path process) "")
-            (string-join (or (process-outputs process) (list)) ",")
-            (or (process-run-time process) "")))
   (match (process-procedure process)
     ((? gexp? g) g)
     ((? list? s) s)
-    (($ <code-snippet> 'python code)
-     #~(system* "python3"
-                "-c" #$(string-append (process->python-meta) code)))
-    (($ <code-snippet> 'python2 code)
-     #~(system* "python"
-                "-c" #$(string-append (process->python-meta) code)))
-    (($ <code-snippet> 'r code)
-     (let ((args (append-map (lambda (line)
-                               (list "-e" line))
-                             (cons (process->R-meta)
-                                   (filter (negate string-null?)
-                                           (string-split code #\newline))))))
-       #~(apply system* "Rscript" #$args)))
+    (($ <code-snippet> name code)
+     (let ((language (find (lambda (lang)
+                             (eq? name (language-name lang)))
+                           languages)))
+       (unless language
+         (error (format #f "unsupported code snippet: ~a\n" name)))
+       ((language-call language) process code)))
     (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
 ;;; ---------------------------------------------------------------------------
