@@ -53,4 +53,17 @@ print("hello from python 3")
          (eq? 'python (code-snippet-language snippet))
          (gexp? (procedure->gexp proc)))))
 
+(test-assert "procedure->gexp supports R code"
+  (let* ((proc (process
+                (name "r")
+                (procedure
+#---{r}
+cat("hello from R")
+---
+)))
+         (snippet (process-procedure proc)))
+    (and (code-snippet? snippet)
+         (eq? 'r (code-snippet-language snippet))
+         (gexp? (procedure->gexp proc)))))
+
 (test-end "processes")
