@@ -122,40 +122,42 @@
       ;; Handle searching for a process.
       ;; ----------------------------------------------------------------------
       ('search
-       (let* ((procs (find-processes (assoc-ref opts 'value))))
-         (unless (null? procs)
-           (vlist-for-each (lambda (proc)
-                       (print-process-record (cdr proc) #t)) procs)))
-       #t)
+       (match (find-processes (assoc-ref opts 'value))
+         (() #t)
+         (matches
+          (vlist-for-each (compose print-process-record cdr)
+                          matches))))
       ;; Handle running a process.
       ;; ----------------------------------------------------------------------
       ('prepare
        ;; TODO: Deal with the situation wherein multiple processes
        ;; with the same name are defined.
-       (let* ((procs (find-process-by-name (assoc-ref opts 'value)))
-              (proc (if (null? procs) '() (car procs)))
-              (engine-name (assoc-ref opts 'engine))
-              (proc-name (assoc-ref opts 'value)))
-         (when (not proc-name)
+       (let ((proc (match (find-process-by-name (assoc-ref opts 'value))
+                     (() '())
+                     ((first . _) first)))
+             (engine-name (assoc-ref opts 'engine))
+             (proc-name (assoc-ref opts 'value)))
+         (unless (and engine-name proc-name)
            (leave (G_ "Please provide --engine and --run arguments.~%")))
-         (when (not (process? proc))
+         (unless (process? proc)
            (leave (G_ "Cannot find a process with name ~s.~%") proc-name))
          (let ((engine (find-engine-by-name engine-name)))
-           (when (not engine)
+           (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
            (process->script proc engine)))
        #t)
       ('run
-       (let* ((procs (find-process-by-name (assoc-ref opts 'value)))
-              (proc (if (null? procs) '() (car procs)))
-              (engine-name (assoc-ref opts 'engine))
-              (proc-name (assoc-ref opts 'value)))
-         (when (not proc-name)
+       (let ((proc (match (find-process-by-name (assoc-ref opts 'value))
+                     (() '())
+                     ((first . _) first)))
+             (engine-name (assoc-ref opts 'engine))
+             (proc-name (assoc-ref opts 'value)))
+         (unless proc-name
            (leave (G_ "Please provide --engine and --run arguments.~%")))
-         (when (not (process? proc))
+         (unless (process? proc)
            (leave (G_ "Cannot find a process with name ~s.~%") proc-name))
          (let ((engine (find-engine-by-name engine-name)))
-           (when (not engine)
+           (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
            (process->script->run proc engine)))
        #t)
