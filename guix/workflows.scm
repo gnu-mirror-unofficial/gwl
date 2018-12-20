@@ -135,10 +135,8 @@ processes that can be executed in parallel."
   "Runs WORKFLOW using ENGINE."
   (let ((order (workflow-run-order workflow #:parallel? parallel?)))
     (if (not order)
-        (begin
-          (display "Sorry, I cannot determine the order in which to ")
-          (display "execute the processes.")
-          (newline))
+        (format (current-error-port)
+                "Error: Cannot determine process execution order.~%")
         (if parallel?
             (for-each (lambda (step)
                         (for-each (lambda (process)
