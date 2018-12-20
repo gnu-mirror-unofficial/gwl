@@ -14,10 +14,10 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (guix workflows graph)
+(define-module (gwl workflows graph)
   #:use-module (ice-9 format)
   #:use-module (guix workflows)
-  #:use-module (guix workflows utils)
+  #:use-module (gwl workflows utils)
   #:use-module (guix processes)
   #:use-module (guix packages)
   #:export (workflow->dot))

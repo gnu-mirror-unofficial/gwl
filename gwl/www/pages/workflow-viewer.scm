@@ -15,16 +15,16 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages workflow-viewer)
-  #:use-module (guix workflows)
-  #:use-module (guix workflows graph)
-  #:use-module (guix processes)
-  #:use-module (guix packages)
   #:use-module (gnu workflows)
+  #:use-module (guix processes)
+  #:use-module (guix workflows)
+  #:use-module (gwl workflows graph)
+  #:use-module (gwl www pages)
+  #:use-module (gwl www config)
+  #:use-module (guix packages)
   #:use-module (gnu packages graphviz)
   #:use-module (guix store)
   #:use-module (ice-9 vlist)
-  #:use-module (gwl www pages)
-  #:use-module (gwl www config)
   #:export (page-workflow-viewer))
 
 (define %daemon-connection #f)
