@@ -23,10 +23,10 @@ godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache
 SOURCES =                                                 \
   gnu/processes.scm                                       \
   gnu/workflows.scm                                       \
-  guix/process-engines.scm                                \
-  guix/process-engines/bash-engine.scm                    \
-  guix/process-engines/grid-engine.scm                    \
-  guix/process-engines/simple-engine.scm                  \
+  gwl/process-engines.scm                                \
+  gwl/process-engines/bash-engine.scm                    \
+  gwl/process-engines/grid-engine.scm                    \
+  gwl/process-engines/simple-engine.scm                  \
   guix/processes.scm                                      \
   guix/scripts/process.scm                                \
   guix/scripts/workflow.scm                               \

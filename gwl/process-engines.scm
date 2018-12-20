@@ -14,7 +14,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (guix process-engines)
+(define-module (gwl process-engines)
   #:use-module (guix records)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-9 gnu)
@@ -56,5 +56,5 @@
   (let* ((engine-symbol (string->symbol name)))
     (false-if-exception (module-ref
                          (resolve-interface
-                          `(guix process-engines ,engine-symbol))
+                          `(gwl process-engines ,engine-symbol))
                          engine-symbol))))

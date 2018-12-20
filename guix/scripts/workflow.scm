@@ -15,11 +15,11 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix scripts workflow)
+  #:use-module (gwl process-engines)
   #:use-module (gwl web-interface)
   #:use-module (guix ui)
   #:use-module (guix scripts)
   #:use-module (guix utils)
-  #:use-module (guix process-engines)
   #:use-module (guix workflows)
   #:use-module (guix workflows graph)
   #:use-module (gnu workflows)

@@ -17,9 +17,9 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (guix process-engines bash-engine)
-  #:use-module (guix process-engines)
-  #:use-module (guix process-engines simple-engine)
+(define-module (gwl process-engines bash-engine)
+  #:use-module (gwl process-engines)
+  #:use-module (gwl process-engines simple-engine)
   #:use-module (guix processes)
   #:use-module (guix gexp)
   #:use-module (guix store)

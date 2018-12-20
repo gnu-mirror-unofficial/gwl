@@ -15,7 +15,7 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix processes)
-  #:use-module (guix process-engines)
+  #:use-module (gwl process-engines)
   #:use-module (guix utils)
   #:use-module (guix ui)
   #:use-module (guix build utils)
