@@ -59,8 +59,9 @@
                                         (workflow-name p)
                                         (workflow-version p)) p r)))
               vlist-null)))
-    (vlist-for-each (lambda (pair)
-                      (format #t "  * ~a~%" (car pair)))
+    (vlist-for-each (match-lambda
+                      ((label . _)
+                       (format #t "  * ~a~%" label)))
                     wfs))
   (newline))
 
@@ -134,28 +135,28 @@
       ;; Handle searching for a process.
       ;; ----------------------------------------------------------------------
       ('search
-       (let ((procs (find-workflows (assoc-ref opts 'value))))
-         (unless (null? procs)
-           (vlist-for-each (lambda (proc)
-                             (print-workflow-record (cdr proc) #t)) procs)))
+       (match (find-workflows (assoc-ref opts 'value))
+         (() #t)
+         (matches
+          (vlist-for-each (compose print-workflow-record cdr)
+                          matches)))
        #t)
       ;; Handle preparing to running processes.
       ;; ----------------------------------------------------------------------
       ((and (or 'prepare 'run) action)
        ;; TODO: Deal with the situation wherein multiple processes
        ;; with the same name are defined.
-       (let* ((wf (match (find-workflow-by-name (assoc-ref opts 'value))
-                    ((first . rest) first)
-                    (_ #f)))
-              (engine-name (assoc-ref opts 'engine))
-              (wf-name (assoc-ref opts 'value)))
-         (when (or (not engine-name)
-                   (not wf-name))
+       (let ((wf (match (find-workflow-by-name (assoc-ref opts 'value))
+                   ((first . rest) first)
+                   (_ #f)))
+             (engine-name (assoc-ref opts 'engine))
+             (wf-name (assoc-ref opts 'value)))
+         (unless (and engine-name wf-name)
            (leave (G_ "Please provide --engine and --run arguments.~%")))
          (unless wf
            (leave (G_ "Cannot find a workflow with name ~s.~%") wf-name))
          (let ((engine (find-engine-by-name engine-name)))
-           (when (not engine)
+           (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
            ((case action
               ((prepare) workflow-prepare)

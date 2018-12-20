@@ -104,7 +104,7 @@
   "Write a decent human-representation of a workflow of WORKFLOW to PORT."
   (simple-format port "#<workflow ~a>" (workflow-full-name workflow)))
 
-(define (print-workflow-record workflow port)
+(define* (print-workflow-record workflow #:optional (port #t))
   "Write a multi-line representation of PROC to PORT."
   (match workflow
     (($ <workflow> name version synopsis description)
