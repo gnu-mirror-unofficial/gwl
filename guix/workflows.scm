@@ -108,8 +108,8 @@
   "Write a multi-line representation of PROC to PORT."
   (match workflow
     (($ <workflow> name version synopsis description)
-     (format port (string-append "name: ~a~%version: ~a~%synopsis: ~a~%"
-                                 "description: ~a~%processes: ~{~%  * ~a~}~%")
+     (format port "name: ~a~%version: ~a~%synopsis: ~a~%\
+description: ~a~%processes: ~{~%  * ~a~}~%"
              name version synopsis description
              (map (lambda (proc)
                     (process-full-name proc))
