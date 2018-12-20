@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -33,10 +34,10 @@
          (pretty-name (string-map (lambda (x)
                                     (if (eq? x #\-) #\  x))
                                   (process-name proc))))
-    (format #f (string-append " ~s [shape=box,style=\"rounded,filled\",fillcolo"
-                              "r=~s,label=<<FONT POINT-SIZE=\"14\"><U>~a</U></F"
-                              "ONT><BR/><FONT POINT-SIZE=\"12\">~a<BR/><BR/>Use"
-                              "s: ~{~a~^, ~}.</FONT>>];~%")
+    (format #f " ~s [shape=box,style=\"rounded,filled\",fillcolor=~s,\
+label=<<FONT POINT-SIZE=\"14\"><U>~a</U></FONT><BR/>\
+<FONT POINT-SIZE=\"12\">~a<BR/><BR/>\
+Uses: ~{~a~^, ~}.</FONT>>];~%"
             (process-full-name proc)
             (take-color)
             (string-upcase pretty-name)
