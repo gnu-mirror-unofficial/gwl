@@ -15,8 +15,8 @@
 
 (define-module (gwl workflows utils)
   #:use-module (srfi srfi-1)
-  #:export (succes?
-            succesful-execution?
+  #:export (success?
+            successful-execution?
             source->string
 
             color-scheme-stepper
@@ -26,14 +26,14 @@
 
 ;; Catch the return value of a call to (system* ...) and return #t when
 ;; it executed normally, and #f otherwise.
-(define-syntax-rule (succes? . body)
+(define-syntax-rule (success? . body)
   (eqv? 0 (status:exit-val body)))
 
 ;; So we run multiple processes, and each process returns #t or #f, depending
-;; on the succesful completion of the command.  These values can be kept in
+;; on the successful completion of the command.  These values can be kept in
 ;; a list.  This function can then figure out whether all processes succeeded.
 ;;
-(define (succesful-execution? lst)
+(define (successful-execution? lst)
   "Returns #t when all executions succeeded, #f otherwise."
   (not (memq #f lst)))
 
