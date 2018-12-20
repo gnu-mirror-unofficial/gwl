@@ -27,10 +27,12 @@ SOURCES =                                                 \
   guix/scripts/process.scm                                \
   guix/scripts/workflow.scm                               \
   guix/workflows.scm                                      \
+  gwl/processes.scm                                       \
   gwl/process-engines.scm                                 \
   gwl/process-engines/bash-engine.scm                     \
   gwl/process-engines/grid-engine.scm                     \
   gwl/process-engines/simple-engine.scm                   \
+  gwl/workflows.scm                                       \
   gwl/workflows/execution-order.scm                       \
   gwl/workflows/graph.scm                                 \
   gwl/workflows/utils.scm                                 \
