@@ -15,10 +15,12 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu processes)
-  #:use-module (gnu packages)
-  #:use-module (gnu workflows)
-  #:use-module (guix utils)
-  #:use-module (guix combinators)
+  #:use-module ((gnu workflows)
+                #:select (all-workflow-modules))
+  #:use-module ((guix utils)
+                #:select (version>?))
+  #:use-module ((guix combinators)
+                #:select (fold2))
   #:use-module (guix processes)
   #:use-module (ice-9 vlist)
   #:use-module (ice-9 match)
