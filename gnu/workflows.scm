@@ -250,20 +250,13 @@ decreasing version order."
   (let ((workflows (delay
                      (fold-workflows (lambda (p r)
                                        (vhash-cons (workflow-name p) p r))
-                                     vlist-null)))
-        (version>? (lambda (p1 p2)
-                     (version>? (workflow-version p1) (workflow-version p2)))))
-    (lambda* (keyword)
-      "Return the list of workflows with the given NAME.  If VERSION is not #f,
-then only return workflows whose version is prefixed by VERSION, sorted in
-decreasing version order."
-      (let ((wfs (force workflows)))
-        (if (null? wfs)
-            '()
-            (vlist-filter
-             (lambda (item)
-               (let ((wf (cdr item)))
-                 (or (string-contains-ci (workflow-full-name wf) keyword)
-                     (string-contains-ci (workflow-synopsis wf) keyword)
-                     (string-contains-ci (workflow-description wf) keyword))))
-             wfs))))))
+                                     vlist-null))))
+    (lambda (keyword)
+      "Return the list of workflows matching the given KEYWORD."
+      (vlist-filter
+       (match-lambda
+         ((label . wf)
+          (or (string-contains-ci (workflow-full-name wf) keyword)
+              (string-contains-ci (workflow-synopsis wf) keyword)
+              (string-contains-ci (workflow-description wf) keyword))))
+       (force workflows)))))
