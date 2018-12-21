@@ -71,20 +71,13 @@ decreasing version order."
   (let ((processes (delay
                      (fold-processes (lambda (p r)
                                        (vhash-cons (process-name p) p r))
-                                     vlist-null)))
-        (version>? (lambda (p1 p2)
-                     (version>? (process-version p1) (process-version p2)))))
-    (lambda* (keyword)
-      "Return the list of processes with the given NAME.  If VERSION is not #f,
-then only return processes whose version is prefixed by VERSION, sorted in
-decreasing version order."
-      (let ((procs (force processes)))
-        (if (null? procs)
-            '()
-            (vlist-filter
-             (lambda (item)
-               (let ((proc (cdr item)))
-                 (or (string-contains-ci (process-name proc) keyword)
-                     (string-contains-ci (process-synopsis proc) keyword)
-                     (string-contains-ci (process-description proc) keyword))))
-             procs))))))
+                                     vlist-null))))
+    (lambda (keyword)
+      "Return the list of processes matching the given KEYWORD."
+      (vlist-filter
+       (match-lambda
+         ((label . proc)
+          (or (string-contains-ci (process-name proc) keyword)
+              (string-contains-ci (process-synopsis proc) keyword)
+              (string-contains-ci (process-description proc) keyword))))
+       (force processes)))))
