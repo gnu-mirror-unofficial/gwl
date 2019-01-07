@@ -1,6 +1,6 @@
 (define-module (simple)
-  #:use-module (guix processes)
-  #:use-module (guix workflows)
+  #:use-module (gwl processes)
+  #:use-module (gwl workflows)
   #:use-module (gnu packages base))
 
 (define-public greet
