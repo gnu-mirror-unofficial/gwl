@@ -14,7 +14,7 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (test-processes)
-  #:use-module (guix processes)
+  #:use-module (gwl processes)
   #:use-module (guix gexp)
   #:use-module (srfi srfi-64))
 
