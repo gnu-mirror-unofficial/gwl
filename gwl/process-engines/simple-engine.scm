@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2017 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -61,6 +61,7 @@ in PROC, with PROCEDURE's imported modules in its search path."
                ;; TODO: We have to mount this location when building inside
                ;; a container.
                (format port "~s" '#$(if out `(setenv "out" ,out) ""))
+               (format port "~s" '(setenv "_GWL_PROFILE" #$profile))
                (format port "~%;; Code to create a proper Guile environment.~%")
                (pretty-print '#$set-load-path port)
 
