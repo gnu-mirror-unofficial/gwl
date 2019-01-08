@@ -405,7 +405,7 @@ set to #f, it only returns the output path."
                           (port (current-output-port)))
   "Builds a derivation of PROC and displays the commands a user needs
 to run."
-  (when (not (process? proc))
+  (unless (process? proc)
     (leave (G_ "This is not a process!~%")))
   (let* ((command-prefix (process-engine-command-prefix engine))
          (derivation-builder (process-engine-derivation-builder engine))
