@@ -492,7 +492,7 @@ user needs to run."
   "Returns a list of PROCESSES after applying FILTER.  FILTER
 is a function that takes a process and returns the process to include it
 of #f to exclude it."
-  (delete #f (map filter processes)))
+  (filter-map filter processes))
 
 (define (processes-filter-by-name processes name)
   "Returns a list of PROCESSES whose name (partially) matches NAME."
