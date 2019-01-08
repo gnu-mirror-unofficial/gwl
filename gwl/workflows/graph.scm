@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 
 (define-module (gwl workflows graph)
   #:use-module (ice-9 format)
-  #:use-module (guix workflows)
+  #:use-module (gwl processes)
+  #:use-module (gwl workflows)
   #:use-module (gwl workflows utils)
-  #:use-module (guix processes)
-  #:use-module (guix packages)
+  #:use-module ((guix packages) #:select (package-full-name))
   #:export (workflow->dot))
 
 ;;; ---------------------------------------------------------------------------
