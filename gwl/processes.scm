@@ -496,8 +496,8 @@ of #f to exclude it."
 
 (define (processes-filter-by-name processes name)
   "Returns a list of PROCESSES whose name (partially) matches NAME."
-  (delete #f (map (lambda (proc)
-                    (if (and (process? proc)
-                             (string-contains (process-name proc) name))
-                        proc #f))
-                  processes)))
+  (filter-map (lambda (proc)
+                (and (process? proc)
+                     (string-contains (process-name proc) name)
+                     proc))
+              processes))
