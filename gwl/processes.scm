@@ -16,11 +16,16 @@
 
 (define-module (gwl processes)
   #:use-module (gwl process-engines)
-  #:use-module (guix records)
-  #:use-module (guix store)
+  #:use-module ((guix derivations)
+                #:select (derivation->output-path
+                          build-derivations))
   #:use-module (guix gexp)
-  #:use-module (guix derivations)
-  #:use-module (guix monads)
+  #:use-module ((guix monads) #:select (mlet return))
+  #:use-module (guix records)
+  #:use-module ((guix store)
+                #:select (open-connection
+                          run-with-store
+                          %store-monad))
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
