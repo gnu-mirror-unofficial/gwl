@@ -27,26 +27,13 @@
     (equal? (procedure->gexp proc)
             (process-procedure proc))))
 
-(test-assert "procedure->gexp supports Python 2 code"
+(test-assert "procedure->gexp supports Python code"
   (let* ((proc (process
-                (name "python2")
+                (name "python")
                 (procedure
-#---{python2}
+## python
 print "hello from python 2"
----
-)))
-         (snippet (process-procedure proc)))
-    (and (code-snippet? snippet)
-         (eq? 'python2 (code-snippet-language snippet))
-         (gexp? (procedure->gexp proc)))))
-
-(test-assert "procedure->gexp supports Python 3 code"
-  (let* ((proc (process
-                (name "python3")
-                (procedure
-#---{python}
-print("hello from python 3")
----
+##
 )))
          (snippet (process-procedure proc)))
     (and (code-snippet? snippet)
@@ -57,13 +44,27 @@ print("hello from python 3")
   (let* ((proc (process
                 (name "r")
                 (procedure
-#---{r}
+## R
 cat("hello from R")
----
+##
 )))
          (snippet (process-procedure proc)))
     (and (code-snippet? snippet)
-         (eq? 'r (code-snippet-language snippet))
+         (eq? 'R (code-snippet-language snippet))
+         (gexp? (procedure->gexp proc)))))
+
+(test-assert "procedure->gexp supports any kind of code"
+  (let* ((proc (process
+                (name "bash")
+                (procedure
+## /bin/bash -c
+echo "hello from bash"
+##
+)))
+         (snippet (process-procedure proc)))
+    (and (code-snippet? snippet)
+         (eq? '/bin/bash (code-snippet-language snippet))
+         (equal? '("-c") (code-snippet-arguments snippet))
          (gexp? (procedure->gexp proc)))))
 
 (test-end "processes")

@@ -1,5 +1,5 @@
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -77,6 +77,7 @@
             code-snippet
             code-snippet?
             code-snippet-language
+            code-snippet-arguments
 
             ;; Syntactic sugar
             procedure->gexp
@@ -188,83 +189,53 @@
   (name          language-name)          ; symbol
   (call          language-call))         ; procedure
 
-(define (python-process->meta process)
-  (format #f "\
-GWL = {
-  'name': ~s,
-  'synopsis': ~s,
-  'description': ~s,
-  'data-inputs': [~{~s,~}],
-  'output-path': ~s,
-  'outputs': [~{~s,~}],
-  'run-time': ~s
-}
-"
-          (process-name process)
-          (process-synopsis process)
-          (process-description process)
-          (match (process-data-inputs process)
-            ((? list? lst) lst)
-            (item (list item)))
-          (or (process-output-path process) "")
-          (or (process-outputs process) (list))
-          (or (process-run-time process) "")))
+(define (process->env process)
+  "Return an alist of environment variable names to values of fields
+of PROCESS."
+  `(("_GWL_PROCESS_NAME" .
+     ,(process-name process))
+    ("_GWL_PROCESS_SYNOPSIS" .
+     ,(or (process-synopsis process) ""))
+    ("_GWL_PROCESS_DESCRIPTION" .
+     ,(or (process-description process) ""))
+    ;; TODO: this doesn't always make sense as data inputs could be
+    ;; procedures.
+    ("_GWL_PROCESS_DATA_INPUTS" .
+     ,(and=> (process-data-inputs process) string-join))
+    ("_GWL_PROCESS_OUTPUT_PATH" .
+     ,(or (process-output-path process) ""))
+    ("_GWL_PROCESS_OUTPUTS" .
+     ,(and=> (process-outputs process) string-join))
+    ;; TODO: does this make sense?
+    ("_GWL_PROCESS_RUN_TIME" .
+     ,(or (process-run-time process) ""))))
 
-(define (r-process->meta process)
-  (format #f "\
-GWL <- list(\
-  'name'=~s,\
-  'synopsis'=~s,\
-  'description'=~s,\
-  'data-inputs'=c(~s),\
-  'output-path'=~s,\
-  'outputs'=c(~s),\
-  'run-time'=~s\
-)"
-          (process-name process)
-          (process-synopsis process)
-          (process-description process)
-          (or (and=> (process-data-inputs process)
-                     (lambda (data-inputs)
-                       (string-join (match data-inputs
-                                      ((? list? lst) lst)
-                                      (item (list item)))
-                                    ",")))
-              "")
-          (or (process-output-path process) "")
-          (string-join (or (process-outputs process) (list)) ",")
-          (or (process-run-time process) "")))
-
-(define language-python3
+(define language-python
   (language
    (name 'python)
    (call (lambda (process code)
-           #~(system* "python3"
-                      "-c" #$(string-append
-                              (python-process->meta process) code))))))
-
-(define language-python2
-  (language
-   (name 'python2)
-   (call (lambda (process code)
-           #~(system* "python2"
-                      "-c" #$(string-append
-                              (python-process->meta process) code))))))
+           #~(begin
+               (for-each (lambda (pair)
+                           (setenv (car pair) (cdr pair)))
+                         '#$(process->env process))
+               (system* "python" "-c" #$code))))))
 
 (define language-r
   (language
-   (name 'r)
+   (name 'R)
    (call (lambda (process code)
            (let ((args (append-map (lambda (line)
                                      (list "-e" line))
-                                   (cons (r-process->meta process)
-                                         (filter (negate string-null?)
-                                                 (string-split code #\newline))))))
-             #~(apply system* "Rscript" #$args))))))
+                                   (filter (negate string-null?)
+                                           (string-split code #\newline)))))
+             #~(begin
+                 (for-each (lambda (pair)
+                             (setenv (car pair) (cdr pair)))
+                           '#$(process->env process))
+                 (apply system* "Rscript" '#$args)))))))
 
 (define languages
-  (list language-python3
-        language-python2
+  (list language-python
         language-r))
 
 
@@ -273,74 +244,97 @@ GWL <- list(\
 ;;; ---------------------------------------------------------------------------
 
 (define-record-type <code-snippet>
-  (code-snippet language code)
+  (code-snippet language arguments code)
   code-snippet?
-  (language code-snippet-language)
-  (code     code-snippet-code))
+  (language  code-snippet-language)
+  (arguments code-snippet-arguments)
+  (code      code-snippet-code))
 
 (eval-when (expand load compile eval)
   (define (reader-extension-inline-code chr port)
     "When this reader macro is registered for CHR it reads all
-characters between Rmarkdown-flavored code delimiters from PORT and
-returns a pair of the specified language and the code as a string.
+characters between code delimiters from PORT and returns a code
+snippet.
 
-Here is an example when CHR is the backtick:
+Here is an example:
 
-    #---{python}print(\"hello\")---
-    => (code-snippet 'python \"print(\\\"hello\\\"))
+    ## python
+    print(\"hello\")
+    ##
+    => (code-snippet 'python \"\" \"print(\\\"hello\\\"))
+
+If there is no matching language definition, the first line is
+considered as the invocation of an interpreter.
+
+    ## /bin/bash -c
+    echo hello world
+    ##
+    => (code-snippet '/bin/bash \"-c\" \"print(\\\"hello\\\"))
 "
-    (define delim-begin "--")
-    (define delim-language-begin "{")
-    (define delim-language-end "}")
-    (define delim-end "---")
+    (define delim-end "##\n")
     (define delim-end-first (substring/shared delim-end 0 1))
     (define delim-end-rest (substring/shared delim-end 1))
     (define (read-chunk)
       (get-string-n port (- (string-length delim-end) 1)))
 
-    (let ((chunk (get-string-n port (string-length delim-begin))))
-      (unless (string= chunk delim-begin)
-        (throw 'inline-code-delimiter-not-found)))
+    ;; Throw away any number of blank characters
+    (let loop ((next (lookahead-char port)))
+      (if (char-set-contains? char-set:blank next)
+          (begin (read-char port)
+                 (loop (lookahead-char port)))
+          #t))
 
-    ;; Throw away a single newline character
-    (let ((next (lookahead-char port)))
-      (when (eqv? next #\newline)
-        (read-char port)))
-
-    ;; This character must be the begin of the language declaration
-    (let ((next (lookahead-char port)))
-      (if (string=? (string next) delim-language-begin)
-          (read-char port)
-          (throw 'inline-code-language-declaration-not-found)))
-
-    (let ((language (read-delimited delim-language-end port)))
-      (when (string-null? language)
-        (throw 'inline-code-language-undefined))
-      (let search-delim ((acc (list (read-delimited delim-end-first port)))
-                         (chunk (read-chunk)))
-        (if (string= chunk delim-end-rest)
-            `(code-snippet ',(string->symbol language)
-                           ,(string-join (reverse! acc) delim-end-first))
-            (begin
-              (unget-string port chunk)
-              (search-delim (cons (read-delimited delim-end-first port) acc)
-                            (read-chunk)))))))
+    ;; This first line must be the language identifier or executable
+    ;; path with arguments.
+    (match (let ((line (get-line port)))
+             (or (and=> (string-index line #\space)
+                        (lambda (index)
+                          (cons (substring line 0 index)
+                                (substring line (1+ index)))))
+                 (cons line "")))
+      (("" . _)
+       (throw 'inline-code-language-undefined))
+      ((language . arguments)
+       (let search-delim ((acc (list (read-delimited delim-end-first port)))
+                          (chunk (read-chunk)))
+         (if (string= chunk delim-end-rest)
+             `(code-snippet ',(string->symbol language)
+                            ',(string-split arguments #\space)
+                            ,(string-join (reverse! acc) delim-end-first))
+             (begin
+               (unget-string port chunk)
+               (search-delim (cons (read-delimited delim-end-first port) acc)
+                             (read-chunk))))))))
   ;; Support syntactic sugar
-  (read-hash-extend #\- reader-extension-inline-code))
+  (read-hash-extend #\# reader-extension-inline-code))
 
 (define (procedure->gexp process)
   "Transform the procedure of PROCESS to a G-expression or return the
 plain S-expression."
+  (define (sanitize-path path)
+    (string-join (delete ".." (string-split path #\/))
+                 "/"))
   (match (process-procedure process)
     ((? gexp? g) g)
     ((? list? s) s)
-    (($ <code-snippet> name code)
-     (let ((language (find (lambda (lang)
-                             (eq? name (language-name lang)))
-                           languages)))
-       (unless language
-         (error (format #f "unsupported code snippet: ~a\n" name)))
-       ((language-call language) process code)))
+    (($ <code-snippet> name arguments code)
+     (let ((call (or (and=> (find (lambda (lang)
+                                    (eq? name (language-name lang)))
+                                  languages)
+                            language-call)
+                     ;; There is no pre-defined way to execute the
+                     ;; snippet.  Use generic approach.
+                     (lambda (process code)
+                       #~(begin
+                           (for-each (lambda (pair)
+                                       (setenv (car pair) (cdr pair)))
+                                     '#$(process->env process))
+                           (apply system*
+                                  (string-append (getenv "_GWL_PROFILE")
+                                                 #$(sanitize-path (symbol->string name)))
+                                  '#$(append arguments
+                                             (list code))))))))
+       (call process code)))
     (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
 ;;; ---------------------------------------------------------------------------

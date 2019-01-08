@@ -2,24 +2,26 @@ define-module
     test
 
 use-modules
-    guix workflows
-    guix processes
+    gwl workflows
+    gwl processes
+    gnu packages python
 
 process: python-test
     package-inputs
-        list python
+        list python-wrapper
     data-inputs
         list "A" "B" "C"
-    procedure #---{python}
+    procedure
+        . ##python
 import os
 
 def hello():
-  print "hello from python"
-  print(GWL['data-inputs'])
-  print(GWL['name'])
+  print("hello from python")
+  print("inputs:", os.environ["_GWL_PROCESS_DATA_INPUTS"])
+  print("name:", os.environ["_GWL_PROCESS_NAME"])
 
 hello()
----
+##
 
 workflow: test-workflow
     processes
