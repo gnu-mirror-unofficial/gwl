@@ -22,7 +22,6 @@
   #:use-module (gnu workflows)
   #:use-module (guix ui)
   #:use-module (guix scripts)
-  #:use-module (guix utils)
   #:use-module (ice-9 match)
   #:use-module (ice-9 vlist)
   #:use-module (srfi srfi-37)

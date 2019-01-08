@@ -17,7 +17,6 @@
 (define-module (guix scripts process)
   #:use-module (guix ui)
   #:use-module (guix scripts)
-  #:use-module (guix utils)
   #:use-module (gwl processes)
   #:use-module (gwl process-engines)
   #:use-module (gnu processes)

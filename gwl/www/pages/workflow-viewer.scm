@@ -22,9 +22,9 @@
   #:use-module (gwl workflows graph)
   #:use-module (gwl www pages)
   #:use-module (gwl www config)
-  #:use-module (guix packages)
+  #:use-module ((guix packages) #:select (package-output))
+  #:use-module ((guix store) #:select (open-connection))
   #:use-module (gnu packages graphviz)
-  #:use-module (guix store)
   #:use-module (ice-9 vlist)
   #:export (page-workflow-viewer))
 

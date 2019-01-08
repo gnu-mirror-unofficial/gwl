@@ -21,11 +21,18 @@
   #:use-module (gwl process-engines)
   #:use-module (gwl processes)
   #:use-module (guix gexp)
-  #:use-module (guix store)
-  #:use-module (guix monads)
-  #:use-module (guix profiles)
-  #:use-module (guix search-paths)
-  #:use-module (guix derivations)
+  #:use-module ((guix store)
+                #:select (%store-monad))
+  #:use-module ((guix monads)
+                #:select (mlet))
+  #:use-module ((guix profiles)
+                #:select (packages->manifest
+                          profile-derivation
+                          manifest-entries
+                          manifest-entry-search-paths))
+  #:use-module ((guix search-paths)
+                #:select (search-path-specification->sexp
+                          $PATH))
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
