@@ -29,11 +29,12 @@
   #:use-module (ice-9 format)
   #:export (grid-engine))
 
-(define (sanitize-sge-job-name name)
+(define sanitize-sge-job-name
   (let ((bad-chars (char-set #\/ #\: #\@ #\\ #\* #\?)))
-    (string-map
-     (lambda (x)
-       (if (char-set-contains? bad-chars x) #\- x)) name)))
+    (lambda (name)
+      (string-map
+       (lambda (x)
+         (if (char-set-contains? bad-chars x) #\- x)) name))))
 
 (define (process-job-name proc)
   "Returns a valid job name for PROC."
