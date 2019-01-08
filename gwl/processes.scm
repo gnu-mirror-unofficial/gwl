@@ -341,13 +341,6 @@ plain S-expression."
 ;;; ADDITIONAL FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
-(define (process-with-store-monad store proc gexp-transformation callback)
-  (run-with-store store
-    (mlet %store-monad ((drv (gexp-transformation
-                              (process-full-name proc)
-                              (procedure->gexp proc))))
-      (return (callback drv)))))
-
 (define (process-outputs proc)
   "Return the output location(s) of process PROC."
   
