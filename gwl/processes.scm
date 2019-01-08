@@ -419,12 +419,11 @@ to run."
                                                  (workflow '()))
   "Builds a derivation of PROC and runs the resulting script."
   (if (not (process? proc))
-      (format #t "This is not a process!~%")
-      (system (with-output-to-string
-                (lambda _
-                  (process->script proc engine
-                                   #:workflow workflow
-                                   #:stand-alone? #f))))))
+      (format (current-error-port) "This is not a process!~%")
+      (system (process->script proc engine
+                               #:workflow workflow
+                               #:stand-alone? #f
+                               #:port #f))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS
