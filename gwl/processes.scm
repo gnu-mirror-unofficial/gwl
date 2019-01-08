@@ -354,25 +354,14 @@ plain S-expression."
         (file (process-output proc)))
     (compose-location path file)))
 
-(define (process-takes-available proc)
-  "Returns #t when inputs exist, #f otherwise."
-
-  (define (process-files-exist files)
-    (if (null? files)
-        #t
-        (if (stat (car files) #f)
-            (process-files-exist (cdr files))
-            #f)))
-
-  (let ((inputs (process-data-inputs proc)))
-    ;; When there are no input files to take,
-    ;; the situation is fine.
-    (if (not inputs)
-        #t
-        ;; 'process-files-exist' expects a list.
-        (if (list? inputs)
-            (process-files-exist inputs)
-            (process-files-exist (list inputs))))))
+(define (process-takes-available process)
+  "Returns #T when the data inputs of the PROCESS exist."
+  (match (process-data-inputs process)
+    ((? list? inputs)
+     (every file-exists? inputs))
+    ((? string? input)
+     (file-exists? input))
+    (_ #t)))
 
 ;;; ---------------------------------------------------------------------------
 ;;; HACKS AND DUPLICATED FUNCTIONS FROM GEXP.
