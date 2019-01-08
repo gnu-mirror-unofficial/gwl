@@ -64,9 +64,7 @@
                code-snippet?
                code-snippet-language
 
-               ;; Syntactic sugar
                procedure->gexp
-               process:
 
                ;; For the lack of a better place.
                derivation->script

@@ -35,7 +35,4 @@
 
                workflow-run-order
                workflow-prepare
-               workflow-run
-
-               ;; Syntactic sugar
-               workflow:))
+               workflow-run))

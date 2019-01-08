@@ -36,6 +36,7 @@ SOURCES =                                                 \
   gwl/workflows/execution-order.scm                       \
   gwl/workflows/graph.scm                                 \
   gwl/workflows/utils.scm                                 \
+  gwl/sugar.scm                                           \
   gwl/web-interface.scm                                   \
   gwl/www/config.scm                                      \
   gwl/www/pages.scm                                       \

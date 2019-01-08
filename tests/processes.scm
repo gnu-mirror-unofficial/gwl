@@ -15,6 +15,7 @@
 
 (define-module (test-processes)
   #:use-module (gwl processes)
+  #:use-module (gwl sugar)
   #:use-module (guix gexp)
   #:use-module (srfi srfi-64))
 
