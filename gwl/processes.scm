@@ -398,10 +398,13 @@ set to #f, it only returns the output path."
                     #:guile-for-build guile
                     #:graft? #f))
 
-(define* (process->script proc engine #:key (stand-alone? #t)
-                                            (workflow '()))
-  "Builds a derivation of PROC and displays the commands a
-user needs to run."
+(define* (process->script proc engine
+                          #:key
+                          (stand-alone? #t)
+                          (workflow '())
+                          (port (current-output-port)))
+  "Builds a derivation of PROC and displays the commands a user needs
+to run."
   (when (not (process? proc))
     (leave (G_ "This is not a process!~%")))
   (let* ((command-prefix (process-engine-command-prefix engine))
@@ -409,7 +412,8 @@ user needs to run."
          (output (derivation->script (derivation-builder proc)))
          (restrictions-func (process-engine-restrictions-string engine))
          (restrictions (restrictions-func proc workflow)))
-    (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output)))
+    (format port "~@[~a ~]~@[~a ~]~a~%"
+            command-prefix restrictions output)))
 
 (define* (process->script->run proc engine #:key (stand-alone? #t)
                                                  (workflow '()))
