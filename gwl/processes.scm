@@ -328,7 +328,7 @@ set to #f, it only returns the output path."
   "Builds a derivation of PROC and displays the commands a user needs
 to run."
   (unless (process? proc)
-    (leave (G_ "This is not a process!~%")))
+    (error (format #f "This is not a process!~%")))
   (let* ((command-prefix (process-engine-command-prefix engine))
          (derivation-builder (process-engine-derivation-builder engine))
          (output (derivation->script (derivation-builder proc)))
