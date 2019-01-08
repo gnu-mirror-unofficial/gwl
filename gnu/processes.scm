@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gnu processes)
+  #:use-module (gwl processes)
   #:use-module ((gnu workflows)
                 #:select (all-workflow-modules))
   #:use-module ((guix utils)
                 #:select (version>?))
   #:use-module ((guix combinators)
                 #:select (fold2))
-  #:use-module (guix processes)
   #:use-module (ice-9 vlist)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
