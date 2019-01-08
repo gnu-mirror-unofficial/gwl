@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -18,11 +18,11 @@
   #:use-module (gwl process-engines)
   #:use-module (gwl web-interface)
   #:use-module (gwl workflows graph)
+  #:use-module (gwl workflows)
+  #:use-module (gnu workflows)
   #:use-module (guix ui)
   #:use-module (guix scripts)
   #:use-module (guix utils)
-  #:use-module (guix workflows)
-  #:use-module (gnu workflows)
   #:use-module (ice-9 match)
   #:use-module (ice-9 vlist)
   #:use-module (srfi srfi-37)

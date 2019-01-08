@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -15,10 +16,10 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages designer)
-  #:use-module (guix processes)
+  #:use-module (gwl processes)
+  #:use-module (gwl www pages)
   #:use-module (gnu processes)
   #:use-module (ice-9 vlist)
-  #:use-module (gwl www pages)
   #:export (page-designer))
 
 (define (page-designer request-path)

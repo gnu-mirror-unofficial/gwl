@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -20,7 +20,7 @@
 (define-module (gwl process-engines bash-engine)
   #:use-module (gwl process-engines)
   #:use-module (gwl process-engines simple-engine)
-  #:use-module (guix processes)
+  #:use-module (gwl processes)
   #:use-module (guix gexp)
   #:use-module (guix store)
   #:use-module (guix monads)

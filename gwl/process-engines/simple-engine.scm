@@ -19,7 +19,7 @@
 
 (define-module (gwl process-engines simple-engine)
   #:use-module (gwl process-engines)
-  #:use-module (guix processes)
+  #:use-module (gwl processes)
   #:use-module (guix gexp)
   #:use-module (guix store)
   #:use-module (guix monads)

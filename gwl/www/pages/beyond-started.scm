@@ -48,8 +48,8 @@
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme
 "(define-module (example-workflow)
-  #:use-module (guix processes)
-  #:use-module (guix workflows)
+  #:use-module (gwl processes)
+  #:use-module (gwl workflows)
   #:use-module (gnu packages compression)) ; For the \"gzip\" package.
 
 (define-public create-file
@@ -141,8 +141,8 @@
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme
 "(define-module (example-workflow)
-  #:use-module (guix processes)
-  #:use-module (guix workflows)
+  #:use-module (gwl processes)
+  #:use-module (gwl workflows)
   ;; \"zip\" is both a package name and a function.  So we use a prefix
   ;; for packages to avoid this collision.
   #:use-module ((gnu packages compression) #:prefix package:)

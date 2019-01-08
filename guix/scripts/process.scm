@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
   #:use-module (guix ui)
   #:use-module (guix scripts)
   #:use-module (guix utils)
-  #:use-module (guix processes)
+  #:use-module (gwl processes)
   #:use-module (gwl process-engines)
   #:use-module (gnu processes)
   #:use-module (ice-9 match)

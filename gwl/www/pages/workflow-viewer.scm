@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -16,8 +17,8 @@
 
 (define-module (gwl www pages workflow-viewer)
   #:use-module (gnu workflows)
-  #:use-module (guix processes)
-  #:use-module (guix workflows)
+  #:use-module (gwl processes)
+  #:use-module (gwl workflows)
   #:use-module (gwl workflows graph)
   #:use-module (gwl www pages)
   #:use-module (gwl www config)

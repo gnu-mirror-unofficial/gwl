@@ -73,8 +73,8 @@
           (pre (code (@ (class "scheme"))
             ,(highlights->sxml (highlight lex-scheme
 "(define-module (example-workflow)
-  #:use-module (guix processes)
-  #:use-module (guix workflows))
+  #:use-module (gwl processes)
+  #:use-module (gwl workflows))
 
 (define-public hello-world
   (process
@@ -118,9 +118,9 @@
 (span (@ (class "syntax-open")) "(") "example-workflow" (span (@ (class "syntax-close")) ")")
 "
   #:use-module " (span (@ (class "syntax-open")) "(")
-  "guix processes" (span (@ (class "syntax-close"))")")
+  "gwl processes" (span (@ (class "syntax-close"))")")
 "
-  #:use-module (guix workflows)
+  #:use-module (gwl workflows)
 " (strong "  #:use-module (gnu packages bioinformatics)") ")"
 "
 

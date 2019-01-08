@@ -44,8 +44,8 @@
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme
 "(define-module (extended-example-workflow)
-  #:use-module (guix processes)
-  #:use-module (guix workflows)
+  #:use-module (gwl processes)
+  #:use-module (gwl workflows)
   #:use-module ((gnu packages compression) #:prefix package:)
   #:use-module (srfi srfi-1)
   #:use-module (example-workflow)) ; We are going to extend \"example-workflow\".
