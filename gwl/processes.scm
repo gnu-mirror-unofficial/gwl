@@ -449,17 +449,14 @@ to run."
   (define-dynamically name value)
   (primitive-eval `(define-public ,name ,value)))
 
-(define-syntax-rule
-  (process-space proc)
-  (complexity-space (process-run-time proc)))
+(define (process-space process)
+  (and=> (process-run-time process) complexity-space))
 
-(define-syntax-rule
-  (process-time proc)
-  (complexity-time (process-run-time proc)))
+(define (process-time process)
+  (and=> (process-run-time process) complexity-time))
 
-(define-syntax-rule
-  (process-threads proc)
-  (complexity-threads (process-run-time proc)))
+(define (process-threads process)
+  (and=> (process-run-time process) complexity-threads))
 
 (define (processes-filter processes filter)
   "Returns a list of PROCESSES after applying FILTER.  FILTER
