@@ -411,37 +411,6 @@ user needs to run."
          (restrictions (restrictions-func proc workflow)))
     (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output)))
 
-  ;; (catch #t
-  ;;   (lambda _
-  ;;     (let* ((command-prefix (process-engine-command-prefix engine))
-  ;;            (derivation-builder (process-engine-derivation-builder engine))
-  ;;            (output (derivation->script (derivation-builder proc)))
-  ;;            (restrictions-func (process-engine-restrictions-string engine))
-  ;;            (restrictions (restrictions-func proc workflow)))
-  ;;       (format #t "~@[~a ~]~@[~a ~]~a~%" command-prefix restrictions output)))
-  ;;   (lambda (key . args)
-  ;;     (leave (G_ "Error in process '~a':~%  ~s: ~s.~%")
-  ;;            (process-full-name proc) key args)
-  ;;     ;; (match key
-  ;;     ;;   ('missing-runtime
-  ;;     ;;    (leave (G_ "Error in process '~a':~%  ~s: ~s.~%")
-  ;;     ;;           (process-full-name proc) key args))
-  ;;     ;;   ;; TODO: This could be a different error
-  ;;     ;;   ('match-error
-  ;;     ;;    (let ((inputs (process-package-inputs proc)))
-  ;;     ;;      (leave (G_ "Error in process '~a':~%  ~a~%")
-  ;;     ;;             (process-full-name proc)
-  ;;     ;;             (if (and (not (null? inputs))
-  ;;     ;;                      (not (package? (car inputs))))
-  ;;     ;;                 "Please unquote the value of 'package-inputs'."
-  ;;     ;;                 (car args)))))
-  ;;     ;;   (_
-  ;;     ;;    (leave (G_ "Unknown error in process '~a':~%  ~s: ~s.~%")
-  ;;     ;;           (process-full-name proc) key args))
-  ;;     ;;   )
-  ;;     ))
-  ;; )
-
 (define* (process->script->run proc engine #:key (stand-alone? #t)
                                                  (workflow '()))
   "Builds a derivation of PROC and runs the resulting script."
