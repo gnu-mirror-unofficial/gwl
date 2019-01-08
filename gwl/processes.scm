@@ -418,12 +418,13 @@ to run."
 (define* (process->script->run proc engine #:key (stand-alone? #t)
                                                  (workflow '()))
   "Builds a derivation of PROC and runs the resulting script."
-  (if (not (process? proc))
-      (format (current-error-port) "This is not a process!~%")
+  (if (process? proc)
       (system (process->script proc engine
                                #:workflow workflow
                                #:stand-alone? #f
-                               #:port #f))))
+                               #:port #f))
+      (format (current-error-port)
+              "This is not a process!~%")))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS
