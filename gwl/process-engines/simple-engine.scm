@@ -39,7 +39,7 @@
   #:export (simple-engine))
 
 (define* (process->simple-engine-derivation proc #:key (guile (default-guile)))
-  "Return an executable Gulie script that runs the PROCEDURE described
+  "Return an executable Guile script that runs the PROCEDURE described
 in PROC, with PROCEDURE's imported modules in its search path."
   (let* ((name (process-full-name proc))
          (exp (procedure->gexp proc))
