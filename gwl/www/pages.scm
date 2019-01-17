@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -16,6 +17,8 @@
 
 (define-module (gwl www pages)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:use-module (ice-9 match)
   #:export (page-root-template))
 
 (define page-title-prefix "Guix Workflow Language | ")
@@ -29,11 +32,11 @@
     ("/community"       "Community")))
 
 (define (page-partial-main-menu request-path)
-  `(ul ,(map (lambda (item)
-               (if (string= (substring (car item) 1)
-                            (car (string-split (substring request-path 1) #\/)))
-                   `(li (@ (class "active")) ,(cadr item))
-                   `(li (a (@ (href ,(car item))) ,(cadr item)))))
+  `(ul ,(map (match-lambda
+               (((? (cut string=? request-path <>)) label)
+                `(li (@ (class "active")) ,label))
+               ((url label)
+                `(li (a (@ (href ,url)) ,label))))
              pages)))
 
 (define* (page-root-template title request-path content-tree #:key (dependencies '()))
