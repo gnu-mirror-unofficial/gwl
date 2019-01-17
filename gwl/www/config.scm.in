@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -24,6 +25,9 @@
                             (map (lambda (path)
                                    (string-append path "/gwl"))
                                  %load-path) "web-interface.scm")))
-(define %www-static-root "@prefix@/share/@PACKAGE@/gwl")
+(define %www-static-root
+  (if (getenv "GWL_UNINSTALLED")
+      (string-append (getcwd) "/gwl")
+      "@prefix@/share/@PACKAGE@/gwl"))
 (define %www-max-file-size 2500000000)
 (define %www-listen-port 5000)
