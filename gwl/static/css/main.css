@@ -43,8 +43,16 @@ body,html {
     margin: 0px;
     font-family: 'Roboto', sans-serif;
     color: #000000;
-    background-color: #e2e2e2;
+    background-color: #fff;
 }
+
+/* Arrange to have between 40 and 70 characters per line.  */
+.width-control {
+    max-width: 800px;
+    width: 65%;
+}
+
+@media all and (max-width: 760px) { .width-control { width: 90%; } };
 
 #wrapper {
     width: 100%;
@@ -53,10 +61,20 @@ body,html {
     margin: 0px auto auto auto;
 }
 
-#header { background: #1a1a1a; }
+#header { background: #333; }
+#header-inner {
+    margin: auto;
+    padding: 0;
+}
+
 #header .logo { padding: 60px 0px 30px 0px; margin: 0px; text-align: center; }
 #header .title { padding: 5px 5px 0px 5px; }
-#header .title h1 { padding: 0px; margin: 0px; text-align: center; }
+#header .title h1 {
+    line-height: 125%;
+    padding: 0px;
+    margin: 0px;
+    text-align: left;
+}
 
 #header .menu { padding: 5px 5px 0px 5px; }
 #header .menu ul { display: inline-block; padding: 0px; margin: 0px; }
@@ -69,7 +87,6 @@ body,html {
     -webkit-border-radius: 8px 8px 0px 0px;
     -moz-border-radius: 8px 8px 0px 0px;
     border-radius: 8px 8px 0px 0px;
-    text-transform: uppercase;
     text-decoration: none;
 }
 
@@ -78,29 +95,42 @@ body,html {
     padding: 6px;
 }
 
-.menu a { color: #aaaaaa; }
-.menu a:hover { color: #666666; }
-
-a { color: #000000; }
+a {
+    color: #000000;
+    text-decoration: none;
+    border-style: none none dashed none;
+    border-width: thin;
+    border-color: #ffbf2d;
+}
 a:hover { color: #555555; }
 
+.menu a {
+    color: #aaaaaa;
+    border: none;
+}
+.menu a:hover { color: #fff; }
+
 #content {
-    padding: 10px;
-    background: #ffffff;
+    margin: auto;
+    padding: 0;
+    padding-top: 1rem;
     line-height: 1.5;
     text-align: justify;
     text-justify: inter-word;
-    -moz-box-shadow: 0 0 50px -30px #000000;
-    -webkit-box-shadow: 0 0 50px -30px #000000;
-    box-shadow: 0 0 50px -30px #000000;
 }
-#content p { margin: 0px; padding: 5px; }
+    
+#content p {
+    padding: 0px;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+}
 #content h2 { margin: 0px; padding-bottom: 5px; }
-#content h3 { margin: 0px; padding-top: 5px; width: 100%; border-bottom: solid thin #000; }
-#content h4 { margin: 0px; padding-top: 5px; border-bottom: solid thin #ccc; }
+#content h3 { margin: 0px; padding-top: 5px; width: 100%; }
+#content h4 { margin: 0px; padding-top: 5px; }
 #content ul { padding: 0px 0px 0px 10px; margin: 0px 0px 0px 10px; }
 #content li { line-height: 1.5em; }
-#content pre { margin: 5px; padding: 5px; }
 #content table {
     border-spacing: 0px;
     padding: 0px;
@@ -147,12 +177,11 @@ a:hover { color: #555555; }
 div.figure {
     text-align: center;
     font-style: italic;
-    font-size: smaller;
     text-indent: 0;
     -webkit-border-radius: 8px;
     -moz-border-radius: 8px;
     border-radius: 8px;
-    margin: 0px 5px 5px 5px;
+    margin: 0;
 }
 
 div.inline-figure {
@@ -169,15 +198,16 @@ div.inline-figure {
 }
 
 pre {
-    background-color: #f9f9f9;
+    background-color: #f2efe4;
     text-align: left;
     font-family: 'FiraMono', monospace;
     font-style: normal;
-    padding: 0.5em;
+    padding: 10px;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
-    border: solid 2px #ccc;
+    border: solid 1px #ccc;
+    overflow-x: auto;
 }
 
 code {
@@ -194,11 +224,15 @@ div.action-button {
     font-size: 28px;
     font-weight: bold;
     text-transform: uppercase;
-    background: #f7b22f;
+    background: #ffbf2d;
     padding: 8px 14px 8px 14px;
     -webkit-border-radius: 8px;
     -moz-border-radius: 8px;
     border-radius: 8px;
+}
+
+div.action-button a {
+    text-decoration: none;
 }
 
 div.action-button a:hover {
