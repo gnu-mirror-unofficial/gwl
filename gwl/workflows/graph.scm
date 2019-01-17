@@ -42,11 +42,10 @@ Uses: ~{~a~^, ~}.</FONT>>];~%"
             (take-color)
             (string-upcase pretty-name)
             (process-synopsis proc)
-            (if (process-package-inputs proc)
-                (map (lambda (item)
-                       (package-full-name item))
-                     (process-package-inputs proc))
-                '("-")))))
+            (let ((inputs (process-package-inputs proc)))
+              (if inputs
+                  (map package-full-name inputs)
+                  '("-"))))))
 
 (define (workflow-restriction->dot process . restrictions)
   "Write the dependency relationships of a restriction in dot format."
