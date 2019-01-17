@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -49,9 +50,7 @@
             [(#t '(text/plain))])))
 
   (let ((full-path (string-append %www-static-root "/" path)))
-    (if (not (file-exists? full-path))
-        (values '((content-type . (text/html)))
-                (with-output-to-string (lambda _ (sxml->xml (page-error-404 path)))))
+    (if (file-exists? full-path)
         ;; Do not handle files larger than %maximum-file-size.
         ;; Please increase the file size if your server can handle it.
         (let ((file-stat (stat full-path)))
@@ -62,7 +61,9 @@
               (values `((content-type . ,(response-content-type full-path)))
                       (with-input-from-file full-path
                         (lambda _
-                          (get-bytevector-all (current-input-port))))))))))
+                          (get-bytevector-all (current-input-port)))))))
+        (values '((content-type . (text/html)))
+                (with-output-to-string (lambda _ (sxml->xml (page-error-404 path))))))))
 
 (define (request-scheme-page-handler request request-body request-path)
 
