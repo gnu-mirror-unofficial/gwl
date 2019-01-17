@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -109,38 +109,37 @@ description: ~a~%processes: ~{~%  * ~a~}~%"
 ;;; ---------------------------------------------------------------------------
 
 (define* (workflow-run-order workflow #:key (parallel? #t))
-  "Returns a list of processes in WORKFLOW in the order in which the processes
-can be executed.  When parallel? is set to #t, the list contains lists of
-processes that can be executed in parallel."
+  "Returns a list of processes in WORKFLOW in the order in which the
+processes can be executed.  When parallel? is set to #T, the list
+contains lists of processes that can be executed in parallel."
   (let ((order-function (if parallel?
                             parallel-step-execution-order
                             sequential-execution-order)))
     (order-function (workflow-processes workflow)
                     (workflow-restrictions workflow))))
 
-(define* (fold-workflow-processes workflow engine function #:key (parallel? #t))
-  "Runs WORKFLOW using ENGINE."
-  (let ((order (workflow-run-order workflow #:parallel? parallel?)))
-    (if (not order)
-        (format (current-error-port)
-                "Error: Cannot determine process execution order.~%")
-        (if parallel?
-            (for-each (lambda (step)
-                        (for-each (cut function <> engine
-                                       #:workflow workflow)
-                                  ;; By reversing the order of the processes in STEP
-                                  ;; we keep the output order the same as the order
-                                  ;; of the sequential function.
-                                  (reverse step)))
-                      order)
-            (for-each (lambda (process)
-                        (function process engine))
-                      order)))))
+(define* (dispatch-workflow workflow proc #:key (parallel? #t))
+  "Runs WORKFLOW by applying PROC to ordered processes."
+  (define visit (if parallel?
+                    (lambda (step)
+                      (for-each (cut proc <> #:workflow workflow)
+                                ;; By reversing the order of the processes
+                                ;; in STEP we keep the output order the same
+                                ;; as the order of the sequential function.
+                                (reverse step)))
+                    proc))
+  (or (and=>
+       (workflow-run-order workflow #:parallel? parallel?)
+       (cut for-each visit <>))
+      (format (current-error-port)
+              "Error: Cannot determine process execution order.~%")))
 
 (define* (workflow-prepare workflow engine #:key (parallel? #t))
-  (fold-workflow-processes workflow engine process->script
-                           #:parallel? parallel?))
+  (dispatch-workflow workflow
+                     (process->script engine)
+                     #:parallel? parallel?))
 
 (define* (workflow-run workflow engine #:key (parallel? #t))
-  (fold-workflow-processes workflow engine process->script->run
-                           #:parallel? parallel?))
+  (dispatch-workflow workflow
+                     (process->script->run engine)
+                     #:parallel? parallel?))

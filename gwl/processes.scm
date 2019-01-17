@@ -321,27 +321,28 @@ set to #f, it only returns the output path."
                     #:guile-for-build guile
                     #:graft? #f))
 
-(define* (process->script proc engine
-                          #:key
-                          workflow
-                          (port (current-output-port)))
-  "Builds a derivation of PROC and displays the commands a user needs
-to run."
-  (unless (process? proc)
-    (error (format #f "This is not a process!~%")))
+(define (process->script engine)
+  "Builds a procedure that builds a derivation of the process PROCESS
+according to ENGINE and displays the commands a user needs to run."
   (let* ((command-prefix (process-engine-command-prefix engine))
          (derivation-builder (process-engine-derivation-builder engine))
-         (output (derivation->script (derivation-builder proc)))
-         (restrictions-func (process-engine-restrictions-string engine))
-         (restrictions (restrictions-func proc workflow)))
-    (format port "~@[~a ~]~@[~a ~]~a~%"
-            command-prefix restrictions output)))
+         (restrictions-func (process-engine-restrictions-string engine)))
+    (lambda* (process #:key workflow (port (current-output-port)))
+      (unless (process? process)
+        (error (format #f "This is not a process!~%")))
+      (let ((output (derivation->script (derivation-builder process)))
+            (restrictions (restrictions-func process workflow)))
+        (format port "~@[~a ~]~@[~a ~]~a~%"
+                command-prefix restrictions output)))))
 
-(define* (process->script->run proc engine #:key workflow)
-  "Builds a derivation of PROC and runs the resulting script."
-  (system (process->script proc engine
+(define (process->script->run engine)
+  "Return a procedure that builds a derivation of PROCESS according to
+ENGINE and runs the resulting script."
+  (let ((make-script (process->script engine)))
+    (lambda* (process #:key workflow)
+      (system (make-script process
                            #:workflow workflow
-                           #:port #f)))
+                           #:port #f)))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS
