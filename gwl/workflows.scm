@@ -23,6 +23,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-9 gnu)
+  #:use-module (srfi srfi-26)
   #:export (workflow
             workflow?
             workflow-name
@@ -125,10 +126,8 @@ processes that can be executed in parallel."
                 "Error: Cannot determine process execution order.~%")
         (if parallel?
             (for-each (lambda (step)
-                        (for-each (lambda (process)
-                                    (function process engine
-                                              #:stand-alone? #f
-                                              #:workflow workflow))
+                        (for-each (cut function <> engine
+                                       #:workflow workflow)
                                   ;; By reversing the order of the processes in STEP
                                   ;; we keep the output order the same as the order
                                   ;; of the sequential function.

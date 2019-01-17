@@ -323,8 +323,7 @@ set to #f, it only returns the output path."
 
 (define* (process->script proc engine
                           #:key
-                          (stand-alone? #t)
-                          (workflow '())
+                          workflow
                           (port (current-output-port)))
   "Builds a derivation of PROC and displays the commands a user needs
 to run."
@@ -338,12 +337,10 @@ to run."
     (format port "~@[~a ~]~@[~a ~]~a~%"
             command-prefix restrictions output)))
 
-(define* (process->script->run proc engine #:key (stand-alone? #t)
-                                                 (workflow '()))
+(define* (process->script->run proc engine #:key workflow)
   "Builds a derivation of PROC and runs the resulting script."
   (system (process->script proc engine
                            #:workflow workflow
-                           #:stand-alone? #f
                            #:port #f)))
 
 ;;; ---------------------------------------------------------------------------
