@@ -28,7 +28,7 @@
         (a (@ (href "https://arxiv.org/abs/1305.4584"))
            "declarative language for package management") " to automate "
            "execution of programs.  Additionally, GWL can use "
-           (a (@ (href ,(string-append %gwl-repository "guix/process-engines")))
+           (a (@ (href ,(string-append %gwl-repository "gwl/process-engines")))
               "process engines") " to integrate with various computing "
               "environments.  As of February 11, 2018, GWL has become part of "
               (a (@ (href "https://www.gnu.org")) "GNU") ".")
