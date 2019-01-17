@@ -107,7 +107,8 @@
                   (show-available-workflows args)))
         (option '(#\w "web-interface") #f #f
                 (lambda args
-                  (run-web-interface)))))
+                  (run-web-interface)
+                  (exit 0)))))
 
 (define %default-options
   `((engine . "bash-engine")))
