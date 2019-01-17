@@ -48,19 +48,20 @@ Uses: ~{~a~^, ~}.</FONT>>];~%"
                      (process-package-inputs proc))
                 '("-")))))
 
-(define (workflow-restriction->dot pair)
+(define (workflow-restriction->dot process . restrictions)
   "Write the dependency relationships of a restriction in dot format."
-  (let ((process (process-full-name (car pair)))
-        (restrictions (cdr pair)))
-    (format #f "~{~a~}~%" (map (lambda (item)
-                                 (format #f "~s -> ~s~%"
-                                         (process-full-name item)
-                                         process))
-                               restrictions))))
+  (format #f "~{~a~}~%"
+          (map (lambda (item)
+                 (format #f "~s -> ~s~%"
+                         (process-full-name item)
+                         (process-full-name process)))
+               restrictions)))
 
 (define* (workflow->dot workflow #:key (parallel? #t))
   "Returns the workflow's processes formatted in Graphviz's Dot language as a
 directed acyclic graph."
   (format #f "digraph G {~%  graph [bgcolor=transparent, fontsize=24];~%~{~a~}~%~{~a~}}"
           (map workflow-dot-prettify-node (workflow-processes workflow))
-          (map workflow-restriction->dot (workflow-restrictions workflow))))
+          (map (lambda (restriction)
+                 (apply workflow-restriction->dot restriction))
+               (workflow-restrictions workflow))))
