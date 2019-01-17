@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -28,6 +29,6 @@
 (define (page-error-filesize request-path)
   (page-root-template "Oops!" request-path
    `(p ,(format #f "The maximum file size has been set to ~a megabytes."
-                (/ %www-max-file-size 1000000)))))
+                (/ (web-config 'max-file-size) 1000000)))))
 
 (define page-error page-error-404)

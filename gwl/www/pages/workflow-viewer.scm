@@ -42,8 +42,8 @@
         (let* ((workflow (car workflow-list))
                (store (open-or-reuse-connection))
                (dot-bin (string-append (package-output store graphviz) "/bin/dot"))
-               (web-path (string-append "/static/graphs/" workflow-name ".svg"))
-               (dot-file (string-append %www-root  "/static/graphs/" workflow-name))
+               (web-path (string-append (web-config 'static-root) "/graphs/" workflow-name ".svg"))
+               (dot-file (string-append (web-config 'root) "/static/graphs/" workflow-name))
                (svg-file (string-append dot-file ".svg")))
           (with-output-to-file dot-file
             (lambda _

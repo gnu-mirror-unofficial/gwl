@@ -16,18 +16,19 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www config)
-  #:export (%www-root
-            %www-max-file-size
-            %www-listen-port
-            %www-static-root))
+  #:use-module (ice-9 match)
+  #:export (web-config))
 
-(define %www-root (dirname (search-path
-                            (map (lambda (path)
-                                   (string-append path "/gwl"))
-                                 %load-path) "web-interface.scm")))
-(define %www-static-root
-  (if (getenv "GWL_UNINSTALLED")
-      (string-append (getcwd) "/gwl")
-      "@prefix@/share/@PACKAGE@/gwl"))
-(define %www-max-file-size 2500000000)
-(define %www-listen-port 5000)
+(define (web-config key)
+  (match key
+    ('root
+     (dirname (search-path
+               (map (lambda (path)
+                      (string-append path "/gwl"))
+                    %load-path) "web-interface.scm")))
+    ('static-root
+     (if (getenv "GWL_UNINSTALLED")
+         (string-append (getcwd) "/gwl/static")
+         "@prefix@/share/@PACKAGE@/gwl/static"))
+    ('max-file-size 2500000000)
+    ('port 5000)))
