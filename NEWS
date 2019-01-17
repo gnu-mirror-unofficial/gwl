@@ -11,7 +11,7 @@ Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 
 * Changes since 0.1.1
   * Add syntactic sugar for defining workflows and processes.
-  * Support syntax for procedures written in R or Python
+  * Support syntax for procedures written in languages other than Guile.
   * Add simple execution engine.
   * Support Wisp syntax.
   * Deprecate modules “(guix processes)” and “(guix workflows)”.  Use “(gwl processes)” and “(gwl workflows)” instead.
