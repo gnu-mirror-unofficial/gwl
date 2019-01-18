@@ -42,15 +42,18 @@
                  (sanitize-sge-job-name
                   (process-full-name proc))))
 
-(define (process->grid-engine-restrictions-string proc workflow)
+(define (process->grid-engine-restrictions-string process workflow)
+  "Return a grid engine option string to specify the process name for
+PROCESS alongside all jobs that it depends on according to WORKFLOW."
   (let ((restrictions
          (and (workflow? workflow)
-              (assoc-ref (workflow-restrictions workflow) proc))))
-    (string-append "-N " (process-job-name proc) " "
-      (if restrictions
-          (format #f "~{-hold_jid ~a ~}"
-                  (map process-job-name restrictions))
-          ""))))
+              (or (assoc-ref (workflow-restrictions workflow) process)
+                  '()))))
+    (string-join (cons* "-N" (process-job-name process)
+                        (map (lambda (job)
+                               (format #f "-hold_jid ~a"
+                                       (process-job-name job)))
+                             restrictions)))))
 
 (define* (process->grid-engine-derivation proc #:key (guile (default-guile)))
   "Return an executable script that runs the PROCEDURE described in PROC, with
