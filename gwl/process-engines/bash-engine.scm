@@ -22,7 +22,7 @@
   #:use-module (gwl process-engines simple-engine)
   #:use-module (gwl processes)
   #:use-module (guix gexp)
-  #:use-module ((guix monads) #:select (mlet))
+  #:use-module ((guix monads) #:select (mbegin))
   #:use-module ((guix store) #:select (%store-monad))
   #:use-module (gnu packages bash)
   #:export (bash-engine))
@@ -35,7 +35,7 @@ PROCEDURE's imported modules in its search path."
          (derivation-builder (process-engine-derivation-builder simple-engine))
          (simple-out         (derivation->script
                               (derivation-builder proc #:guile guile))))
-    (mlet %store-monad ()
+    (mbegin %store-monad
       (gexp->derivation
        name
        #~(call-with-output-file #$output

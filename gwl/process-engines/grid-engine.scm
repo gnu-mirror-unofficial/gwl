@@ -23,7 +23,7 @@
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (guix gexp)
-  #:use-module ((guix monads) #:select (mlet))
+  #:use-module ((guix monads) #:select (mbegin))
   #:use-module ((guix store) #:select (%store-monad))
   #:use-module (gnu packages bash)
   #:use-module (ice-9 format)
@@ -95,7 +95,7 @@ the PROCESS, with the procedure's imported modules in its load path."
              (logs-directory (string-append (getcwd) "/logs")))
         (unless (file-exists? logs-directory)
           (mkdir logs-directory))
-        (mlet %store-monad ()
+        (mbegin %store-monad
           (gexp->derivation
            name
            #~(call-with-output-file #$output
