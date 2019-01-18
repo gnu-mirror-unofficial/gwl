@@ -24,6 +24,7 @@
     (propagated-inputs
      `(("guix" ,guix)
        ("guile-commonmark" ,guile-commonmark)
+       ("guile-syntax-highlight" ,guile-syntax-highlight)
        ("guile-wisp" ,guile-wisp)))
     (home-page "https://www.guixwl.org")
     (synopsis "Workflow management extension for GNU Guix")
