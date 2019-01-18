@@ -78,46 +78,43 @@ requirements of PROCESS."
 (define* (process->grid-engine-derivation process #:key (guile (default-guile)))
   "Return an executable script that runs the PROCEDURE described in
 the PROCESS, with the procedure's imported modules in its load path."
-  (if (not (process-run-time process))
-      (throw 'missing-runtime
-             "Please set the run-time information for this process.")
-      (let* ((name               (process-full-name process))
-             (prefix             (process-engine-command-prefix simple-engine))
-             (derivation-builder (process-engine-derivation-builder simple-engine))
-             (simple-out         (derivation->script
-                                  (derivation-builder process #:guile guile)))
-             (time-str           (process->grid-engine-time-limit process))
-             (space-str          (process->grid-engine-space-limit process))
-             (threads-str        (or (and=> (process-threads process)
-                                            (lambda (threads)
-                                              (format #f "-pe threaded ~a" threads)))
-                                     ""))
-             (logs-directory (string-append (getcwd) "/logs")))
-        (unless (file-exists? logs-directory)
-          (mkdir logs-directory))
-        (mbegin %store-monad
-          (gexp->derivation
-           name
-           #~(call-with-output-file #$output
-               (lambda (port)
-                 (use-modules (ice-9 format))
-                 (format port "#!~a/bin/bash~%" #$bash)
-                 ;; Write the SGE options to the header of the Bash script.
-                 (format port
-                         "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
-                         #$bash
-                         #$space-str
-                         #$time-str
-                         #$threads-str)
-                 ;; Write logs to the 'logs' subdirectory of the workflow output.
-                 (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
-                         #$logs-directory
-                         #$name
-                         #$logs-directory
-                         #$name)
-                 (format port "~@[~a ~]~a~%" #$prefix #$simple-out)
-                 (chmod port #o555)))
-           #:graft? #f)))))
+  (let* ((name               (process-full-name process))
+         (prefix             (process-engine-command-prefix simple-engine))
+         (derivation-builder (process-engine-derivation-builder simple-engine))
+         (simple-out         (derivation->script
+                              (derivation-builder process #:guile guile)))
+         (time-str           (process->grid-engine-time-limit process))
+         (space-str          (process->grid-engine-space-limit process))
+         (threads-str        (or (and=> (process-threads process)
+                                        (lambda (threads)
+                                          (format #f "-pe threaded ~a" threads)))
+                                 ""))
+         (logs-directory (string-append (getcwd) "/logs")))
+    (unless (file-exists? logs-directory)
+      (mkdir logs-directory))
+    (mbegin %store-monad
+      (gexp->derivation
+       name
+       #~(call-with-output-file #$output
+           (lambda (port)
+             (use-modules (ice-9 format))
+             (format port "#!~a/bin/bash~%" #$bash)
+             ;; Write the SGE options to the header of the Bash script.
+             (format port
+                     "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
+                     #$bash
+                     #$space-str
+                     #$time-str
+                     #$threads-str)
+             ;; Write logs to the 'logs' subdirectory of the workflow output.
+             (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
+                     #$logs-directory
+                     #$name
+                     #$logs-directory
+                     #$name)
+             (format port "~@[~a ~]~a~%" #$prefix #$simple-out)
+             (chmod port #o555)))
+       #:graft? #f))))
 
 (define grid-engine
   (process-engine
