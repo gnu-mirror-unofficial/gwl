@@ -55,6 +55,26 @@ PROCESS alongside all jobs that it depends on according to WORKFLOW."
                                        (process-job-name job)))
                              restrictions)))))
 
+(define (process->grid-engine-time-limit process)
+  "Return a grid engine limit string corresponding to the time
+requirements of PROCESS."
+  (or (and=> (process-time process)
+             (lambda (time)
+               (format #f "-l h_rt=~a:~a:~a"
+                       (quotient time 3600)                ; Hours
+                       (quotient (remainder time 3600) 60) ; Minutes
+                       (remainder time 60))))              ; Seconds
+      ""))
+
+(define (process->grid-engine-space-limit process)
+  "Return a grid engine limit string corresponding to the memory
+requirements of PROCESS."
+  (or (and=> (process-space process)
+             (lambda (space)
+               (format #f "-l h_vmem=~a"
+                       (+ space (megabytes 65)))))
+      ""))
+
 (define* (process->grid-engine-derivation proc #:key (guile (default-guile)))
   "Return an executable script that runs the PROCEDURE described in PROC, with
 PROCEDURE's imported modules in its search path."
