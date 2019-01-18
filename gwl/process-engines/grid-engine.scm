@@ -93,11 +93,8 @@ the PROCESS, with the procedure's imported modules in its load path."
                                               (format #f "-pe threaded ~a" threads)))
                                      ""))
              (logs-directory (string-append (getcwd) "/logs")))
-        ;; Attempt to create the logs directory.  It's fine when it already
-        ;; exists.
-        (catch #t
-          (lambda _ (mkdir logs-directory))
-          (lambda (key . arguments) #t))
+        (unless (file-exists? logs-directory)
+          (mkdir logs-directory))
         (mlet %store-monad ()
           (gexp->derivation
            name
