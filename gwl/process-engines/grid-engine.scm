@@ -75,28 +75,23 @@ requirements of PROCESS."
                        (+ space (megabytes 65)))))
       ""))
 
-(define* (process->grid-engine-derivation proc #:key (guile (default-guile)))
-  "Return an executable script that runs the PROCEDURE described in PROC, with
-PROCEDURE's imported modules in its search path."
-  (if (not (process-run-time proc))
+(define* (process->grid-engine-derivation process #:key (guile (default-guile)))
+  "Return an executable script that runs the PROCEDURE described in
+the PROCESS, with the procedure's imported modules in its load path."
+  (if (not (process-run-time process))
       (throw 'missing-runtime
              "Please set the run-time information for this process.")
-      (let* ((name               (process-full-name proc))
+      (let* ((name               (process-full-name process))
              (prefix             (process-engine-command-prefix simple-engine))
              (derivation-builder (process-engine-derivation-builder simple-engine))
              (simple-out         (derivation->script
-                                  (derivation-builder proc #:guile guile)))
-             (time               (process-time proc))
-             (space              (process-space proc))
-             (threads            (process-threads proc))
-             (time-str (if time
-                           (format #f "-l h_rt=~a:~a:~a"
-                                   (quotient time 3600) ; Hours
-                                   (quotient (remainder time 3600) 60) ; Minutes
-                                   (remainder time 60)) #f)) ; Seconds
-             (space-str   (if space (format #f "-l h_vmem=~a"
-                                            (+ space (megabytes 65))) ""))
-             (threads-str (if threads (format #f "-pe threaded ~a" threads) ""))
+                                  (derivation-builder process #:guile guile)))
+             (time-str           (process->grid-engine-time-limit process))
+             (space-str          (process->grid-engine-space-limit process))
+             (threads-str        (or (and=> (process-threads process)
+                                            (lambda (threads)
+                                              (format #f "-pe threaded ~a" threads)))
+                                     ""))
              (logs-directory (string-append (getcwd) "/logs")))
         ;; Attempt to create the logs directory.  It's fine when it already
         ;; exists.
