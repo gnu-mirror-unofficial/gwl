@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -23,11 +23,8 @@
                workflow-name
                workflow-full-name
                workflow-version
-               workflow-input
-               workflow-output
                workflow-processes
                workflow-restrictions
-               workflow-arguments
                workflow-synopsis
                workflow-description
 

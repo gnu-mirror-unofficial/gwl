@@ -29,11 +29,8 @@
             workflow-name
             workflow-full-name
             workflow-version
-            workflow-input
-            workflow-output
             workflow-processes
             workflow-restrictions
-            workflow-arguments
             workflow-synopsis
             workflow-description
 
@@ -57,29 +54,12 @@
   (synopsis workflow-synopsis         (default ""))
   (description workflow-description   (default ""))
 
-  ;; The input and output of a workfow will be passed to each starting process.
-  ;; This can be files or directories, depending on what the workflow expects.
-  (input workflow-input               (default #f))
-  (output workflow-output             (default #f))
-
-  ;; Processes are functions taking two parameters (input and output) that
-  ;; return a <process> record type.
+  ;; Processes are values of the <process> record type.
   (processes workflow-processes)
 
   ;; Processes can depend on each other.  By defining dependency pairs
   ;; in the form (A B) where A must be executed after B.
-  (restrictions workflow-restrictions (default '()))
-
-  ;; Arguments are literally command-line arguments that can be passed
-  ;; when executing a specific workflow.  This allows users to turn features
-  ;; off and on, and pass an input and output directory.
-  ;;
-  ;; The arguments are passed as a list to the workflow record.
-  (arguments workflow-arguments       (default #f))
-
-  ;; When a workflow requires additional code to execute, it can be
-  ;; specified in the following field.
-  (execution workflow-execution       (default #f)))
+  (restrictions workflow-restrictions (default '())))
 
 (define (workflow-full-name arg)
   "Writes the name and version as a single string of PROCESS to PORT."
