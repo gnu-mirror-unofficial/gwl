@@ -27,15 +27,15 @@
   (lambda (x)
     (syntax-case x ()
       ((_ (id . args) rest ...)
-       #'(define-public id
+       #`(define-public id
            (lambda* args
              (process
-              (name (symbol->string (syntax->datum #'id)))
+              (name #,(symbol->string (syntax->datum #'id)))
               rest ...))))
       ((_ id rest ...)
-       #'(define-public id
+       #`(define-public id
            (process
-            (name (symbol->string (syntax->datum #'id)))
+            (name #,(symbol->string (syntax->datum #'id)))
             rest ...))))))
 
 ;; Shorter syntax, which is especially useful when wisp is used.
@@ -43,9 +43,9 @@
   (lambda (x)
     (syntax-case x ()
       ((_ id rest ...)
-       #'(define-public id
+       #`(define-public id
            (workflow
-            (name (symbol->string (syntax->datum #'id)))
+            (name #,(symbol->string (syntax->datum #'id)))
             rest ...))))))
 
 (eval-when (expand load compile eval)
