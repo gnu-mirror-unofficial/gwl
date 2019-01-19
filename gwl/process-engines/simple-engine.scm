@@ -30,9 +30,13 @@
                           profile-derivation
                           manifest-entries
                           manifest-entry-search-paths))
+  #:use-module ((guix packages)
+                #:select (package?))
   #:use-module ((guix search-paths)
                 #:select (search-path-specification->sexp
                           $PATH))
+  #:use-module ((gnu packages)
+                #:select (specification->package))
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -44,7 +48,15 @@ in PROC, with PROCEDURE's imported modules in its search path."
   (let* ((name (process-full-name proc))
          (exp (procedure->gexp proc))
          (out (process-output-path proc))
-         (packages (process-package-inputs proc))
+         (packages (map (match-lambda
+                          ((and (? string?) spec)
+                           (specification->package spec))
+                          ((and (? package?) pkg)
+                           pkg)
+                          (x
+                           (error (format #f "~a: no such package: ~a~%"
+                                          name x))))
+                        (process-package-inputs proc)))
          (manifest (packages->manifest packages))
          (search-paths (delete-duplicates
                         (map search-path-specification->sexp
