@@ -143,7 +143,7 @@
          (let ((engine (find-engine-by-name engine-name)))
            (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
-           (process->script proc engine)))
+           ((process->script engine) proc)))
        #t)
       ('run
        (let ((proc (match (find-process-by-name (assoc-ref opts 'value))
@@ -158,7 +158,7 @@
          (let ((engine (find-engine-by-name engine-name)))
            (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
-           (process->script->run proc engine)))
+           ((process->script->run engine) proc)))
        #t)
       ;; Handle (or don't handle) anything else.
       ;; ----------------------------------------------------------------------
