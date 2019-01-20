@@ -30,5 +30,9 @@
      (if (getenv "GWL_UNINSTALLED")
          (string-append (getcwd) "/gwl/static")
          "@prefix@/share/@PACKAGE@/gwl/static"))
+    ('examples-root
+     (if (getenv "GWL_UNINSTALLED")
+         (string-append (getcwd) "/doc/examples")
+         "@prefix@/share/@PACKAGE@/doc/examples"))
     ('max-file-size 2500000000)
     ('port 5000)))

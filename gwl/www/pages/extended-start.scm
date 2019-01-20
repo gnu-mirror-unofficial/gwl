@@ -15,6 +15,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages extended-start)
+  #:use-module (gwl www config)
   #:use-module (gwl www pages)
   #:use-module (syntax-highlight)
   #:use-module (syntax-highlight scheme)
@@ -42,42 +43,10 @@
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme
-"(define-module (extended-example-workflow)
-  #:use-module (gwl processes)
-  #:use-module (gwl workflows)
-  #:use-module ((gnu packages compression) #:prefix package:)
-  #:use-module (srfi srfi-1)
-  #:use-module (example-workflow)) ; We are going to extend \"example-workflow\".
-
-(define (delete-file-template filename)
-  (process
-   (name (string-append \"delete-file-\" (basename filename)))
-   (run-time (complexity
-              (space (megabytes 20))
-              (time 10)))
-   (procedure
-    `(delete-file ,filename))))
-
-(define-public extended-dynamic-workflow
-  (let* (;; Get all processes of the other workflow.
-         (foreign-processes (workflow-processes dynamic-workflow))
-
-         ;; Get the processes that we want to extend on.
-         (compress-file-processes (processes-filter-by-name
-                                   foreign-processes \"compress-file\"))
-
-         ;; Create the new processes.
-         (delete-file-processes (map delete-file-template
-                                     (map process-outputs
-                                          compress-file-processes))))
-    (workflow
-     (name \"extended-dynamic-workflow\")
-     (processes (append foreign-processes delete-file-processes))
-     (restrictions
-      (append
-       (workflow-restrictions dynamic-workflow)
-       (zip delete-file-processes compress-file-processes))))))")))))
+                     ,(with-input-from-file
+                          (string-append (web-config 'examples-root)
+                                         "/extended-example-workflow.scm")
+                        (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
      (p "With " (code "delete-file-template") " we created a function that"
         " returns a " (code "process") " that removes a file.  We use this"
