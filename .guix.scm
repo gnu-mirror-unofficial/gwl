@@ -4,7 +4,8 @@
              (gnu packages autotools)
              (gnu packages guile)
              (gnu packages package-management)
-             (gnu packages pkg-config))
+             (gnu packages pkg-config)
+             (gnu packages tex))
 
 (define-public gwl
   (package
@@ -18,7 +19,9 @@
     (native-inputs
      `(("autoconf" ,autoconf)
        ("automake" ,automake)
-       ("pkg-config" ,pkg-config)))
+       ("pkg-config" ,pkg-config)
+       ;; This is only needed for make distcheck
+       ("texlive" ,texlive-tiny)))
     (inputs
      `(("guile" ,guile-2.2)))
     (propagated-inputs
