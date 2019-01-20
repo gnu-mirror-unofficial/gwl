@@ -31,18 +31,12 @@
      '(display "Farewell, world!\n"))))
 
 (define-public simple
-  (let ((eat-fruit (eat "fruit"))
-        (eat-veges (eat "vegetables")))
-    (workflow
-     (name "simple")
-     (processes
-      (list greet
-            eat-fruit
-            eat-veges
-            sleep
-            bye))
-     (restrictions
-      `((,eat-fruit ,greet)
-        (,eat-veges ,greet)
-        (,sleep ,eat-fruit ,eat-veges)
-        (,bye ,sleep))))))
+  (workflow
+   (name "simple")
+   (processes
+    (let ((eat-fruit (eat "fruit"))
+          (eat-veges (eat "vegetables")))
+      (graph (eat-fruit -> greet)
+             (eat-veges -> greet)
+             (sleep     -> eat-fruit eat-veges)
+             (bye       -> sleep))))))

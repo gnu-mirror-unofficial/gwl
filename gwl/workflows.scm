@@ -22,6 +22,7 @@
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 match)
   #:use-module (ice-9 format)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:export (workflow
@@ -38,7 +39,9 @@
 
             workflow-run-order
             workflow-prepare
-            workflow-run))
+            workflow-run
+
+            graph))
 
 ;;; ---------------------------------------------------------------------------
 ;;; RECORD TYPES
@@ -54,12 +57,42 @@
   (synopsis workflow-synopsis         (default ""))
   (description workflow-description   (default ""))
 
-  ;; Processes are values of the <process> record type.
-  (processes workflow-processes)
+  ;; Processes are values of the <process> record type.  This field
+  ;; can hold either a plain list of processes or an adjacency list of
+  ;; processes and their dependencies.
+  (processes workflow-processes*)
 
-  ;; Processes can depend on each other.  By defining dependency pairs
-  ;; in the form (A B) where A must be executed after B.
-  (restrictions workflow-restrictions (default '())))
+  ;; This field is deprecated!
+  ;;
+  ;; The legacy way to specify process dependencies is by providing an
+  ;; adjacency list of processes.
+  (restrictions _workflow-restrictions (default #f)))
+
+(define-syntax graph
+  (lambda (x)
+    (syntax-case x (->)
+      ((_ (source -> targets ...) ...)
+       #`(list (list source targets ...) ...)))))
+
+;; This procedure would better be named workflow-processes->list, but
+;; we keep the name for the benefit of existing workflows depending on
+;; the behaviour of the old record accessor.
+(define (workflow-processes workflow)
+  "Return a list of all processes."
+  (match (workflow-processes* workflow)
+    (((and association (source target ...)) ...)
+     (delete-duplicates
+      (apply append association) eq?))
+    (x x)))
+
+(define (workflow-restrictions workflow)
+  "Return process restrictions as an alist mapping processes to their
+dependencies."
+  (or (_workflow-restrictions workflow) ; legacy
+      (match (workflow-processes*  workflow)
+        (((and association (source target ...)) ...)
+         association)
+        (_ '()))))
 
 (define (workflow-full-name arg)
   "Writes the name and version as a single string of PROCESS to PORT."
