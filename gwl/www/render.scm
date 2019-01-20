@@ -17,6 +17,7 @@
 (define-module (gwl www render)
   #:use-module (gwl www config)
   #:use-module (gwl www util)
+  #:use-module (gwl www pages error)
   #:use-module (sxml simple)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
