@@ -49,7 +49,6 @@
 
 (define (show-available-workflows args)
   "Display available workflows."
-  (format #t "Available workflows:~%")
   (let ((wfs (fold-workflows
               (lambda (p r)
                 (if (string= (workflow-version p) "")
@@ -58,6 +57,7 @@
                                         (workflow-name p)
                                         (workflow-version p)) p r)))
               vlist-null)))
+    (format #t "Available workflows:~%")
     (vlist-for-each (match-lambda
                       ((label . _)
                        (format #t "  * ~a~%" label)))

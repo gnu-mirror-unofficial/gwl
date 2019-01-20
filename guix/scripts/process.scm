@@ -45,7 +45,6 @@
 
 (define (show-available-processes args)
   "Display available processes."
-  (format #t "Available processes:~%")
   (let ((processes (fold-processes
                      (lambda (p r)
                        (if (string= (process-version p) "")
@@ -54,6 +53,7 @@
                                                (process-name p)
                                                (process-version p)) p r)))
                      vlist-null)))
+    (format #t "Available processes:~%")
     (vlist-for-each (lambda (pair)
                       (format #t "  * ~a~%" (car pair)))
                     processes))
