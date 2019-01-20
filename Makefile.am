@@ -46,6 +46,7 @@ SOURCES =                                                 \
   gwl/www/pages/getting-started.scm                       \
   gwl/www/pages/welcome.scm                               \
   gwl/www/pages/workflow-viewer.scm                       \
+  gwl/www/render.scm                                      \
   gwl/www/util.scm
 
 assetsdir = $(prefix)/share/@PACKAGE@
