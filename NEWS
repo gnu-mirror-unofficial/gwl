@@ -3,7 +3,7 @@
 #+STARTUP: content hidestars
 
 Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -12,9 +12,11 @@ Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 * Changes since 0.1.1
   * Add syntactic sugar for defining workflows and processes.
   * Support syntax for procedures written in languages other than Guile.
+  * Add graph syntax to specify process dependencies.
   * Add simple execution engine.
   * Support Wisp syntax.
   * Deprecate modules “(guix processes)” and “(guix workflows)”.  Use “(gwl processes)” and “(gwl workflows)” instead.
+  * Deprecate the “restrictions” field in workflow records.
 * Changes in 0.1.1 (since 0.1.0)
   * Disable interpreting shell escape characters.
   * Show more information in error messages.
