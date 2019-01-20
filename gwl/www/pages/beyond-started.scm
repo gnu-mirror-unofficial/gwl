@@ -1,4 +1,5 @@
 ;;; Copyright © 2018  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2019  Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -15,6 +16,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages beyond-started)
+  #:use-module (gwl www config)
   #:use-module (gwl www pages)
   #:use-module (syntax-highlight)
   #:use-module (syntax-highlight scheme)
@@ -139,50 +141,10 @@
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme
-"(define-module (example-workflow)
-  #:use-module (gwl processes)
-  #:use-module (gwl workflows)
-  ;; \"zip\" is both a package name and a function.  So we use a prefix
-  ;; for packages to avoid this collision.
-  #:use-module ((gnu packages compression) #:prefix package:)
-  #:use-module (srfi srfi-1)) ; For the \"append\" and \"zip\" functions.
-
-(define (create-file filename)
-  (process
-    (name (string-append \"create-file-\" (basename filename)))
-    (outputs filename)
-    (run-time (complexity
-                (space   (megabytes 20))
-                (time    10)))
-    (procedure
-     `(call-with-output-file ,outputs
-        (lambda (port)
-          (format port \"Hello, world!~%\"))))))
-
-(define (compress-file input output)
-  (process
-    (name (string-append \"compress-file-\" (basename input)))
-    (package-inputs (list package:gzip))
-    (data-inputs input)
-    (outputs output)
-    (run-time (complexity
-                (space   (megabytes 20))
-                (time    10)))
-    (procedure
-     `(system ,(string-append \"gzip \" data-inputs \" -c > \" outputs)))))
-
-(define-public dynamic-workflow
-   (let* ((files '(\"/tmp/one.txt\" \"/tmp/two.txt\" \"/tmp/three.txt\"))
-          (create-file-processes   (map create-file files))
-          (compress-file-processes (map (lambda (filename)
-                                         (compress-file filename (string-append filename \".gz\")))
-                                        files)))
-     (workflow
-       (name \"dynamic-workflow\")
-       (processes (append create-file-processes compress-file-processes))
-       (restrictions
-        (zip compress-file-processes create-file-processes)))))")))))
+                     ,(with-input-from-file
+                          (string-append (web-config 'examples-root)
+                                         "/example-workflow.scm")
+                        (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
      (p "In GWL, we define restrictions explicitly.  This may seem redundant"
         " because GWL could compare the " (code "outputs") " field with the "
