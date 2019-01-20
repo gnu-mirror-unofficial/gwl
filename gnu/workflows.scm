@@ -181,11 +181,13 @@ search."
   (fold-right (lambda (spec result)
                 (match spec
                   ((? string? directory)
-                   (append (scheme-modules directory)
+                   (append (scheme-modules directory
+                                           #:warn warn-about-load-error)
                            (wisp-modules directory)
                            result))
                   ((directory . sub-directory)
-                   (append (scheme-modules directory sub-directory)
+                   (append (scheme-modules directory sub-directory
+                                           #:warn warn-about-load-error)
                            (wisp-modules directory sub-directory)
                            result))))
               '()
