@@ -93,29 +93,12 @@ returns a process.  This is what it looks like:")
      `(system ,(string-append \"gzip \" (first data-inputs)
                               \" -c > \" (first outputs))))))")))))
 
-     (p "By using the " (code "define-dynamically") " function, we can now create multiple processes like this:")
-
-     (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme
-"(for-each (lambda (filename)
-             (define-dynamically 
-               ;; Create a unique symbol name.
-               (string->symbol (string-append \"compress-file-\" (basename filename)))
-               ;; Create a process using the template.
-               (compress-file filename (string-append filename \".gz\"))))
-           '(\"/tmp/one.txt\" \"/tmp/two.txt\" \"/tmp/three.txt\"))")))))
-
-     (p "This will define three processes bound to these three
-variables: " (code "compress-file-one.txt") ", " (code "compress-file-two.txt")
-", and " (code "compress-file-three.txt") ".")
-
      (h3 "Dynamic workflows")
 
-     (p "This poses a potential problem workflows.  We would have to
-guess the dynamically generated symbol names, which isn't very
-dynamic.  Instead we can use Scheme's " (code "let") ",
-and " (code "map") " to do the work for us:")
+     (p "We can now dynamically create compression processes by
+applying the " (code "compress-file") " procedure to input and output
+file names.  We use Scheme's " (code "let") ", and " (code "map") " to
+simplify the work for us:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
