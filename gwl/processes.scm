@@ -31,6 +31,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
+  #:use-module (srfi srfi-26)
   #:export (process
             process?
             process-name
@@ -109,11 +110,11 @@
 
   ;; Inputs can be packages, files, and settings.
   (package-inputs   process-package-inputs (default '()))
-  (data-inputs      process-data-inputs    (default #f))
+  (data-inputs      process-data-inputs    (default '()))
 
   ;; Outputs can be anything, but are mostly files (I guess).
   (output-path      process-output-path    (default #f))
-  (outputs          process-output         (default #f))
+  (outputs          process-outputs*       (default '()))
 
   (run-time         process-run-time       (default #f))
   (procedure        process-procedure))
@@ -182,11 +183,11 @@ of PROCESS."
     ;; TODO: this doesn't always make sense as data inputs could be
     ;; procedures.
     ("_GWL_PROCESS_DATA_INPUTS" .
-     ,(and=> (process-data-inputs process) string-join))
+     ,(string-join (process-data-inputs process)))
     ("_GWL_PROCESS_OUTPUT_PATH" .
      ,(or (process-output-path process) ""))
     ("_GWL_PROCESS_OUTPUTS" .
-     ,(and=> (process-outputs process) string-join))
+     ,(string-join (process-outputs process)))
     ;; TODO: does this make sense?
     ("_GWL_PROCESS_RUN_TIME" .
      ,(or (process-run-time process) ""))))
@@ -266,24 +267,17 @@ plain S-expression."
 
 (define (process-outputs proc)
   "Return the output location(s) of process PROC."
-  
-  (define (compose-location folder file)
-    (cond
-     ((and file folder)  (string-append folder "/" file))
-     (file file)
-     (else folder)))
-
-  (let ((path (process-output-path proc))
-        (file (process-output proc)))
-    (compose-location path file)))
+  (let* ((root (process-output-path proc))
+         (mangle (if root
+                     (cut string-append root "/" <>)
+                     identity)))
+    (map mangle (process-outputs* proc))))
 
 (define (process-takes-available process)
   "Returns #T when the data inputs of the PROCESS exist."
   (match (process-data-inputs process)
     ((? list? inputs)
      (every file-exists? inputs))
-    ((? string? input)
-     (file-exists? input))
     (_ #t)))
 
 ;;; ---------------------------------------------------------------------------
