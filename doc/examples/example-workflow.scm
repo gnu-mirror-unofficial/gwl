@@ -9,7 +9,7 @@
 (define (create-file filename)
   (process
    (name (string-append "create-file-" (basename filename)))
-   (outputs filename)
+   (outputs (list filename))
    (run-time (complexity
               (space   (megabytes 20))
               (time    10)))
@@ -21,9 +21,9 @@
 (define (compress-file input output)
   (process
    (name (string-append "compress-file-" (basename input)))
-   (package-inputs package:gzip)
-   (data-inputs input)
-   (outputs output)
+   (package-inputs (list package:gzip))
+   (data-inputs (list input))
+   (outputs (list output))
    (run-time (complexity
               (space   (megabytes 20))
               (time    10)))

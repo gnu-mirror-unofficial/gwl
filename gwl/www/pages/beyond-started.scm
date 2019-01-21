@@ -48,35 +48,10 @@
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme
-"(define-module (example-workflow)
-  #:use-module (gwl processes)
-  #:use-module (gwl workflows)
-  #:use-module (gnu packages compression)) ; For the \"gzip\" package.
-
-(define-public create-file
-  (process
-    (name \"create-file\")
-    (outputs \"/tmp/file.txt\")
-    (run-time (complexity
-                (space   (megabytes 20))
-                (time    10)))
-    (procedure
-     `(call-with-output-file ,outputs
-        (lambda (port)
-          (format port \"~%\"))))))
-
-(define-public compress-file
-  (process
-    (name \"compress-file\")
-    (package-inputs (list gzip))
-    (data-inputs \"/tmp/file.txt\")
-    (outputs \"/tmp/file.txt.gz\")
-    (run-time (complexity
-                (space   (megabytes 20))
-                (time    10)))
-    (procedure
-     `(system ,(string-append \"gzip \" data-inputs \" -c > \" outputs)))))")))))
+                     ,(with-input-from-file
+                          (string-append (web-config 'examples-root)
+                                         "/example-workflow1.scm")
+                        (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
      (p "With these definitions in place, we can run both in a single go by"
         " defining a workflow.")
@@ -107,13 +82,13 @@
   (process
     (name (string-append \"compress-file-\" (basename input)))
     (package-inputs (list gzip))
-    (data-inputs input)
-    (outputs output)
+    (data-inputs (list input))
+    (outputs (list output))
     (run-time (complexity
                 (space   (megabytes 20))
                 (time    10)))
     (procedure
-     `(system ,(string-append \"gzip \" data-inputs \" -c > \" outputs)))))")))))
+     `(system ,(string-append \"gzip \" (first data-inputs) \" -c > \" (first outputs))))))")))))
 
      (p "By using the " (code "define-dynamically") " function, we can now"
         "create multiple processes like this:")
