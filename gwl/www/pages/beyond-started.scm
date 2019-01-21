@@ -80,12 +80,12 @@ returns a process.  This is what it looks like:")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme "\
-(define (compress-file input output)
+(define (compress-file input)
   (process
     (name (string-append \"compress-file-\" (basename input)))
     (package-inputs (list gzip))
     (data-inputs (list input))
-    (outputs (list output))
+    (outputs (list (string-append input \".gz\")))
     (run-time (complexity
                 (space   (megabytes 20))
                 (time    10)))
