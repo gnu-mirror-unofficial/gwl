@@ -41,7 +41,8 @@
             workflow-prepare
             workflow-run
 
-            graph))
+            graph
+            connect))
 
 ;;; ---------------------------------------------------------------------------
 ;;; RECORD TYPES
@@ -100,6 +101,26 @@ source property alist."
     (syntax-case x (->)
       ((_ (source -> targets ...) ...)
        #`(list (list source targets ...) ...)))))
+
+(define (connect . processes)
+  "Return an association list mapping processes to processes they
+depend on.  This is accomplished by matching a the inputs of a process
+with the outputs of other processes."
+  (let ((process-by-output
+         (append-map (lambda (process)
+                       (filter-map (lambda (out)
+                                     (cons out process))
+                                   (process-outputs process)))
+                     processes)))
+    (map (lambda (process)
+           (cons process
+                 (map (lambda (input)
+                        (or (assoc-ref process-by-output input)
+                            (error (format #f "~a: no process provides ~a~%"
+                                           (process-full-name process)
+                                           input))))
+                      (process-data-inputs process))))
+         processes)))
 
 ;; This procedure would better be named workflow-processes->list, but
 ;; we keep the name for the benefit of existing workflows depending on
