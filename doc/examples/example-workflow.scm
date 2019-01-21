@@ -42,4 +42,5 @@
     (workflow
      (name "dynamic-workflow")
      (processes
-      (zip compress-file-processes create-file-processes)))))
+      (apply connect
+             (append compress-file-processes create-file-processes))))))

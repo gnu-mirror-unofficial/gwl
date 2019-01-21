@@ -62,11 +62,13 @@
 "(define-public file-workflow
   (workflow
     (name \"file-workflow\")
-    ;; Include all processes that should run in the workflow.
-    (processes (list create-file compress-file))
-    (restrictions
-     ;; Before we can compress the file, we must first create it.
-     `((,compress-file ,create-file)))))")))))
+    (processes (connect create-file compress-file))))")))))
+
+     (p "The workflow specifies all processes that should run.
+The " (code "connect") " procedure links up all inputs and outputs of
+all specified processes and ensures that the processes are run in the
+correct order.  Later we will see other ways to specify process
+dependencies.")
 
      (h3 "Process templates")
 
@@ -121,15 +123,25 @@
                                          "/example-workflow.scm")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
-     (p "In GWL, we define restrictions explicitly.  This may seem redundant"
-        " because GWL could compare the " (code "outputs") " field with the "
-        (code "data-inputs") " to derive the restrictions.  However, taking"
-        " this route, we rule out anything that isn't directly coupled this"
-        " way.  Processes could also insert data in a database, which does not"
-        " produce an output, in which case implicit restrictions fall short.")
+     (p "In GWL, we can define process dependencies explicitly.  This
+is useful when processes don't have explicit " (code "outputs") "
+or " (code "data-inputs") ".  Processes can do something other than
+producing output files, such as inserting data in a database, so
+process dependencies can be specified manually.")
 
-     (p "Guile Scheme provides the utilities to express " (code "restrictions")
-        " in a concise and clear way, like we've seen with " (code "zip") ".")
+     (p "Restrictions can be specified as an association list mapping
+processes to their dependencies, or via the
+convenient " (code "graph") " syntax.")
+
+     (div (@ (class "figure"))
+          (pre (code (@ (class "scheme"))
+                     ,(highlights->sxml (highlight lex-scheme "\
+(workflow
+ (name \"graph-example\")
+ (processes
+  (graph (A -> B C)
+         (B -> D)
+         (C -> B))))")))))
 
      (h3 "Reusing workflows in new workflows")
 
