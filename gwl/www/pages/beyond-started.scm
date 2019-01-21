@@ -30,21 +30,21 @@
 
      (h3 "Recap")
 
-     (p "In the " (a (@ (href "/getting-started")) "previous section") " we"
-        " defined a Scheme module, a process, and we disected a grid engine "
-        " job script to get to the details of how processes work.")
+     (p "In the " (a (@ (href "/getting-started")) "previous
+section") " we defined a Scheme module, a process, and we disected a
+grid engine job script to get to the details of how processes work.")
 
-     (p "This section builds on the knowledge from the previous section, so"
-        " if you haven't read that, now is the time to "
-        (a (@ (href "/getting-started")) "get started") ".")
+     (p "This section builds on the knowledge from the previous
+section, so if you haven't read that, now is the time
+to " (a (@ (href "/getting-started")) "get started") ".")
 
      (h3 "Defining workflows")
 
-     (p "A " (em "workflow") " describes how " (em "processes") " relate to"
-        " each other.  So before we can write the workflow, we must define"
-        " some processes.  In the example we will create a file with a process"
-        " named " (code "create-file") ", and we will compress that file"
-        " using a process named " (code "compress-file") ".")
+     (p "A " (em "workflow") " describes how " (em "processes") "
+relate to each other.  So before we can write the workflow, we must
+define some processes.  In the example we will create a file with a
+process named " (code "create-file") ", and we will compress that file
+using a process named " (code "compress-file") ".")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
@@ -53,13 +53,13 @@
                                          "/example-workflow1.scm")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
-     (p "With these definitions in place, we can run both in a single go by"
-        " defining a workflow.")
+     (p "With these definitions in place, we can run both in a single
+go by defining a workflow.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme
-"(define-public file-workflow
+                     ,(highlights->sxml (highlight lex-scheme "\
+(define-public file-workflow
   (workflow
     (name \"file-workflow\")
     (processes (connect create-file compress-file))))")))))
@@ -72,15 +72,15 @@ dependencies.")
 
      (h3 "Process templates")
 
-     (p "We can make the inputs and outputs for a process variable, so that"
-        " the same procedure can serve for multiple inputs and outputs."
-        " Instead of writing a process directly, we can write a function that"
-        " will return a process.  This is what it looks like:")
+     (p "We can make the inputs and outputs for a process variable, so
+that the same procedure can serve for multiple inputs and outputs.
+Instead of writing a process directly, we can write a function that
+returns a process.  This is what it looks like:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme
-"(define (compress-file input output)
+                     ,(highlights->sxml (highlight lex-scheme "\
+(define (compress-file input output)
   (process
     (name (string-append \"compress-file-\" (basename input)))
     (package-inputs (list gzip))
@@ -90,10 +90,10 @@ dependencies.")
                 (space   (megabytes 20))
                 (time    10)))
     (procedure
-     `(system ,(string-append \"gzip \" (first data-inputs) \" -c > \" (first outputs))))))")))))
+     `(system ,(string-append \"gzip \" (first data-inputs)
+                              \" -c > \" (first outputs))))))")))))
 
-     (p "By using the " (code "define-dynamically") " function, we can now"
-        "create multiple processes like this:")
+     (p "By using the " (code "define-dynamically") " function, we can now create multiple processes like this:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
@@ -106,15 +106,16 @@ dependencies.")
                (compress-file filename (string-append filename \".gz\"))))
            '(\"/tmp/one.txt\" \"/tmp/two.txt\" \"/tmp/three.txt\"))")))))
 
-     (p "Which will create three symbols " (code "compress-file-one.txt") ", "
-        (code "compress-file-two.txt") ", and " (code "compress-file-three.txt") ".")
+     (p "This will define three processes bound to these three
+variables: " (code "compress-file-one.txt") ", " (code "compress-file-two.txt")
+", and " (code "compress-file-three.txt") ".")
 
      (h3 "Dynamic workflows")
 
-     (p "This poses a potential problem workflows.  We would have to guess the"
-        " dynamically generated symbol names, which isn't very dynamic."
-        " Instead we can use Scheme's " (code "let") ", and " (code "map") " to"
-        " do the work for us:")
+     (p "This poses a potential problem workflows.  We would have to
+guess the dynamically generated symbol names, which isn't very
+dynamic.  Instead we can use Scheme's " (code "let") ",
+and " (code "map") " to do the work for us:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
@@ -145,8 +146,8 @@ convenient " (code "graph") " syntax.")
 
      (h3 "Reusing workflows in new workflows")
 
-     (p "On the " (a (@ (href "/extended-start")) "next page") ", we will extend"
-        " " (code "dynamic-workflow") " in a new workflow.")
+     (p "On the " (a (@ (href "/extended-start")) "next page") ", we
+will extend " (code "dynamic-workflow") " in a new workflow.")
 
      (div (@ (style "text-align: center"))
           (div (@ (class "action-button"))
