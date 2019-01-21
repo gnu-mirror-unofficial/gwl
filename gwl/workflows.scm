@@ -48,7 +48,7 @@
 ;;; ---------------------------------------------------------------------------
 
 (define-record-type* <workflow>
-  workflow make-workflow
+  workflow* make-workflow
   workflow?
 
   ;; Basic information about the workflow
@@ -67,6 +67,33 @@
   ;; The legacy way to specify process dependencies is by providing an
   ;; adjacency list of processes.
   (restrictions _workflow-restrictions (default #f)))
+
+;; Taken from (guix deprecation)
+(define (source-properties->location-string properties)
+  "Return a human-friendly, GNU-standard representation of PROPERTIES, a
+source property alist."
+  (let ((file   (assq-ref properties 'filename))
+        (line   (assq-ref properties 'line))
+        (column (assq-ref properties 'column)))
+    (if (and file line column)
+        (format #f "~a:~a:~a" file (+ 1 line) column)
+        ;; TODO: Translate
+        "<unknown location>")))
+
+(define-syntax workflow
+  (lambda (x)
+    (syntax-case x ()
+      ((_ . fields)
+       #`(workflow*
+          #,@(begin (for-each (match-lambda
+                                ;; Warn about deprecated fields
+                                (('restrictions . _)
+                                 (format (current-error-port)
+                                         "~a: The \"restrictions\" field is deprecated.  Use \"processes\" instead.~%"
+                                         (source-properties->location-string (syntax-source x))))
+                                (_ #f))
+                              (syntax->datum #'fields))
+                    #'fields))))))
 
 (define-syntax graph
   (lambda (x)
