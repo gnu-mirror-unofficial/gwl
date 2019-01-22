@@ -62,10 +62,10 @@ go by defining a workflow.")
 (define-public file-workflow
   (workflow
     (name \"file-workflow\")
-    (processes (connect create-file compress-file))))")))))
+    (processes (auto-connect create-file compress-file))))")))))
 
      (p "The workflow specifies all processes that should run.
-The " (code "connect") " procedure links up all inputs and outputs of
+The " (code "auto-connect") " procedure links up all inputs and outputs of
 all specified processes and ensures that the processes are run in the
 correct order.  Later we will see other ways to specify process
 dependencies.")

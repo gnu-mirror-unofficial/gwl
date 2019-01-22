@@ -42,7 +42,7 @@
             workflow-run
 
             graph
-            connect))
+            auto-connect))
 
 ;;; ---------------------------------------------------------------------------
 ;;; RECORD TYPES
@@ -102,7 +102,7 @@ source property alist."
       ((_ (source -> targets ...) ...)
        #`(list (list source targets ...) ...)))))
 
-(define (connect . processes)
+(define (auto-connect . processes)
   "Return an association list mapping processes to processes they
 depend on.  This is accomplished by matching a the inputs of a process
 with the outputs of other processes."

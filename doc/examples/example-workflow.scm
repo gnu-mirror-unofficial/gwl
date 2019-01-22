@@ -42,6 +42,6 @@
             (map create-file files))
            (compress-file-processes
             (map compress-file files)))
-      (apply connect
+      (apply auto-connect
              (append compress-file-processes
                      create-file-processes))))))
