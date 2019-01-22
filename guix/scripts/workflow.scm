@@ -111,7 +111,7 @@
                   (exit 0)))))
 
 (define %default-options
-  `((engine . "bash-engine")))
+  `((engine . "simple-engine")))
 
 ;;;
 ;;; Entry point.

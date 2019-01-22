@@ -97,7 +97,7 @@
                   (show-available-processes args)))))
 
 (define %default-options
-  `((engine . "bash-engine")))
+  `((engine . "simple-engine")))
 
 ;;;
 ;;; Entry point.
