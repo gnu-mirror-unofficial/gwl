@@ -32,8 +32,6 @@
    '("Usage: guix process [OPTION]..."
      "Run a predefined computational process."
      ""
-     "  -i, --input=LOCATION   set LOCATION as input for a workflow"
-     "  -o, --output=LOCATION  set LOCATION as output for a workflow"
      "  -e, --engine=ENGINE    set ENGINE for offloading to a cluster"
      "  -l, --list-available   list available processes"
      "  -p, --prepare=PROCESS  Prepare the running of a PROCESS"
@@ -69,14 +67,6 @@
                 (lambda (opt name arg result)
                   (alist-cons 'engine arg
                               (alist-delete 'engine result))))
-        (option '(#\i "input") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'input arg
-                              (alist-delete 'input result))))
-        (option '(#\o "output") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'output arg
-                              (alist-delete 'output result))))
         (option '(#\p "prepare") #t #f
                 (lambda (opt name arg result)
                   (alist-cons 'query 'prepare
