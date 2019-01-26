@@ -104,4 +104,5 @@ considered as the invocation of an interpreter.
                (search-delim (cons (read-delimited delim-end-first port) acc)
                              (read-chunk))))))))
   ;; Support syntactic sugar
-  (read-hash-extend #\# reader-extension-inline-code))
+  (read-hash-extend #\space reader-extension-inline-code)
+  (read-hash-extend #\newline reader-extension-inline-code))
