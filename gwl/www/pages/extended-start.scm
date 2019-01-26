@@ -30,17 +30,18 @@
 
      (h3 "Recap")
 
-     (p "In the " (a (@ (href "/beyond-started")) "previous section") " we"
-        " defined a workflow.  This section builds on the knowledge from the "
-        "previous section, so if you haven't read that, now is the time to "
-        (a (@ (href "/beyond-started")) "get beyond started") ".")
+     (p "In the " (a (@ (href "/beyond-started")) "previous
+section") " we defined a workflow.  This section builds on the
+knowledge from the previous section, so if you haven't read that, now
+is the time to " (a (@ (href "/beyond-started")) "get beyond
+started") ".")
 
      (h3 "Extending workflows")
 
-     (p "In the " (code "dynamic-workflow") " we create files and compressed"
-        " those files.  In the following workflow we will delete those"
-        " compressed files to learn how we can extend a workflow at any point"
-        " in a new workflow.")
+     (p "In the " (code "dynamic-workflow") " we create files and
+compressed those files.  In the following workflow we will delete
+those compressed files to learn how we can extend a workflow at any
+point in a new workflow.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
@@ -49,10 +50,10 @@
                                          "/extended-example-workflow.scm")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
-     (p "With " (code "delete-file-template") " we created a function that"
-        " returns a " (code "process") " that removes a file.  We use this"
-        " function in " (code "extended-dynamic-workflow") " to run after"
-        " each " (code "compress-file") " process.")
+     (p "With " (code "delete-file-template") " we created a function
+that returns a " (code "process") " that removes a file.  We use this
+function in " (code "extended-dynamic-workflow") " to run after
+each " (code "compress-file") " process.")
 
      (p "In the " (code "processes") " field we include the contents
 of " (code "dynamic-workflow") ", thereby concisely extending it.
@@ -61,9 +62,11 @@ we can use the " (code "#:use-module") " facility to refer to it.")
 
      (h3 "Further reading")
 
-     (p "The " (a (@ (href "https://www.gnu.org/software/guile/learn/"))
-               "GNU Guile") " and "
-               (a (@ (href "https://www.gnu.org/software/guix/manual/"))
-                  "GNU Guix")
-        " manuals are good places to learn the language and concepts on which "
-        "GWL builds."))))
+     (p "The "
+        (a (@ (href "https://www.gnu.org/software/guile/learn/"))
+           "GNU Guile")
+        " and "
+        (a (@ (href "https://www.gnu.org/software/guix/manual/"))
+           "GNU Guix")
+        " manuals are good places to learn the language and concepts
+on which GWL builds."))))
