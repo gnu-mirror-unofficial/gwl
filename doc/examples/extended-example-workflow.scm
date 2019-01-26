@@ -29,8 +29,6 @@
     (workflow
      (name "extended-dynamic-workflow")
      (processes
-      (append foreign-processes delete-file-processes))
-     (restrictions
       (append
        (workflow-restrictions dynamic-workflow)
        (zip delete-file-processes compress-file-processes))))))
