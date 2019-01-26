@@ -1,6 +1,8 @@
 (define-module (extended-example-workflow)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
+  ;; We use a prefix here because "zip" is a package but also a
+  ;; procedure in srfi-1.
   #:use-module ((gnu packages compression) #:prefix package:)
   #:use-module (srfi srfi-1)
   #:use-module (example-workflow)) ; We are going to extend "example-workflow".
