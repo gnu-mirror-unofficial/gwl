@@ -54,12 +54,10 @@
         " function in " (code "extended-dynamic-workflow") " to run after"
         " each " (code "compress-file") " process.")
 
-     (p "In the " (code "processes") " and " (code "restrictions") " fields we"
-        " include the contents of " (code "dynamic-workflow") ".  Explicitly"
-        " expressing the new " (code "restrictions") " displays how this"
-        " workflow extends the other in a concise way.  Because "
-        (code "dynamic-workflow") " is defined in a Scheme module, we can"
-        " use the " (code "#:use-module") " facility to refer to it.")
+     (p "In the " (code "processes") " field we include the contents
+of " (code "dynamic-workflow") ", thereby concisely extending it.
+Because " (code "dynamic-workflow") " is defined in a Scheme module,
+we can use the " (code "#:use-module") " facility to refer to it.")
 
      (h3 "Further reading")
 
