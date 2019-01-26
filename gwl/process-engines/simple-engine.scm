@@ -75,7 +75,7 @@ in PROC, with PROCEDURE's imported modules in its search path."
                         (srfi srfi-26))
            (call-with-output-file #$output
              (lambda (port)
-               (format port "#!~a/bin/guile -s~%!#~%" #$guile)
+               (format port "#!~a/bin/guile --no-auto-compile~%-s~%!#~%" #$guile)
                ;; The destination can be outside of the store.
                ;; TODO: We have to mount this location when building inside
                ;; a container.
