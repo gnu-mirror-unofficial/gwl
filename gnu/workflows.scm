@@ -60,8 +60,13 @@
               environment)
     (make-parameter environment)))
 
+(define (wisp-suffix file)
+  (cond ((string-suffix? ".w" file) ".w")
+        ((string-suffix? ".wisp" file) ".wisp")
+        ((string-suffix? ".gwl" file) ".gwl")))
+
 ;; This is the same as "scheme-files" in (guix discovery), except that
-;; it looks for ".wisp" files.
+;; it looks for ".wisp"/".gwl"/".w" files.
 (define* (wisp-files directory)
   "Return the list of Wisp files found under DIRECTORY, recursively.  The
 returned list is sorted in alphabetical order.  Return the empty list if
@@ -87,11 +92,15 @@ DIRECTORY is not accessible."
                        ((directory)
                         (append (wisp-files absolute) result))
                        ((regular)
-                        (if (string-suffix? ".wisp" name)
+                        (if (or (string-suffix? ".wisp" name)
+                                (string-suffix? ".gwl" name)
+                                (string-suffix? ".w" name))
                             (cons absolute result)
                             result))
                        ((symlink)
-                        (cond ((string-suffix? ".wisp" name)
+                        (cond ((or (string-suffix? ".wisp" name)
+                                   (string-suffix? ".gwl" name)
+                                   (string-suffix? ".w" name))
                                (cons absolute result))
                               ((stat absolute #f)
                                =>
@@ -122,7 +131,7 @@ DIRECTORY is not accessible."
     (lambda (file)
       "Return the module name (a list of symbols) corresponding to FILE."
       (map string->symbol
-           (string-tokenize (string-drop-right file 5) not-slash)))))
+           (string-tokenize (basename file (wisp-suffix file)) not-slash)))))
 
 ;; Copied from Guile's (scripts compile) module.
 (define (available-optimizations)
@@ -148,7 +157,10 @@ SUB-DIRECTORY."
 
   (filter-map (lambda (path)
                 (let* ((file     (substring path prefix-len))
-                       (compiled (string-append (string-drop-right path 5) ".go"))
+                       (compiled (string-append
+                                  (dirname path) "/"
+                                  (basename path (wisp-suffix path))
+                                  ".go"))
                        (module   (wisp-file-name->module-name file)))
                   (catch #t
                     (lambda ()
