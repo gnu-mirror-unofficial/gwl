@@ -16,10 +16,11 @@
 
 (define-module (gwl workflows graph)
   #:use-module (ice-9 format)
+  #:use-module (ice-9 match)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows utils)
-  #:use-module ((guix packages) #:select (package-full-name))
+  #:use-module ((guix packages) #:select (package-full-name package?))
   #:export (workflow->dot))
 
 ;;; ---------------------------------------------------------------------------
@@ -30,22 +31,27 @@
 
 (define (workflow-dot-prettify-node process)
   "Returns a string of prettified node names for a Graphviz graph."
-  (let* ((proc process)
-         (pretty-name (string-map (lambda (x)
-                                    (if (eq? x #\-) #\  x))
-                                  (process-name proc))))
-    (format #f " ~s [shape=box,style=\"rounded,filled\",fillcolor=~s,\
-label=<<FONT POINT-SIZE=\"14\"><U>~a</U></FONT><BR/>\
-<FONT POINT-SIZE=\"12\">~a<BR/><BR/>\
-Uses: ~{~a~^, ~}.</FONT>>];~%"
-            (process-full-name proc)
+  (let ((pretty-name (string-map (lambda (x)
+                                   (if (eq? x #\-) #\  x))
+                                 (process-name process))))
+    (format #f " ~s [shape=box,style=\"rounded,filled\",\
+fontname=\"helvetica\",\
+fillcolor=~s,\
+label=<<FONT POINT-SIZE=\"14\">~a</FONT><BR/>\
+<FONT POINT-SIZE=\"12\">~a<BR/>~a</FONT>>];~%"
+            (process-full-name process)
             (take-color)
             (string-upcase pretty-name)
-            (process-synopsis proc)
-            (let ((inputs (process-package-inputs proc)))
-              (if inputs
-                  (map package-full-name inputs)
-                  '("-"))))))
+            (process-synopsis process)
+            (let ((inputs (process-package-inputs process)))
+              (match (process-package-inputs process)
+                (() "")
+                (inputs (format #f "<BR/>Uses: ~{~a~^, ~}."
+                                (map (match-lambda
+                                       ((and (? package?) package)
+                                        (package-full-name package))
+                                       ((and (? string?) name) name))
+                                     inputs))))))))
 
 (define (workflow-restriction->dot process . restrictions)
   "Write the dependency relationships of a restriction in dot format."
