@@ -56,7 +56,7 @@ snippet.
 
 Here is an example:
 
-    ## python
+    # python
     print(\"hello\")
     ##
     => (code-snippet 'python \"\" \"print(\\\"hello\\\"))
@@ -64,7 +64,7 @@ Here is an example:
 If there is no matching language definition, the first line is
 considered as the invocation of an interpreter.
 
-    ## /bin/bash -c
+    # /bin/bash -c
     echo hello world
     ##
     => (code-snippet '/bin/bash \"-c\" \"print(\\\"hello\\\"))
