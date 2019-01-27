@@ -151,10 +151,12 @@ field.
 @chapter Acknowledgments
 
 Thanks to the following people who contributed to the Guix Workflow
-Language through bug reports or patches:
+Language through bug reports, patches, or through insightful
+discussions:
 
 @itemize @bullet
 @item Ludovic Courtès @email{ludo@@gnu.org}
+@item Simon Tournier
 @end itemize
 
 Also thanks to the people who reviewed this project for joining the GNU
