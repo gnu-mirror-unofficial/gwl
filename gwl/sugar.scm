@@ -27,11 +27,15 @@
   (lambda (x)
     (syntax-case x ()
       ((_ (id . args) rest ...)
-       #`(define-public id
-           (lambda* args
-             (process
-              (name #,(symbol->string (syntax->datum #'id)))
-              rest ...))))
+       (if (assoc-ref (syntax->datum #'(rest ...)) 'name)
+           #`(define-public id
+               (lambda* args
+                 (process rest ...)))
+           #`(define-public id
+               (lambda* args
+                 (process
+                  (name #,(symbol->string (syntax->datum #'id)))
+                  rest ...)))))
       ((_ id rest ...)
        #`(define-public id
            (process
