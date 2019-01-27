@@ -109,15 +109,21 @@ then perform the above steps.
 
 To get a little taste of what the workflow language looks like, let's
 start by writing a simple workflow.  The workflow language is a
-@dfn{domain specific language} (DSL) embedded in Guile Scheme.  If you
-prefer a white-space sensitive syntax like that of Python or YAML over
-the native syntax of Scheme, you can use the Wisp syntax extension,
-which will be introduced later.
+@dfn{domain specific language} (DSL) embedded in Guile Scheme.
 
 Here is a simple workflow example:
 
 @example
 @include examples/simple.scm
+@end example
+
+If you prefer a white-space sensitive syntax like that of Python or YAML
+over the native syntax of Scheme, you can use the Wisp syntax extension
+in files ending on @file{.w}, @file{.wisp}, or @file{.gwl}.  Here is the
+same workflow written in Wisp:
+
+@example
+@include examples/simple-wisp.w
 @end example
 
 

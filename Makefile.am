@@ -62,6 +62,8 @@ nobase_dist_assets_DATA =                                 \
 
 examplesdir = $(prefix)/share/@PACKAGE@/doc/examples
 nobase_dist_examples_DATA =                               \
+  doc/examples/simple.scm                                 \
+  doc/examples/simple-wisp.w                              \
   doc/examples/example-workflow1.scm                      \
   doc/examples/example-workflow.scm                       \
   doc/examples/extended-example-workflow.scm
