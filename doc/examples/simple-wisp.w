@@ -16,6 +16,8 @@ process: sleep
                     (system* "sleep" "10"))
 
 process: (eat something)
+  name
+    string-append "eat-" something
   procedure '(format #t "Eating ~a\n" something)
 
 process: bye

@@ -5,9 +5,9 @@
 
 (define-public greet
   (process
-    (name "greet")
-    (package-inputs (list hello))
-    (procedure '(system "hello"))))
+   (name "greet")
+   (package-inputs (list hello))
+   (procedure '(system "hello"))))
 
 (define-public sleep
   (process
@@ -20,15 +20,15 @@
 
 (define-public (eat something)
   (process
-    (name "eat")
-    (procedure
-     `(format #t "Eating ~a\n" ,something))))
+   (name (string-append "eat-" something))
+   (procedure
+    `(format #t "Eating ~a\n" ,something))))
 
 (define-public bye
   (process
-    (name "bye")
-    (procedure
-     '(display "Farewell, world!\n"))))
+   (name "bye")
+   (procedure
+    '(display "Farewell, world!\n"))))
 
 (define-public simple
   (workflow
