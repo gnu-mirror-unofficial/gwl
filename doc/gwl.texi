@@ -51,6 +51,7 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 * Introduction::                What is this all about?
 * Installation::                Installing the GWL.
 * A Simple Workflow::           Show me what this looks like!
+* Code Snippets::               Embedding scripts
 * Process Engines::             Generating executable pipeline scripts.
 
 * Acknowledgments::             Thanks!
@@ -126,6 +127,61 @@ same workflow written in Wisp:
 @include examples/simple-wisp.w
 @end example
 
+@c *********************************************************************
+@node Code Snippets
+@chapter Code Snippets
+
+@cindex scripts, embedding
+@cindex code snippets
+@cindex special syntax, code snippets
+@cindex language support, code snippets
+@cindex Python, code snippets
+@cindex R, code snippets
+@cindex shell snippets
+The Guix Workflow Language is embedded in Guile Scheme, so it makes
+sense to use Scheme to define the work that a process should perform.
+Sometimes it may be more convenient, though, to express the procedure in
+a different language, such as GNU R, Python, or maybe even in Bash.
+
+The GWL provides special syntax for embedding code snippets.  The
+special syntax is provided in the @code{(gwl sugar)} module.  Here is an
+example of a process that runs an embedded Bash shell script:
+
+@example
+import
+  gwl processes
+  gwl sugar
+
+process: run-bash
+  package-inputs : list "bash"
+  procedure # /bin/bash -c
+echo "hello from bash!"
+##
+@end example
+
+Code snippets are introduced with @code{# interpreter}, where
+@code{interpreter} is the command line for running an interpreter, such
+as @code{/bin/bash -c}.  Make sure that the package inputs include a
+package providing the interpreter.  For convenience we provide the
+special interpreters @code{R} and @code{python}, so that you don't have
+to specify a more complicated command line.
+
+Code snippets must end with a line consisting only of @code{##}.
+
+@cindex environment variables, code snippets
+@cindex process meta data, code snippets
+Within code snippets you can access process meta data through
+environment variables.  The following variables may be set:
+
+@itemize
+@item @code{_GWL_PROCESS_NAME}
+@item @code{_GWL_PROCESS_SYNOPSIS}
+@item @code{_GWL_PROCESS_DESCRIPTION}
+@item @code{_GWL_PROCESS_DATA_INPUTS}
+@item @code{_GWL_PROCESS_OUTPUT_PATH}
+@item @code{_GWL_PROCESS_OUTPUTS}
+@item @code{_GWL_PROCESS_RUN_TIME}
+@end itemize
 
 @c *********************************************************************
 @node Process Engines
