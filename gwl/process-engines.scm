@@ -1,5 +1,5 @@
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
             process-engine-name
             process-engine-derivation-builder
             process-engine-command-prefix
-            process-engine-restrictions-string
             find-engine-by-name))
 
 ;;; ---------------------------------------------------------------------------
@@ -39,9 +38,7 @@
 
   (name                 process-engine-name)
   (derivation-builder   process-engine-derivation-builder)
-  (command-prefix       process-engine-command-prefix (default #f))
-  (restrictions-string  process-engine-restrictions-string
-                        (default (const #f))))
+  (command-prefix       process-engine-command-prefix (default #f)))
 
 (define (print-process-engine engine port)
   "Write a concise representation of PROCESS-ENGINE to PORT."

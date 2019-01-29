@@ -42,7 +42,10 @@
   #:use-module (srfi srfi-1)
   #:export (simple-engine))
 
-(define* (process->simple-engine-derivation proc #:key (guile (default-guile)))
+(define* (process->simple-engine-derivation proc
+                                            #:key
+                                            (guile (default-guile))
+                                            workflow)
   "Return an executable Guile script that runs the PROCEDURE described
 in PROC, with PROCEDURE's imported modules in its search path."
   (let* ((name (process-full-name proc))

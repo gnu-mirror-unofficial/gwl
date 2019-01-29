@@ -322,15 +322,14 @@ set to #f, it only returns the output path."
   "Builds a procedure that builds a derivation of the process PROCESS
 according to ENGINE and displays the commands a user needs to run."
   (let* ((command-prefix (process-engine-command-prefix engine))
-         (derivation-builder (process-engine-derivation-builder engine))
-         (restrictions-func (process-engine-restrictions-string engine)))
+         (derivation-builder (process-engine-derivation-builder engine)))
     (lambda* (process #:key workflow (port (current-output-port)))
       (unless (process? process)
         (error (format #f "This is not a process!~%")))
-      (let ((output (derivation->script (derivation-builder process)))
-            (restrictions (restrictions-func process workflow)))
-        (format port "~@[~a ~]~@[~a ~]~a~%"
-                command-prefix restrictions output)))))
+      (let ((output (derivation->script
+                     (derivation-builder process
+                                         #:workflow workflow))))
+        (format port "~@[~a ~]~a" command-prefix output)))))
 
 (define (process->script->run engine)
   "Return a procedure that builds a derivation of PROCESS according to

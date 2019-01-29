@@ -75,7 +75,10 @@ requirements of PROCESS."
                        (+ space (megabytes 65)))))
       ""))
 
-(define* (process->grid-engine-derivation process #:key (guile (default-guile)))
+(define* (process->grid-engine-derivation process
+                                          #:key
+                                          workflow
+                                          (guile (default-guile)))
   "Return an executable script that runs the PROCEDURE described in
 the PROCESS, with the procedure's imported modules in its load path."
   (let* ((name               (process-full-name process))
@@ -83,6 +86,7 @@ the PROCESS, with the procedure's imported modules in its load path."
          (derivation-builder (process-engine-derivation-builder simple-engine))
          (simple-out         (derivation->script
                               (derivation-builder process #:guile guile)))
+         (restrictions       (process->grid-engine-restrictions-string process workflow))
          (time-str           (process->grid-engine-time-limit process))
          (space-str          (process->grid-engine-space-limit process))
          (threads-str        (or (and=> (process-threads process)
@@ -101,8 +105,9 @@ the PROCESS, with the procedure's imported modules in its load path."
              (format port "#!~a/bin/bash~%" #$bash)
              ;; Write the SGE options to the header of the Bash script.
              (format port
-                     "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
+                     "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
                      #$bash
+                     #$restrictions
                      #$space-str
                      #$time-str
                      #$threads-str)
@@ -120,5 +125,4 @@ the PROCESS, with the procedure's imported modules in its load path."
   (process-engine
    (name "grid-engine")
    (derivation-builder process->grid-engine-derivation)
-   (command-prefix "qsub")
-   (restrictions-string process->grid-engine-restrictions-string)))
+   (command-prefix "qsub")))
