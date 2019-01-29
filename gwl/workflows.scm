@@ -176,31 +176,32 @@ contains lists of processes that can be executed in parallel."
   (let ((order-function (if parallel?
                             parallel-step-execution-order
                             sequential-execution-order)))
-    (order-function (workflow-processes workflow)
-                    (workflow-restrictions workflow))))
+    (or (order-function (workflow-processes workflow)
+                        (workflow-restrictions workflow))
+        (error (format (current-error-port)
+                       "Error: Cannot determine process execution order.~%")))))
 
-(define* (dispatch-workflow workflow proc #:key (parallel? #t))
-  "Runs WORKFLOW by applying PROC to ordered processes."
-  (define visit (if parallel?
-                    (lambda (step)
-                      (for-each (cut proc <> #:workflow workflow)
-                                ;; By reversing the order of the processes
-                                ;; in STEP we keep the output order the same
-                                ;; as the order of the sequential function.
-                                (reverse step)))
-                    proc))
-  (or (and=>
-       (workflow-run-order workflow #:parallel? parallel?)
-       (cut for-each visit <>))
-      (format (current-error-port)
-              "Error: Cannot determine process execution order.~%")))
+(define (workflow-kons workflow proc)
+  "Construct a procedure from the single-argument procedure PROC that
+can be used in a fold over the WORKFLOW's processes."
+  (lambda (item acc)
+    (match item
+      ((? list?)
+       (fold (lambda (process res)
+               (cons (proc process #:workflow workflow) res))
+             acc
+             ;; By reversing the order of the processes
+             ;; in STEP we keep the output order the same
+             ;; as the order of the sequential function.
+             (reverse item)))
+      (_ (cons (proc item) acc)))))
 
 (define* (workflow-prepare workflow engine #:key (parallel? #t))
-  (dispatch-workflow workflow
-                     (process->script engine)
-                     #:parallel? parallel?))
+  (fold (workflow-kons workflow (process->script engine))
+        #t
+        (workflow-run-order workflow #:parallel? parallel?)))
 
 (define* (workflow-run workflow engine #:key (parallel? #t))
-  (dispatch-workflow workflow
-                     (process->script->run engine)
-                     #:parallel? parallel?))
+  (fold (workflow-kons workflow (process->script->run engine))
+        '()
+        (workflow-run-order workflow #:parallel? parallel?)))
