@@ -180,7 +180,9 @@ environment variables.  The following variables may be set:
 @item @code{_GWL_PROCESS_DATA_INPUTS}
 @item @code{_GWL_PROCESS_OUTPUT_PATH}
 @item @code{_GWL_PROCESS_OUTPUTS}
-@item @code{_GWL_PROCESS_RUN_TIME}
+@item @code{_GWL_PROCESS_COMPLEXITY_TIME}
+@item @code{_GWL_PROCESS_COMPLEXITY_SPACE}
+@item @code{_GWL_PROCESS_COMPLEXITY_THREADS}
 @end itemize
 
 @c *********************************************************************

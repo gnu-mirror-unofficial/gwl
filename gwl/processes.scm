@@ -188,9 +188,12 @@ of PROCESS."
      ,(or (process-output-path process) ""))
     ("_GWL_PROCESS_OUTPUTS" .
      ,(string-join (process-outputs process)))
-    ;; TODO: does this make sense?
-    ("_GWL_PROCESS_RUN_TIME" .
-     ,(or (process-run-time process) ""))))
+    ("_GWL_PROCESS_COMPLEXITY_THREADS" .
+     ,(or (and=> (process-threads process) number->string) ""))
+    ("_GWL_PROCESS_COMPLEXITY_SPACE" .
+     ,(or (and=> (process-space process) number->string) ""))
+    ("_GWL_PROCESS_COMPLEXITY_TIME" .
+     ,(or (and=> (process-time process) number->string) ""))))
 
 (define language-python
   (language
