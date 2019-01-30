@@ -15,9 +15,12 @@
 
 (define-module (gwl workflows utils)
   #:use-module (srfi srfi-1)
+  #:use-module (ice-9 match)
   #:export (success?
             successful-execution?
             source->string
+
+            mkdir-p
 
             color-scheme-stepper
             %modern-color-scheme
@@ -42,6 +45,32 @@
   (if (string? exp)
       exp
       (format #f "~s" exp)))
+
+;; Taken from (guix build utils)
+(define (mkdir-p dir)
+  "Create directory DIR and all its ancestors."
+  (define absolute?
+    (string-prefix? "/" dir))
+
+  (define not-slash
+    (char-set-complement (char-set #\/)))
+
+  (let loop ((components (string-tokenize dir not-slash))
+             (root       (if absolute?
+                             ""
+                             ".")))
+    (match components
+      ((head tail ...)
+       (let ((path (string-append root "/" head)))
+         (catch 'system-error
+           (lambda ()
+             (mkdir path)
+             (loop tail path))
+           (lambda args
+             (if (= EEXIST (system-error-errno args))
+                 (loop tail path)
+                 (apply throw args))))))
+      (() #t))))
 
 ;; We like colors in diagrams.  The following closure implements an automatic
 ;; color stepper from which we receive a new color on each invocation.
