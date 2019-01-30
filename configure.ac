@@ -32,6 +32,7 @@ if test "x$GUILD" = "x"; then
 fi
 
 GUILE_MODULE_REQUIRED(language wisp spec)
+GUILE_MODULE_REQUIRED(gcrypt hash)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([gwl/www/config.scm])

@@ -17,6 +17,7 @@
              (guix packages)
              ((guix licenses) #:prefix license:)
              (gnu packages autotools)
+             (gnu packages gnupg)
              (gnu packages guile)
              (gnu packages guile-xyz)
              (gnu packages package-management)
@@ -43,6 +44,7 @@
     (propagated-inputs
      `(("guix" ,guix)
        ("guile-commonmark" ,guile-commonmark)
+       ("guile-gcrypt" ,guile-gcrypt)
        ("guile-syntax-highlight" ,guile-syntax-highlight)
        ("guile-wisp" ,guile-wisp)))
     (home-page "https://www.guixwl.org")
