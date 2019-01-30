@@ -1,5 +1,6 @@
 # gwl - Workflow management extension for GNU Guix
 # Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
+# Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Affero General Public License
@@ -27,6 +28,7 @@ SOURCES =                                                 \
   guix/scripts/process.scm                                \
   guix/scripts/workflow.scm                               \
   guix/workflows.scm                                      \
+  gwl/cache.scm                                           \
   gwl/processes.scm                                       \
   gwl/process-engines.scm                                 \
   gwl/process-engines/bash-engine.scm                     \
