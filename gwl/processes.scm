@@ -54,7 +54,6 @@
             complexity-time
             complexity-threads
 
-            process->derivation
             process->script
             process->script->run
 
@@ -305,12 +304,6 @@ set to #f, it only returns the output path."
       (mlet %store-monad ((drv drv))
         (when build? (build-derivations store (list drv)))
         (return (derivation->output-path drv))))))
-
-(define* (process->derivation proc #:key (guile (default-guile)))
-  (gexp->derivation (process-full-name proc)
-                    (procedure->gexp proc)
-                    #:guile-for-build guile
-                    #:graft? #f))
 
 (define (process->script engine)
   "Builds a procedure that builds a derivation of the process PROCESS

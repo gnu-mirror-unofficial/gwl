@@ -40,7 +40,6 @@
                complexity-time
                complexity-threads
 
-               process->derivation
                process->script
                process->script->run
 
