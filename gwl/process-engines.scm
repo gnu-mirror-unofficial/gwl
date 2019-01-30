@@ -51,7 +51,7 @@
 
 (define (find-engine-by-name name)
   "Find the process engine corresponding to NAME."
-  (let* ((engine-symbol (string->symbol name)))
+  (let ((engine-symbol (string->symbol name)))
     (false-if-exception (module-ref
                          (resolve-interface
                           `(gwl process-engines ,engine-symbol))
