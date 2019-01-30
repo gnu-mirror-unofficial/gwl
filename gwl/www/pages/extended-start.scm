@@ -39,9 +39,9 @@ started") ".")
      (h3 "Extending workflows")
 
      (p "In the " (code "dynamic-workflow") " we create files and
-compressed those files.  In the following workflow we will delete
-those compressed files to learn how we can extend a workflow at any
-point in a new workflow.")
+compressed those files.  In the following workflow we will generate a
+file containing some information about these compressed files to learn
+how we can extend a workflow at any point in a new workflow.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
@@ -50,9 +50,10 @@ point in a new workflow.")
                                          "/extended-example-workflow.scm")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
-     (p "With " (code "delete-file-template") " we created a function
-that returns a " (code "process") " that removes a file.  We use this
-function in " (code "extended-dynamic-workflow") " to run after
+     (p "With " (code "list-file-template") " we created a procedure
+that returns a " (code "process") " that generates a file containing
+details about the compressed archive.  We use this function
+in " (code "extended-dynamic-workflow") " to run after
 each " (code "compress-file") " process.")
 
      (p "In the " (code "processes") " field we include the contents

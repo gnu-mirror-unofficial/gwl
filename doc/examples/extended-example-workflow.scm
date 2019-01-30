@@ -1,20 +1,26 @@
 (define-module (extended-example-workflow)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
-  ;; We use a prefix here because "zip" is a package but also a
-  ;; procedure in srfi-1.
-  #:use-module ((gnu packages compression) #:prefix package:)
+  #:use-module (gwl sugar) ; for embedded bash snippet
+  #:use-module ((gnu packages compression) #:select (gzip))
+  #:use-module ((gnu packages bash) #:select (bash))
   #:use-module (srfi srfi-1)
   #:use-module (example-workflow)) ; We are going to extend "example-workflow".
 
-(define (delete-file-template filename)
+(define (list-file-template filename)
   (process
-   (name (string-append "delete-file-" (basename filename)))
+   (name (string-append "list-file-" (basename filename)))
+   (package-inputs (list bash gzip))
+   (data-inputs (list filename))
+   (outputs (list (string-append filename ".list")))
    (run-time (complexity
               (space (megabytes 20))
               (time 10)))
    (procedure
-    `(delete-file ,filename))))
+# /bin/bash -c
+  gzip --list ${_GWL_PROCESS_DATA_INPUTS} > ${_GWL_PROCESS_OUTPUTS}
+##
+  )))
 
 (define-public extended-dynamic-workflow
   (let* (;; Get all processes of the other workflow.
@@ -25,12 +31,12 @@
                                    foreign-processes "compress-file"))
 
          ;; Create the new processes.
-         (delete-file-processes (map delete-file-template
-                                     (map (compose first process-outputs)
-                                          compress-file-processes))))
+         (list-file-processes (map list-file-template
+                                   (map (compose first process-outputs)
+                                        compress-file-processes))))
     (workflow
      (name "extended-dynamic-workflow")
      (processes
       (append
        (workflow-restrictions dynamic-workflow)
-       (zip delete-file-processes compress-file-processes))))))
+       (zip list-file-processes compress-file-processes))))))
