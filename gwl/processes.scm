@@ -23,8 +23,8 @@
   #:use-module ((guix monads) #:select (mlet return))
   #:use-module (guix records)
   #:use-module ((guix store)
-                #:select (open-connection
-                          run-with-store
+                #:select (run-with-store
+                          with-store
                           %store-monad))
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
@@ -293,12 +293,6 @@ plain S-expression."
   (module-ref (resolve-interface '(gnu packages commencement))
               'guile-final))
 
-(define %daemon-connection #f)
-(define (open-or-reuse-connection)
-  (unless %daemon-connection
-    (set! %daemon-connection (open-connection)))
-  %daemon-connection)
-
 ;;; ---------------------------------------------------------------------------
 ;;; DERIVATIONS AND SCRIPTS FUNCTIONS
 ;;; ---------------------------------------------------------------------------
@@ -306,7 +300,7 @@ plain S-expression."
 (define* (derivation->script drv #:optional (build? #t))
   "Write the output of a derivation DRV to a file.  When BUILD? is
 set to #f, it only returns the output path."
-  (let ((store (open-or-reuse-connection)))
+  (with-store store
     (run-with-store store
       (mlet %store-monad ((drv drv))
         (when build? (build-derivations store (list drv)))
