@@ -18,6 +18,7 @@
              ((guix licenses) #:prefix license:)
              (gnu packages autotools)
              (gnu packages guile)
+             (gnu packages guile-xyz)
              (gnu packages package-management)
              (gnu packages pkg-config)
              (gnu packages tex))
