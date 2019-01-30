@@ -82,7 +82,6 @@ requirements of PROCESS."
   "Return an executable script that runs the PROCEDURE described in
 the PROCESS, with the procedure's imported modules in its load path."
   (let* ((name               (process-full-name process))
-         (prefix             (process-engine-command-prefix simple-engine))
          (derivation-builder (process-engine-derivation-builder simple-engine))
          (simple-out         (derivation->script
                               (derivation-builder process #:guile guile)))
@@ -117,7 +116,7 @@ the PROCESS, with the procedure's imported modules in its load path."
                      #$name
                      #$logs-directory
                      #$name)
-             (format port "~@[~a ~]~a~%" #$prefix #$simple-out)
+             (format port "~a~%" #$simple-out)
              (chmod port #o555)))
        #:graft? #f))))
 
