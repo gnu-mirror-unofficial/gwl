@@ -124,4 +124,4 @@ the PROCESS, with the procedure's imported modules in its load path."
   (process-engine
    (name "grid-engine")
    (derivation-builder process->grid-engine-derivation)
-   (command-prefix "qsub")))
+   (runner '("qsub"))))

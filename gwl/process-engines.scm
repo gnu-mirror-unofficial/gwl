@@ -22,7 +22,7 @@
             process-engine?
             process-engine-name
             process-engine-derivation-builder
-            process-engine-command-prefix
+            process-engine-runner
             find-engine-by-name))
 
 ;;; ---------------------------------------------------------------------------
@@ -36,9 +36,10 @@
   process-engine make-process-engine
   process-engine?
 
-  (name                 process-engine-name)
-  (derivation-builder   process-engine-derivation-builder)
-  (command-prefix       process-engine-command-prefix (default #f)))
+  (name                process-engine-name)
+  (derivation-builder  process-engine-derivation-builder)
+  (runner              process-engine-runner
+                       (default '("/bin/sh" "-c"))))
 
 (define (print-process-engine engine port)
   "Write a concise representation of PROCESS-ENGINE to PORT."

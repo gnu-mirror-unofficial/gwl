@@ -315,22 +315,22 @@ set to #f, it only returns the output path."
 (define (process->script engine)
   "Builds a procedure that builds a derivation of the process PROCESS
 according to ENGINE and returns the commands a user needs to run."
-  (let* ((command-prefix (process-engine-command-prefix engine))
-         (derivation-builder (process-engine-derivation-builder engine)))
+  (let ((derivation-builder (process-engine-derivation-builder engine)))
     (lambda* (process #:key workflow)
       (unless (process? process)
         (error (format #f "This is not a process!~%")))
-      (let ((output (derivation->script
-                     (derivation-builder process
-                                         #:workflow workflow))))
-        (format #f "~@[~a ~]~a" command-prefix output)))))
+      (derivation->script
+       (derivation-builder process
+                           #:workflow workflow)))))
 
 (define (process->script->run engine)
   "Return a procedure that builds a derivation of PROCESS according to
 ENGINE and runs the resulting script."
-  (let ((make-script (process->script engine)))
+  (let ((make-script (process->script engine))
+        (runner (process-engine-runner engine)))
     (lambda* (process #:key workflow)
-      (system (make-script process #:workflow workflow)))))
+      (apply system* (append runner
+                             (list (make-script process #:workflow workflow)))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS

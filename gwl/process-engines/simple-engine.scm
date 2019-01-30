@@ -110,4 +110,5 @@ in PROC, with PROCEDURE's imported modules in its search path."
 (define simple-engine
   (process-engine
    (name "simple-engine")
-   (derivation-builder process->simple-engine-derivation)))
+   (derivation-builder process->simple-engine-derivation)
+   (runner '("/bin/sh" "-c"))))
