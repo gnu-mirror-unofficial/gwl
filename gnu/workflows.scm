@@ -39,8 +39,7 @@
             all-workflow-modules
             fold-workflows
             find-workflows
-            find-workflow-by-name
-            find-workflow-by-full-name))
+            find-workflow-by-name))
 
 (define %workflow-module-path
   ;; Search path for process modules.  Each item must be either a directory
@@ -231,26 +230,6 @@ same workflow twice."
   (let ((workflows (delay
                      (fold-workflows (lambda (p r)
                                        (vhash-cons (workflow-name p) p r))
-                                     vlist-null)))
-        (version>? (lambda (p1 p2)
-                     (version>? (workflow-version p1) (workflow-version p2)))))
-    (lambda* (name #:optional version)
-      "Return the list of workflows with the given NAME.  If VERSION is not #f,
-then only return workflows whose version is prefixed by VERSION, sorted in
-decreasing version order."
-      (let ((matching (sort (vhash-fold* cons '() name (force workflows))
-                            version>?)))
-        (if version
-            (filter (lambda (workflow)
-                      (and=> (workflow-version workflow)
-                             (cut string-prefix? version <>)))
-                    matching)
-            matching)))))
-
-(define find-workflow-by-full-name
-  (let ((workflows (delay
-                     (fold-workflows (lambda (p r)
-                                       (vhash-cons (workflow-full-name p) p r))
                                      vlist-null)))
         (version>? (lambda (p1 p2)
                      (version>? (workflow-version p1) (workflow-version p2)))))

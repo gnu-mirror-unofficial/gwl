@@ -24,11 +24,13 @@
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (ice-9 vlist)
+  #:use-module (srfi srfi-11)
+  #:use-module ((web uri) #:select (uri-decode))
   #:export (page-workflow-viewer))
 
-(define (workflow-graph-svg-object workflow-name)
+(define (workflow-graph-svg-object workflow-name version)
   "Return the SXML to render an SVG containing the graph of WORKFLOW-NAME."
-  (match (find-workflow-by-full-name workflow-name)
+  (match (find-workflow-by-name workflow-name version)
     (() `(p "Sorry, I could not render graph."))
     ((workflow . _)
      (let* ((dot-file (string-append (web-config 'static-root)
@@ -48,7 +50,8 @@
 (define page-workflow-viewer
   (let* ((workflows (fold-workflows
                      (lambda (p r)
-                       (vhash-cons (workflow-full-name p) p r))
+                       (vhash-cons (workflow-name p)
+                                   (workflow-version p) r))
                      vlist-null))
          (num-workflows (vlist-length workflows)))
     (lambda* (request-path #:key (post-data ""))
@@ -65,14 +68,23 @@
                        ,(vlist->list
                          (vlist-map
                           (match-lambda
-                            ((name . workflow)
-                             `(option (@ (value ,name))
-                                      ,(format #f "~a ~@[ (~a)~]"
-                                               name
-                                               (workflow-version workflow)))))
+                            ((name . #f)
+                             `(option (@ (value ,name)) ,name))
+                            ((name . version)
+                             `(option (@ (value ,name "@" ,version))
+                                      ,(format #f "~a (~a)"
+                                               name version))))
                           workflows)))
-               ,(if (string= post-data "")
-                    '()
-                    (let ((name (cadr (string-split post-data #\=))))
-                      `(div (@ (id "workarea"))
-                            ,(workflow-graph-svg-object name))))))))))
+               ,(match (string-split post-data #\=)
+                  (("workflow" name+version)
+                   (let* ((name+version (uri-decode name+version))
+                          (version-index (string-index-right name+version #\@))
+                          (name (if version-index
+                                    (substring name+version 0 version-index)
+                                    name+version))
+                          (version (if version-index
+                                       (substring name+version (1+ version-index))
+                                       #f)))
+                     `(div (@ (id "workarea"))
+                           ,(workflow-graph-svg-object name version))))
+                  (_ '()))))))))
