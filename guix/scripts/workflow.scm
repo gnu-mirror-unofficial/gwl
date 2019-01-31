@@ -40,6 +40,8 @@
      "  -l, --list-available   list available processes"
      "  -p, --prepare=WORKFLOW Prepare to run WORKFLOW"
      "  -r, --run=WORKFLOW     Run WORKFLOW"
+     "  -n, --dry-run          Prepare scripts and show what would be done"
+     "  -f, --force            Bypass the cache and execute all processes"
      "  -s, --search=REGEXP    search in synopsis and description using REGEXP"
      "  -g, --graph=WORKFLOW   Output the workflow in Dot-format"
      "  -w, --web-interface    Start the web interface"
@@ -92,6 +94,12 @@
                   (alist-cons 'query 'run
                               (alist-cons 'value arg
                                           (alist-delete 'run result)))))
+        (option '(#\n "dry-run") #f #f
+                (lambda (opt name arg result)
+                  (alist-cons 'dry-run #t result)))
+        (option '(#f "force") #f #f
+                (lambda (opt name arg result)
+                  (alist-cons 'force #t result)))
         (option '(#\g "graph") #t #f
                 (lambda (opt name arg result)
                   (alist-cons 'query 'graph
@@ -158,10 +166,11 @@
          (let ((engine (find-engine-by-name engine-name)))
            (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
-           ((case action
-              ((prepare) workflow-prepare)
-              ((run)     workflow-run))
-            wf engine)))
+           (case action
+             ((prepare) (workflow-prepare wf engine))
+             ((run)     (workflow-run wf engine
+                                      #:dry-run? (assoc-ref opts 'dry-run)
+                                      #:force? (assoc-ref opts 'force))))))
        #t)
       ;; Handle running processes.
       ;; ----------------------------------------------------------------------

@@ -15,7 +15,9 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl workflows)
+  #:use-module (gwl cache)
   #:use-module (gwl processes)
+  #:use-module (gwl process-engines)
   #:use-module (gwl workflows execution-order)
   #:use-module (gwl workflows utils)
   #:use-module (guix records)
@@ -203,7 +205,68 @@ can be used in a fold over the WORKFLOW's processes."
                            '()
                            (workflow-run-order workflow #:parallel? parallel?)))))
 
-(define* (workflow-run workflow engine #:key (parallel? #t))
-  (fold (workflow-kons workflow (process->script->run engine))
-        '()
-        (workflow-run-order workflow #:parallel? parallel?)))
+(define* (workflow-run workflow engine
+                       #:key
+                       (parallel? #t)
+                       dry-run?
+                       force?)
+  "Run the WORKFLOW with the given process ENGINE.  When PARALLEL? is
+#T try to run independent processes in parallel.  When DRY-RUN? is #T
+only display what would be done.  When FORCE? is #T ignore the cache."
+  (define ordered-processes
+    (workflow-run-order workflow #:parallel? parallel?))
+  (define process->cache-prefix
+    (make-process->cache-prefix workflow
+                                ordered-processes
+                                engine))
+  (define cached?
+    (if force?
+        (const #f)
+        (lambda (process)
+          (let ((cache-prefix (process->cache-prefix process)))
+            (every (lambda (out)
+                     (file-exists?
+                      (string-append cache-prefix out)))
+                   (process-outputs process))))))
+  (define run
+    (let ((make-script (process->script engine))
+          (runner (process-engine-runner engine)))
+      (lambda* (process #:key workflow)
+        (let ((cache-prefix (process->cache-prefix process)))
+          (if (cached? process)
+              (if dry-run?
+                  (format (current-error-port)
+                          "Would skip process \"~a\" (cached at ~a).~%"
+                          (process-name process)
+                          cache-prefix)
+                  (begin
+                    (format (current-error-port)
+                            "Skipping process \"~a\" (cached at ~a).~%"
+                            (process-name process)
+                            cache-prefix)
+                    ;; TODO: mount the cache directory in the container
+                    ;; if containerized.  Otherwise link files from
+                    ;; cache to expected location.
+                    (for-each (cut restore! <> cache-prefix)
+                              (process-outputs process))))
+
+              ;; Not cached: execute the process!
+              (let ((command (append runner
+                                     (list (make-script process #:workflow workflow)))))
+                (if dry-run?
+                    (format (current-error-port)
+                            "Would execute: ~{~a ~}~%" command)
+                    (begin
+                      (format (current-error-port)
+                              "Executing: ~{~a ~}~%" command)
+                      (apply system* command)
+                      ;; Wait before generated files are accessed.
+                      ;; This may be needed for distributed file
+                      ;; systems.
+                      (usleep (%cache-delay))
+
+                      ;; Link files to the cache.
+                      (for-each (cut cache! <> cache-prefix)
+                                (process-outputs process))))))))))
+  (fold (workflow-kons workflow run)
+        '() ordered-processes))
