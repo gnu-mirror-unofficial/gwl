@@ -212,14 +212,14 @@ search."
               path))
 
 
-(define (fold-workflows proc init)
-  "Call (PROC WORKFLOW RESULT) for each available workflow, using INIT as
-the initial value of RESULT.  It is guaranteed to never traverse the
-same workflow twice."
+(define (fold-thing pred proc init)
+  "Call (PROC ITEM RESULT) for each item matching PRED in workflow
+modules, using INIT as the initial value of RESULT.  It is guaranteed
+to never traverse the same item twice."
   (identity   ; discard second return value
    (fold2 (lambda (module result seen)
             (fold2 (lambda (var result seen)
-                     (if (and (workflow? var)
+                     (if (and (pred var)
                               (not (vhash-assq var seen)))
                          (values (proc var result)
                                  (vhash-consq var #t seen))
@@ -233,6 +233,13 @@ same workflow twice."
           vlist-null
           (all-workflow-modules))))
 
+(define (fold-workflows proc init)
+  (fold-thing workflow? proc init))
+
+(define (fold-processes proc init)
+  (fold-thing process? proc init))
+
+
 (define find-workflow-by-name
   (let ((workflows (delay
                      (fold-workflows (lambda (p r)
@@ -265,27 +272,6 @@ decreasing version order."
        (force workflows)))))
 
 
-(define (fold-processes proc init)
-  "Call (PROC PROCESS RESULT) for each available process, using INIT as
-the initial value of RESULT.  It is guaranteed to never traverse the
-same process twice."
-  (identity   ; discard second return value
-   (fold2 (lambda (module result seen)
-            (fold2 (lambda (var result seen)
-                     (if (and (process? var)
-                              (not (vhash-assq var seen)))
-                         (values (proc var result)
-                                 (vhash-consq var #t seen))
-                         (values result seen)))
-                   result
-                   seen
-                   (module-map (lambda (sym var)
-                                 (false-if-exception (variable-ref var)))
-                               module)))
-          init
-          vlist-null
-          (all-workflow-modules))))
-
 (define find-process-by-name
   (let ((processes (delay
                      (fold-processes (lambda (p r)
