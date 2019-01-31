@@ -21,7 +21,6 @@
   #:use-module (gwl process-engines)
   #:use-module (gnu processes)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 vlist)
   #:use-module (srfi srfi-37)
   #:use-module (srfi srfi-1)
   #:export (guix-process))
@@ -43,18 +42,11 @@
 
 (define (show-available-processes args)
   "Display available processes."
-  (let ((processes (fold-processes
-                     (lambda (p r)
-                       (if (process-version p)
-                           (vhash-cons (format #f "~a (~a)"
-                                               (process-name p)
-                                               (process-version p)) p r)
-                           (vhash-cons (format #f "~a" (process-name p)) p r)))
-                     vlist-null)))
+  (let ((processes (fold-processes cons '())))
     (format #t "Available processes:~%")
-    (vlist-for-each (lambda (pair)
-                      (format #t "  * ~a~%" (car pair)))
-                    processes))
+    (for-each (lambda (process)
+                (format #t "  * ~a~%" (process-full-name process)))
+              processes))
   (newline))
 
 (define %options

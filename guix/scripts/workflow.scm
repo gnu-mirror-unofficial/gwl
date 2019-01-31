@@ -23,7 +23,6 @@
   #:use-module (guix ui)
   #:use-module (guix scripts)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 vlist)
   #:use-module (srfi srfi-37)
   #:use-module (srfi srfi-1)
   #:export (guix-workflow))
@@ -51,19 +50,12 @@
 
 (define (show-available-workflows args)
   "Display available workflows."
-  (let ((wfs (fold-workflows
-              (lambda (p r)
-                (if (workflow-version p)
-                    (vhash-cons (format #f "~a (~a)"
-                                        (workflow-name p)
-                                        (workflow-version p)) p r)
-                    (vhash-cons (format #f "~a" (workflow-name p)) p r)))
-              vlist-null)))
+  (let ((wfs (fold-workflows cons '())))
     (format #t "Available workflows:~%")
-    (vlist-for-each (match-lambda
-                      ((label . _)
-                       (format #t "  * ~a~%" label)))
-                    wfs))
+    (for-each (lambda (wf)
+                (format #t "  * ~a~%"
+                        (workflow-full-name wf)))
+              wfs))
   (newline))
 
 (define %options
