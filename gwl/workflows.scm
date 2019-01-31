@@ -155,7 +155,7 @@ dependencies."
   (simple-format port "#<workflow ~a>" (workflow-full-name workflow)))
 
 (define* (print-workflow-record workflow #:optional (port #t))
-  "Write a multi-line representation of PROC to PORT."
+  "Write a multi-line representation of WORKFLOW to PORT."
   (match workflow
     (($ <workflow> name version synopsis description)
      (format port "name: ~a~%version: ~a~%synopsis: ~a~%\
