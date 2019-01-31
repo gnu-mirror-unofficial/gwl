@@ -160,7 +160,12 @@ dependencies."
     (($ <workflow> name version synopsis description)
      (format port "name: ~a~%version: ~a~%synopsis: ~a~%\
 description: ~a~%processes: ~{~%  * ~a~}~%"
-             name version synopsis description
+             name
+             (or version "(none)")
+             (if (string-null? synopsis)
+                 "(none)" synopsis)
+             (if (string-null? description)
+                 "(none)" description)
              (map (lambda (proc)
                     (process-full-name proc))
                   (workflow-processes workflow))))))
