@@ -140,14 +140,10 @@
 
   (let ((opts (parse-options)))
     (match (assoc-ref opts 'query)
-      ;; Handle searching for a process.
-      ;; ----------------------------------------------------------------------
+      ;; Handle searching for a workflow.
       ('search
-       (match (find-workflows (assoc-ref opts 'value))
-         (() #t)
-         (matches
-          (vlist-for-each (compose print-workflow-record cdr)
-                          matches)))
+       (for-each print-workflow-record
+                 (find-workflows (assoc-ref opts 'value)))
        #t)
       ;; Handle preparing to running processes.
       ;; ----------------------------------------------------------------------

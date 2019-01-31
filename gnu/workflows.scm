@@ -247,16 +247,12 @@ decreasing version order."
             matching)))))
 
 (define find-workflows
-  (let ((workflows (delay
-                     (fold-workflows (lambda (p r)
-                                       (vhash-cons (workflow-name p) p r))
-                                     vlist-null))))
+  (let ((workflows (delay (fold-workflows cons '()))))
     (lambda (keyword)
       "Return the list of workflows matching the given KEYWORD."
-      (vlist-filter
-       (match-lambda
-         ((label . wf)
-          (or (string-contains-ci (workflow-full-name wf) keyword)
-              (string-contains-ci (workflow-synopsis wf) keyword)
-              (string-contains-ci (workflow-description wf) keyword))))
+      (filter
+       (lambda (workflow)
+         (any (lambda (accessor)
+                (string-contains-ci (accessor workflow) keyword))
+              (list workflow-full-name workflow-synopsis workflow-description)))
        (force workflows)))))
