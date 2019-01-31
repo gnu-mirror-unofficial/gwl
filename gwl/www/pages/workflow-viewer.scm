@@ -31,14 +31,17 @@
   (match (find-workflow-by-full-name workflow-name)
     (() `(p "Sorry, I could not render graph."))
     ((workflow . _)
-     (let* ((web-path (string-append "/static/graphs/" workflow-name ".svg"))
-            (dot-file (string-append (web-config 'static-root) "/graphs/" workflow-name))
-            (svg-file (string-append dot-file ".svg")))
+     (let* ((dot-file (string-append (web-config 'static-root)
+                                     "/graphs/" workflow-name ".dot"))
+            (svg-file (string-append (dirname dot-file) "/"
+                                     (basename dot-file ".dot") ".svg"))
+            (web-path (string-append "/static/graphs/" (basename svg-file))))
        (unless (file-exists? svg-file)
          (with-output-to-file dot-file
            (lambda _
              (display (workflow->dot workflow))))
-         (system* (web-config 'dot) "-Tsvg" dot-file (string-append "-o" svg-file)))
+         (system* (web-config 'dot) "-Tsvg" dot-file
+                  (string-append "-o" svg-file)))
        `(img (@ (src ,web-path)
                 (style "max-height: 100%; max-width: 100%")))))))
 
