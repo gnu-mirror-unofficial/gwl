@@ -21,7 +21,6 @@
   #:use-module (gwl workflows execution-order)
   #:use-module (gwl workflows utils)
   #:use-module (guix records)
-  #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 match)
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
