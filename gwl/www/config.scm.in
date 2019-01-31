@@ -35,4 +35,5 @@
          (string-append (getcwd) "/doc/examples")
          "@prefix@/share/@PACKAGE@/doc/examples"))
     ('max-file-size 2500000000)
-    ('port 5000)))
+    ('port 5000)
+    ('dot "@DOT@")))

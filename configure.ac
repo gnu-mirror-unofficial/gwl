@@ -33,6 +33,10 @@ fi
 
 GUILE_MODULE_REQUIRED(language wisp spec)
 GUILE_MODULE_REQUIRED(gcrypt hash)
+AC_PATH_PROG([DOT], [dot])
+if test "x$DOT" = "x"; then
+   AC_MSG_ERROR(['dot' could not be found; please check your Graphviz installation.])
+fi
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([gwl/www/config.scm])

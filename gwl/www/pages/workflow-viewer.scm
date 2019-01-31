@@ -22,17 +22,8 @@
   #:use-module (gwl workflows graph)
   #:use-module (gwl www pages)
   #:use-module (gwl www config)
-  #:use-module ((guix packages) #:select (package-output))
-  #:use-module ((guix store) #:select (open-connection))
-  #:use-module (gnu packages graphviz)
   #:use-module (ice-9 vlist)
   #:export (page-workflow-viewer))
-
-(define %daemon-connection #f)
-(define (open-or-reuse-connection)
-  (unless %daemon-connection
-    (set! %daemon-connection (open-connection)))
-  %daemon-connection)
 
 (define (workflow-graph-svg-object workflow-name)
   "Return the SXML to render an SVG containing the graph of WORKFLOW-NAME."
@@ -40,15 +31,13 @@
     (if (null? workflow-list)
         `(p "Sorry, I could not render graph.")
         (let* ((workflow (car workflow-list))
-               (store (open-or-reuse-connection))
-               (dot-bin (string-append (package-output store graphviz) "/bin/dot"))
                (web-path (string-append "/static/graphs/" workflow-name ".svg"))
                (dot-file (string-append (web-config 'static-root) "/graphs/" workflow-name))
                (svg-file (string-append dot-file ".svg")))
           (with-output-to-file dot-file
             (lambda _
               (display (workflow->dot workflow))))
-          (system* dot-bin "-Tsvg" dot-file (string-append "-o" svg-file))
+          (system* (web-config 'dot) "-Tsvg" dot-file (string-append "-o" svg-file))
           `(img (@ (src ,web-path)
                    (style "max-height: 100%; max-width: 100%")))))))
 
