@@ -23,7 +23,6 @@
   #:use-module (gwl www config)
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
-  #:use-module (ice-9 vlist)
   #:use-module (srfi srfi-11)
   #:use-module ((web uri) #:select (uri-decode))
   #:export (page-workflow-viewer))
@@ -49,11 +48,12 @@
 
 (define page-workflow-viewer
   (let* ((workflows (fold-workflows
-                     (lambda (p r)
-                       (vhash-cons (workflow-name p)
-                                   (workflow-version p) r))
-                     vlist-null))
-         (num-workflows (vlist-length workflows)))
+                     (lambda (wf acc)
+                       (cons (cons (workflow-name wf)
+                                   (workflow-version wf))
+                             acc))
+                     '()))
+         (num-workflows (length workflows)))
     (lambda* (request-path #:key (post-data ""))
       (page-root-template
        "Guix Workflow Language" request-path
@@ -65,16 +65,15 @@
                (select (@ (name "workflow")
                           (onchange "this.form.submit()"))
                        (option (@ (value "None")) "Please choose a workflow")
-                       ,(vlist->list
-                         (vlist-map
-                          (match-lambda
-                            ((name . #f)
-                             `(option (@ (value ,name)) ,name))
-                            ((name . version)
-                             `(option (@ (value ,name "@" ,version))
-                                      ,(format #f "~a (~a)"
-                                               name version))))
-                          workflows)))
+                       ,(map
+                         (match-lambda
+                           ((name . #f)
+                            `(option (@ (value ,name)) ,name))
+                           ((name . version)
+                            `(option (@ (value ,name "@" ,version))
+                                     ,(format #f "~a (~a)"
+                                              name version))))
+                         workflows))
                ,(match (string-split post-data #\=)
                   (("workflow" name+version)
                    (let* ((name+version (uri-decode name+version))
