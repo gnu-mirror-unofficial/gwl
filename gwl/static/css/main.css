@@ -250,3 +250,8 @@ div.action-button:hover {
 .syntax-special { color: #000000; text-decoration: underline; }
 .syntax-comment { color: #aaaaaa; }
 img { border: 0; outline: 0; }
+
+
+select {
+    margin-bottom: 1rem;
+}

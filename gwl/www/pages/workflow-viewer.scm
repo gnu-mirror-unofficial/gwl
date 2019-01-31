@@ -69,7 +69,6 @@
                                      ,(string-append (workflow-name (cdr pair)) " @ "
                                                      (workflow-version (cdr pair)))))
                           workflows)))
-               (p "")
                ,(if (string= post-data "")
                     '()
                     (let ((name (cadr (string-split post-data #\=))))
