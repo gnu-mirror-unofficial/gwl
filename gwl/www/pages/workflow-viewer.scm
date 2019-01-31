@@ -22,6 +22,7 @@
   #:use-module (gwl workflows graph)
   #:use-module (gwl www pages)
   #:use-module (gwl www config)
+  #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (ice-9 vlist)
   #:export (page-workflow-viewer))
@@ -64,10 +65,12 @@
                        (option (@ (value "None")) "Please choose a workflow")
                        ,(vlist->list
                          (vlist-map
-                          (lambda (pair)
-                            `(option (@ (value ,(workflow-full-name (cdr pair))))
-                                     ,(string-append (workflow-name (cdr pair)) " @ "
-                                                     (workflow-version (cdr pair)))))
+                          (match-lambda
+                            ((name . workflow)
+                             `(option (@ (value ,name))
+                                      ,(format #f "~a ~@[ (~a)~]"
+                                               name
+                                               (workflow-version workflow)))))
                           workflows)))
                ,(if (string= post-data "")
                     '()
