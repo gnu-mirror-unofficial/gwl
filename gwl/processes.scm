@@ -133,7 +133,7 @@
              name version synopsis description))))
 
 (define (process-full-name process)
-  "Returns the name and version of PROC."
+  "Returns the name and version of PROCESS."
   (if (process-version process)
       (string-append (process-name process) "-"
                      (process-version process))
