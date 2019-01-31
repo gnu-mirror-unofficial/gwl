@@ -19,26 +19,21 @@
   #:use-module (gwl processes)
   #:use-module (gwl www pages)
   #:use-module (gnu processes)
-  #:use-module (ice-9 vlist)
   #:export (page-designer))
 
 (define (page-designer request-path)
-  (let* ((processes (fold-processes
-                     (lambda (p r)
-                       (vhash-cons (process-full-name p) p r))
-                     vlist-null))
-         (num-processes (vlist-length processes)))
+  (let* ((processes (fold-processes cons '()))
+         (num-processes (length processes)))
     (page-root-template "GWL" request-path
      `((h2 "Workflow management designer")
        (p "There " ,(if (> num-processes 1) "are " "is ") ,num-processes
           " available processes.")
        (div (@ (id "workarea") (style "width: 100%; height: 600pt; background: #ccc;")) ""
-            ,(vlist->list
-              (vlist-map
-              (lambda (pair)
+            ,(map
+              (lambda (process)
                 `(div (@ (class "dialog")
-                         (title ,(string-append (process-name (cdr pair)) " @ "
-                                                (process-version (cdr pair)))))
-                      (p ,(process-description (cdr pair)))))
-              processes))))
+                         (title ,(string-append (process-name process) " @ "
+                                                (process-version process))))
+                      (p ,(process-description process))))
+              processes)))
      #:dependencies '(jqueryui))))
