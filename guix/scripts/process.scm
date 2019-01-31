@@ -114,8 +114,7 @@
        (match (find-processes (assoc-ref opts 'value))
          (() #t)
          (matches
-          (vlist-for-each (compose print-process-record cdr)
-                          matches))))
+          (for-each print-process-record matches))))
       ;; Handle running a process.
       ;; ----------------------------------------------------------------------
       ('prepare

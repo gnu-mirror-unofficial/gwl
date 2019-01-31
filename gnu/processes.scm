@@ -70,16 +70,12 @@ decreasing version order."
             matching)))))
 
 (define find-processes
-  (let ((processes (delay
-                     (fold-processes (lambda (p r)
-                                       (vhash-cons (process-name p) p r))
-                                     vlist-null))))
+  (let ((processes (delay (fold-processes cons '()))))
     (lambda (keyword)
       "Return the list of processes matching the given KEYWORD."
-      (vlist-filter
-       (match-lambda
-         ((label . proc)
-          (or (string-contains-ci (process-name proc) keyword)
-              (string-contains-ci (process-synopsis proc) keyword)
-              (string-contains-ci (process-description proc) keyword))))
+      (filter
+       (lambda (process)
+         (any (lambda (accessor)
+                (string-contains-ci (accessor process) keyword))
+              (list process-name process-synopsis process-description)))
        (force processes)))))
