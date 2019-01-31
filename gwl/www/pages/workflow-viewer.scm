@@ -17,7 +17,6 @@
 
 (define-module (gwl www pages workflow-viewer)
   #:use-module (gnu workflows)
-  #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows graph)
   #:use-module (gwl www pages)
