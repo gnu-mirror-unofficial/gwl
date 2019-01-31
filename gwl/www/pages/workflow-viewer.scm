@@ -45,31 +45,33 @@
        `(img (@ (src ,web-path)
                 (style "max-height: 100%; max-width: 100%")))))))
 
-(define* (page-workflow-viewer request-path #:key (post-data ""))
+(define page-workflow-viewer
   (let* ((workflows (fold-workflows
                      (lambda (p r)
                        (vhash-cons (workflow-full-name p) p r))
                      vlist-null))
          (num-workflows (vlist-length workflows)))
-    (page-root-template "Guix Workflow Language" request-path
-     `((h2 "Workflow viewer")
-       (p "There " ,(if (> num-workflows 1) "are " "is ")
-          ,num-workflows " available workflows.  Please choose one below.")
-       (form (@ (action "/workflow-viewer")
-                (method "POST"))
-             (select (@ (name "workflow")
-                        (onchange "this.form.submit()"))
-                     (option (@ (value "None")) "Please choose a workflow")
-                     ,(vlist->list
-                       (vlist-map
-                        (lambda (pair)
-                          `(option (@ (value ,(workflow-full-name (cdr pair))))
-                                   ,(string-append (workflow-name (cdr pair)) " @ "
-                                                   (workflow-version (cdr pair)))))
-                        workflows)))
-             (p "")
-             ,(if (string= post-data "")
-                  '()
-                  (let ((name (cadr (string-split post-data #\=))))
-                  `(div (@ (id "workarea"))
-                        ,(workflow-graph-svg-object name)))))))))
+    (lambda* (request-path #:key (post-data ""))
+      (page-root-template
+       "Guix Workflow Language" request-path
+       `((h2 "Workflow viewer")
+         (p "There " ,(if (> num-workflows 1) "are " "is ")
+            ,num-workflows " available workflows.  Please choose one below.")
+         (form (@ (action "/workflow-viewer")
+                  (method "POST"))
+               (select (@ (name "workflow")
+                          (onchange "this.form.submit()"))
+                       (option (@ (value "None")) "Please choose a workflow")
+                       ,(vlist->list
+                         (vlist-map
+                          (lambda (pair)
+                            `(option (@ (value ,(workflow-full-name (cdr pair))))
+                                     ,(string-append (workflow-name (cdr pair)) " @ "
+                                                     (workflow-version (cdr pair)))))
+                          workflows)))
+               (p "")
+               ,(if (string= post-data "")
+                    '()
+                    (let ((name (cadr (string-split post-data #\=))))
+                      `(div (@ (id "workarea"))
+                            ,(workflow-graph-svg-object name))))))))))
