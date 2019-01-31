@@ -36,11 +36,11 @@
        (lambda (x)
          (if (char-set-contains? bad-chars x) #\- x)) name))))
 
-(define (process-job-name proc)
-  "Returns a valid job name for PROC."
+(define (process-job-name process)
+  "Returns a valid job name for PROCESS."
   (string-append "gwl-"
                  (sanitize-sge-job-name
-                  (process-full-name proc))))
+                  (process-full-name process))))
 
 (define (process->grid-engine-restrictions-string process workflow)
   "Return a grid engine option string to specify the process name for
