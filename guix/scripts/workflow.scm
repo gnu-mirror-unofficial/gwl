@@ -37,7 +37,7 @@
      "  -i, --input=LOCATION   set LOCATION as input for a workflow"
      "  -o, --output=LOCATION  set LOCATION as output for a workflow"
      "  -e, --engine=ENGINE    set ENGINE for offloading to a cluster"
-     "  -l, --list-available   list available processes"
+     "  -l, --list-available   list available workflows"
      "  -p, --prepare=WORKFLOW Prepare to run WORKFLOW"
      "  -r, --run=WORKFLOW     Run WORKFLOW"
      "  -n, --dry-run          Prepare scripts and show what would be done"
@@ -71,7 +71,7 @@
   (list (option '(#\h "help") #f #f
                 (lambda args (show-help) (exit 0)))
         (option '(#\V "version") #f #f
-                (lambda args (show-version-and-exit "guix process")))
+                (lambda args (show-version-and-exit "guix workflow")))
         (option '(#\e "engine") #t #f
                 (lambda (opt name arg result)
                   (alist-cons 'engine arg
@@ -145,10 +145,9 @@
        (for-each print-workflow-record
                  (find-workflows (assoc-ref opts 'value)))
        #t)
-      ;; Handle preparing to running processes.
-      ;; ----------------------------------------------------------------------
+      ;; Handle running or preparing workflows.
       ((and (or 'prepare 'run) action)
-       ;; TODO: Deal with the situation wherein multiple processes
+       ;; TODO: Deal with the situation wherein multiple workflows
        ;; with the same name are defined.
        (let ((wf (match (find-workflow-by-name (assoc-ref opts 'value))
                    ((first . rest) first)
@@ -168,14 +167,12 @@
                                       #:dry-run? (assoc-ref opts 'dry-run)
                                       #:force? (assoc-ref opts 'force))))))
        #t)
-      ;; Handle running processes.
-      ;; ----------------------------------------------------------------------
+      ;; Handle workflow visualization
       ('graph
        (match (find-workflow-by-name (assoc-ref opts 'value))
          ((wf . rest)
           (format #t "~a\n" (workflow->dot wf)))
          (_ (leave (G_ "Could not find the workflow to graph.~%"))))
        #t)
-      ;; Handle (or don't handle) anything else.
-      ;; ----------------------------------------------------------------------
+      ;; Ignore everything else
       (_ #t))))
