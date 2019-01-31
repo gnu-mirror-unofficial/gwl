@@ -103,7 +103,7 @@
   process?
 
   (name             process-name)
-  (version          process-version        (default ""))
+  (version          process-version        (default #f))
   (synopsis         process-synopsis       (default ""))
   (description      process-description    (default ""))
 
@@ -132,11 +132,12 @@
      (format port "name: ~a~%version: ~a~%synopsis: ~a~%description: ~a~%~%"
              name version synopsis description))))
 
-(define (process-full-name proc)
+(define (process-full-name process)
   "Returns the name and version of PROC."
-  (if (string= (process-version proc) "")
-      (process-name proc)
-      (string-append (process-name proc) "-" (process-version proc))))
+  (if (process-version process)
+      (string-append (process-name process) "-"
+                     (process-version process))
+      (process-name process)))
 
 (set-record-type-printer! <process> print-process)
 

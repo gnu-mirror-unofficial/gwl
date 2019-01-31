@@ -25,6 +25,7 @@
   #:use-module (ice-9 vlist)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:export (fold-processes
             find-processes
             find-process-by-name))
@@ -65,7 +66,8 @@ decreasing version order."
                             version>?)))
         (if version
             (filter (lambda (process)
-                      (string-prefix? version (process-version process)))
+                      (and=> (process-version process)
+                             (cut string-prefix? version <>)))
                     matching)
             matching)))))
 
