@@ -55,7 +55,7 @@
 
   ;; Basic information about the workflow
   (name workflow-name)
-  (version workflow-version           (default ""))
+  (version workflow-version           (default #f))
   (synopsis workflow-synopsis         (default ""))
   (description workflow-description   (default ""))
 
@@ -143,11 +143,12 @@ dependencies."
          association)
         (_ '()))))
 
-(define (workflow-full-name arg)
-  "Writes the name and version as a single string of PROCESS to PORT."
-  (if (string= (workflow-version arg) "")
-      (workflow-name arg)
-      (string-append (workflow-name arg) "-" (workflow-version arg))))
+(define (workflow-full-name workflow)
+  "Return the name and version of WORKFLOW as a string."
+  (if (workflow-version workflow)
+      (string-append (workflow-name workflow) "-"
+                     (workflow-version workflow))
+      (workflow-name workflow)))
 
 (define (print-workflow workflow port)
   "Write a decent human-representation of a workflow of WORKFLOW to PORT."

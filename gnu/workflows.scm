@@ -29,6 +29,7 @@
   #:use-module (ice-9 vlist)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   ;; For wisp support
   #:use-module (system base compile)
   #:use-module (language wisp spec)
@@ -241,7 +242,8 @@ decreasing version order."
                             version>?)))
         (if version
             (filter (lambda (workflow)
-                      (string-prefix? version (workflow-version workflow)))
+                      (and=> (workflow-version workflow)
+                             (cut string-prefix? version <>)))
                     matching)
             matching)))))
 
@@ -260,7 +262,8 @@ decreasing version order."
                             version>?)))
         (if version
             (filter (lambda (workflow)
-                      (string-prefix? version (workflow-version workflow)))
+                      (and=> (workflow-version workflow)
+                             (cut string-prefix? version <>)))
                     matching)
             matching)))))
 

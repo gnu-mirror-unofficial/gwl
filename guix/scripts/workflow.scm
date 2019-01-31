@@ -53,11 +53,11 @@
   "Display available workflows."
   (let ((wfs (fold-workflows
               (lambda (p r)
-                (if (string= (workflow-version p) "")
-                    (vhash-cons (format #f "~a" (workflow-name p)) p r)
+                (if (workflow-version p)
                     (vhash-cons (format #f "~a (~a)"
                                         (workflow-name p)
-                                        (workflow-version p)) p r)))
+                                        (workflow-version p)) p r)
+                    (vhash-cons (format #f "~a" (workflow-name p)) p r)))
               vlist-null)))
     (format #t "Available workflows:~%")
     (vlist-for-each (match-lambda
