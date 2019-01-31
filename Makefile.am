@@ -22,8 +22,6 @@ moddir=$(prefix)/share/guile/site/@GUILE_EFFECTIVE_VERSION@
 godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache
 
 SOURCES =                                                 \
-  gnu/processes.scm                                       \
-  gnu/workflows.scm                                       \
   guix/processes.scm                                      \
   guix/scripts/process.scm                                \
   guix/scripts/workflow.scm                               \
@@ -34,6 +32,7 @@ SOURCES =                                                 \
   gwl/process-engines/bash-engine.scm                     \
   gwl/process-engines/grid-engine.scm                     \
   gwl/process-engines/simple-engine.scm                   \
+  gwl/utils.scm                                           \
   gwl/workflows.scm                                       \
   gwl/workflows/execution-order.scm                       \
   gwl/workflows/graph.scm                                 \

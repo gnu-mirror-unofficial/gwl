@@ -18,7 +18,7 @@
 (define-module (gwl www pages designer)
   #:use-module (gwl processes)
   #:use-module (gwl www pages)
-  #:use-module (gnu processes)
+  #:use-module (gwl utils)
   #:export (page-designer))
 
 (define (page-designer request-path)

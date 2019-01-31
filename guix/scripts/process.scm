@@ -19,7 +19,7 @@
   #:use-module (guix scripts)
   #:use-module (gwl processes)
   #:use-module (gwl process-engines)
-  #:use-module (gnu processes)
+  #:use-module (gwl utils)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-37)
   #:use-module (srfi srfi-1)

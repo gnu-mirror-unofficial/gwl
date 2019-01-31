@@ -16,7 +16,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages workflow-viewer)
-  #:use-module (gnu workflows)
+  #:use-module (gwl utils)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows graph)
   #:use-module (gwl www pages)

@@ -14,7 +14,8 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (gnu workflows)
+(define-module (gwl utils)
+  #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module ((guix utils)
                 #:select (version>?))
@@ -37,9 +38,14 @@
   #:use-module (language cps optimize)
   #:export (%workflow-module-path
             all-workflow-modules
+
             fold-workflows
             find-workflows
-            find-workflow-by-name))
+            find-workflow-by-name
+
+            fold-processes
+            find-processes
+            find-process-by-name))
 
 (define %workflow-module-path
   ;; Search path for process modules.  Each item must be either a directory
@@ -205,6 +211,7 @@ search."
               '()
               path))
 
+
 (define (fold-workflows proc init)
   "Call (PROC WORKFLOW RESULT) for each available workflow, using INIT as
 the initial value of RESULT.  It is guaranteed to never traverse the
@@ -256,3 +263,56 @@ decreasing version order."
                 (string-contains-ci (accessor workflow) keyword))
               (list workflow-full-name workflow-synopsis workflow-description)))
        (force workflows)))))
+
+
+(define (fold-processes proc init)
+  "Call (PROC PROCESS RESULT) for each available process, using INIT as
+the initial value of RESULT.  It is guaranteed to never traverse the
+same process twice."
+  (identity   ; discard second return value
+   (fold2 (lambda (module result seen)
+            (fold2 (lambda (var result seen)
+                     (if (and (process? var)
+                              (not (vhash-assq var seen)))
+                         (values (proc var result)
+                                 (vhash-consq var #t seen))
+                         (values result seen)))
+                   result
+                   seen
+                   (module-map (lambda (sym var)
+                                 (false-if-exception (variable-ref var)))
+                               module)))
+          init
+          vlist-null
+          (all-workflow-modules))))
+
+(define find-process-by-name
+  (let ((processes (delay
+                     (fold-processes (lambda (p r)
+                                       (vhash-cons (process-name p) p r))
+                                     vlist-null)))
+        (version>? (lambda (p1 p2)
+                     (version>? (process-version p1) (process-version p2)))))
+    (lambda* (name #:optional version)
+      "Return the list of processes with the given NAME.  If VERSION is not #f,
+then only return processes whose version is prefixed by VERSION, sorted in
+decreasing version order."
+      (let ((matching (sort (vhash-fold* cons '() name (force processes))
+                            version>?)))
+        (if version
+            (filter (lambda (process)
+                      (and=> (process-version process)
+                             (cut string-prefix? version <>)))
+                    matching)
+            matching)))))
+
+(define find-processes
+  (let ((processes (delay (fold-processes cons '()))))
+    (lambda (keyword)
+      "Return the list of processes matching the given KEYWORD."
+      (filter
+       (lambda (process)
+         (any (lambda (accessor)
+                (string-contains-ci (accessor process) keyword))
+              (list process-name process-synopsis process-description)))
+       (force processes)))))
