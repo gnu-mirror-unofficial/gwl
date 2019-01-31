@@ -166,8 +166,7 @@ description: ~a~%processes: ~{~%  * ~a~}~%"
                  "(none)" synopsis)
              (if (string-null? description)
                  "(none)" description)
-             (map (lambda (proc)
-                    (process-full-name proc))
+             (map process-full-name
                   (workflow-processes workflow))))))
 
 (set-record-type-printer! <workflow> print-workflow)
