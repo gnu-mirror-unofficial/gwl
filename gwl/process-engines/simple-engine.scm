@@ -42,15 +42,15 @@
   #:use-module (srfi srfi-1)
   #:export (simple-engine))
 
-(define* (process->simple-engine-derivation proc
+(define* (process->simple-engine-derivation process
                                             #:key
                                             (guile (default-guile))
                                             workflow)
   "Return an executable Guile script that runs the PROCEDURE described
-in PROC, with PROCEDURE's imported modules in its search path."
-  (let* ((name (process-full-name proc))
-         (exp (procedure->gexp proc))
-         (out (process-output-path proc))
+in PROCESS, with PROCEDURE's imported modules in its search path."
+  (let* ((name (process-full-name process))
+         (exp (procedure->gexp process))
+         (out (process-output-path process))
          (packages (map (match-lambda
                           ((and (? string?) spec)
                            (specification->package spec))
@@ -59,7 +59,7 @@ in PROC, with PROCEDURE's imported modules in its search path."
                           (x
                            (error (format #f "~a: no such package: ~a~%"
                                           name x))))
-                        (process-package-inputs proc)))
+                        (process-package-inputs process)))
          (manifest (packages->manifest packages))
          (search-paths (delete-duplicates
                         (map search-path-specification->sexp
