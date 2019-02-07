@@ -89,7 +89,7 @@
         (option '(#\n "dry-run") #f #f
                 (lambda (opt name arg result)
                   (alist-cons 'dry-run #t result)))
-        (option '(#f "force") #f #f
+        (option '(#\f "force") #f #f
                 (lambda (opt name arg result)
                   (alist-cons 'force #t result)))
         (option '(#\g "graph") #t #f
