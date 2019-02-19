@@ -161,10 +161,18 @@ variable reference.
                                maybe-variable?)))))
               (if (zero? new-balance)
                   (let ((last-chunk (list->string (reverse acc))))
-                    `(code-snippet ',(string->symbol language)
-                                   ',(string-split arguments #\space)
-                                   (apply string-append
-                                          (list ,@(reverse (cons last-chunk chunks))))))
+                    `(begin
+                       (use-modules (ice-9 format))
+                       (code-snippet ',(string->symbol language)
+                                     ',(string-split arguments #\space)
+                                     (apply string-append
+                                            (map (lambda (val)
+                                                   (cond
+                                                    ((string? val) val)
+                                                    ((list? val)
+                                                     (format #f "~{~a~^ ~}" val))
+                                                    (else (format #f "~a" val))))
+                                                 (list ,@(reverse (cons last-chunk chunks))))))))
                   (search-delim new-acc
                                 (read-char port)
                                 new-balance

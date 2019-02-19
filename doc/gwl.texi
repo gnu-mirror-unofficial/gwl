@@ -169,7 +169,25 @@ Code snippets must end with a closing brace, @code{@rbracechar{}}.
 @cindex string interpolation, code snippets
 @cindex accessing variables, code snippets
 Within code snippets a special syntax is supported for accessing
-variables.
+variables.  Any uninterrupted value enclosed in double braces is
+considered a reference to a variable, which may also be the name of
+other process fields.  In the following example, the shell snippet
+refers to the @code{name} and @code{data-inputs} fields of the current
+process:
+
+@example
+import
+  gwl processes
+  gwl sugar
+
+process: run-bash
+  package-inputs : list "bash"
+  data-inputs: list "a" "b" "c"
+  procedure # /bin/bash -c @{
+    echo "The name of this process: @{@{name@}@}."
+    echo "The data inputs are: @{@{data-inputs@}@}."
+  @}
+@end example
 
 @cindex environment variables, code snippets
 @cindex process meta data, code snippets
