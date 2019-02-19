@@ -227,11 +227,12 @@ only display what would be done.  When FORCE? is #T ignore the cache."
     (if force?
         (const #f)
         (lambda (process)
-          (let ((cache-prefix (process->cache-prefix process)))
-            (every (lambda (out)
-                     (file-exists?
-                      (string-append cache-prefix out)))
-                   (process-outputs process))))))
+          (and (not (null? (process-outputs process)))
+               (let ((cache-prefix (process->cache-prefix process)))
+                 (every (lambda (out)
+                          (file-exists?
+                           (string-append cache-prefix out)))
+                        (process-outputs process)))))))
   (define run
     (let ((make-script (process->script engine))
           (runner (process-engine-runner engine)))
