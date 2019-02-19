@@ -115,7 +115,7 @@ start by writing a simple workflow.  The workflow language is a
 Here is a simple workflow example:
 
 @example
-@include examples/simple.scm
+@verbatiminclude examples/simple.scm
 @end example
 
 If you prefer a white-space sensitive syntax like that of Python or YAML
@@ -124,7 +124,7 @@ in files ending on @file{.w}, @file{.wisp}, or @file{.gwl}.  Here is the
 same workflow written in Wisp:
 
 @example
-@include examples/simple-wisp.w
+@verbatiminclude examples/simple-wisp.w
 @end example
 
 @c *********************************************************************
