@@ -34,16 +34,20 @@
            #`(define-public id
                (lambda* args
                  (process rest ...)))
-           #`(define-public id
-               (lambda* args
-                 (process
-                  (name #,(symbol->string (syntax->datum #'id)))
-                  rest ...)))))
+           (with-syntax ((the-name (datum->syntax x 'name)))
+             #`(define-public id
+                 (let ((the-name #,(symbol->string (syntax->datum #'id))))
+                   (lambda* args
+                     (process
+                      (name the-name)
+                      rest ...)))))))
       ((_ id rest ...)
-       #`(define-public id
-           (process
-            (name #,(symbol->string (syntax->datum #'id)))
-            rest ...))))))
+       (with-syntax ((the-name (datum->syntax x 'name)))
+         #`(define-public id
+             (let ((the-name #,(symbol->string (syntax->datum #'id))))
+               (process
+                (name the-name)
+                rest ...))))))))
 
 ;; Shorter syntax, which is especially useful when wisp is used.
 (define-syntax workflow:
