@@ -32,10 +32,9 @@
   (let* ((proc (process
                 (name "python")
                 (procedure
-## python
+# python {
 print "hello from python 2"
-##
-)))
+})))
          (snippet (process-procedure proc)))
     (and (code-snippet? snippet)
          (eq? 'python (code-snippet-language snippet))
@@ -45,9 +44,9 @@ print "hello from python 2"
   (let* ((proc (process
                 (name "r")
                 (procedure
-## R
+# R {
 cat("hello from R")
-##
+}
 )))
          (snippet (process-procedure proc)))
     (and (code-snippet? snippet)
@@ -57,11 +56,7 @@ cat("hello from R")
 (test-assert "procedure->gexp supports any kind of code"
   (let* ((proc (process
                 (name "bash")
-                (procedure
-## /bin/bash -c
-echo "hello from bash"
-##
-)))
+                (procedure # /bin/bash -c { echo "hello from bash" })))
          (snippet (process-procedure proc)))
     (and (code-snippet? snippet)
          (eq? '/bin/bash (code-snippet-language snippet))

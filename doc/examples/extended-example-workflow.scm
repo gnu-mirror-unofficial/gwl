@@ -16,11 +16,7 @@
    (run-time (complexity
               (space (megabytes 20))
               (time 10)))
-   (procedure
-# /bin/bash -c
-  gzip --list ${_GWL_PROCESS_DATA_INPUTS} > ${_GWL_PROCESS_OUTPUTS}
-##
-  )))
+   (procedure # /bin/bash -c { gzip --list ${_GWL_PROCESS_DATA_INPUTS} > ${_GWL_PROCESS_OUTPUTS} })))
 
 (define-public extended-dynamic-workflow
   (let* (;; Get all processes of the other workflow.

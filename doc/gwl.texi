@@ -154,24 +154,27 @@ import
 
 process: run-bash
   package-inputs : list "bash"
-  procedure # /bin/bash -c
-echo "hello from bash!"
-##
+  procedure # /bin/bash -c @{ echo "hello from bash!" @}
 @end example
 
-Code snippets are introduced with @code{# interpreter}, where
+Code snippets are introduced with @code{# interpreter @{}, where
 @code{interpreter} is the command line for running an interpreter, such
 as @code{/bin/bash -c}.  Make sure that the package inputs include a
 package providing the interpreter.  For convenience we provide the
 special interpreters @code{R} and @code{python}, so that you don't have
 to specify a more complicated command line.
 
-Code snippets must end with a line consisting only of @code{##}.
+Code snippets must end with a closing brace, @code{@rbracechar{}}.
+
+@cindex string interpolation, code snippets
+@cindex accessing variables, code snippets
+Within code snippets a special syntax is supported for accessing
+variables.
 
 @cindex environment variables, code snippets
 @cindex process meta data, code snippets
-Within code snippets you can access process meta data through
-environment variables.  The following variables may be set:
+You can also access process meta data through environment variables.
+The following variables may be set:
 
 @itemize
 @item @code{_GWL_PROCESS_NAME}

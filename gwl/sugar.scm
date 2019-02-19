@@ -19,6 +19,9 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 textual-ports)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-11)
+  #:use-module (srfi srfi-26)
   #:export (process:
             workflow:))
 
@@ -60,25 +63,28 @@ snippet.
 
 Here is an example:
 
-    # python
+    # python {
     print(\"hello\")
-    ##
-    => (code-snippet 'python \"\" \"print(\\\"hello\\\"))
+    }
+    => (code-snippet 'python '(\"\")
+         (apply string-append (list \"print(\\\"hello\\\"))))
 
 If there is no matching language definition, the first line is
 considered as the invocation of an interpreter.
 
-    # /bin/bash -c
-    echo hello world
-    ##
-    => (code-snippet '/bin/bash \"-c\" \"print(\\\"hello\\\"))
-"
-    (define delim-end "##\n")
-    (define delim-end-first (substring/shared delim-end 0 1))
-    (define delim-end-rest (substring/shared delim-end 1))
-    (define (read-chunk)
-      (get-string-n port (- (string-length delim-end) 1)))
+    # /bin/bash -c { echo hello world }
+    => (code-snippet '/bin/bash '(\"-c\")
+         (apply string-append (list \" echo hello world \"))))
 
+This reader macro also supports string interpolation.  Any
+uninterrupted string between double curly braces will be turned into a
+variable reference.
+
+    # /bin/bash -c {echo {{name}} is great}
+    => (code-snippet '/bin/bash \"-c\"
+         (apply string-append (list \"echo \" name \" is great\")))
+
+"
     ;; Throw away any number of blank characters
     (let loop ((next (lookahead-char port)))
       (if (char-set-contains? char-set:blank next)
@@ -88,25 +94,78 @@ considered as the invocation of an interpreter.
 
     ;; This first line must be the language identifier or executable
     ;; path with arguments.
-    (match (let ((line (get-line port)))
-             (or (and=> (string-index line #\space)
+    (match (let ((prelude (string-trim-both (read-delimited "{" port))))
+             (or (and=> (string-index prelude #\space)
                         (lambda (index)
-                          (cons (substring line 0 index)
-                                (substring line (1+ index)))))
-                 (cons line "")))
+                          (cons (substring prelude 0 index)
+                                (substring prelude (1+ index)))))
+                 (cons prelude "")))
       (("" . _)
        (throw 'inline-code-language-undefined))
       ((language . arguments)
-       (let search-delim ((acc (list (read-delimited delim-end-first port)))
-                          (chunk (read-chunk)))
-         (if (string= chunk delim-end-rest)
-             `(code-snippet ',(string->symbol language)
-                            ',(string-split arguments #\space)
-                            ,(string-join (reverse! acc) delim-end-first))
-             (begin
-               (unget-string port chunk)
-               (search-delim (cons (read-delimited delim-end-first port) acc)
-                             (read-chunk))))))))
+       (let search-delim ((acc '())
+                          (char (read-char port))
+                          (balance 1)
+                          (chunks '())
+                          (maybe-variable? #f))
+         (match char
+           ((? eof-object? c)
+            (throw 'inline-code-unbalanced-braces balance))
+           (_
+            (let-values
+                (((new-balance new-chunks new-acc new-maybe-variable?)
+                  (match char
+                    (#\{
+                     (values (1+ balance)
+                             chunks
+                             (cons char acc)
+                             ;; If previous char was also #\{ we are
+                             ;; probably reading a variable reference
+                             ;; next.
+                             (match acc
+                               ((#\{ . _) #t)
+                               (_ #f))))
+                    (#\}
+                     (call-with-values
+                         (lambda () (break (cut eq? #\{ <>) acc))
+                       (lambda (pre post)
+                         (if (and maybe-variable?
+                                  (not (null? post))
+                                  (>= (length post) 2)
+                                  (equal? (take post 2) '(#\{ #\{))
+                                  (eq? (peek-char port) #\})
+                                  (not (any (cut char-set-contains? char-set:whitespace <>) pre)))
+                             ;; This is a variable reference
+                             (begin
+                               (read-char port) ; drop the closing "}"
+                               (values (- balance 2)
+                                       (cons* (string->symbol
+                                               (list->string (reverse pre))) ; variable
+                                              ;; Drop the opening "{{"
+                                              (list->string (reverse (drop post 2)))
+                                              chunks)
+                                       '()
+                                       #f))
+                             ;; Not a variable
+                             (values (1- balance)
+                                     (cons (list->string (reverse acc))
+                                           chunks)
+                                     (list char)
+                                     #f)))))
+                    (_ (values balance chunks
+                               (cons char acc)
+                               maybe-variable?)))))
+              (if (zero? new-balance)
+                  (let ((last-chunk (list->string (reverse acc))))
+                    `(code-snippet ',(string->symbol language)
+                                   ',(string-split arguments #\space)
+                                   (apply string-append
+                                          (list ,@(reverse (cons last-chunk chunks))))))
+                  (search-delim new-acc
+                                (read-char port)
+                                new-balance
+                                new-chunks
+                                new-maybe-variable?)))))))))
   ;; Support syntactic sugar
   (read-hash-extend #\space reader-extension-inline-code)
   (read-hash-extend #\newline reader-extension-inline-code))

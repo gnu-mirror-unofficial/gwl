@@ -75,7 +75,8 @@ TEST_EXTENSIONS = .scm
 
 SCM_TESTS = \
   tests/processes.scm       \
-  tests/execution-order.scm
+  tests/execution-order.scm \
+  tests/sugar.scm
 
 test_data = \
   tests/data/test.wisp
