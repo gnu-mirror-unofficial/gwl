@@ -77,6 +77,7 @@
             code-snippet?
             code-snippet-language
             code-snippet-arguments
+            code-snippet-code
 
             procedure->gexp
 
