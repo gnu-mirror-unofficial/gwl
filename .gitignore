@@ -16,5 +16,5 @@ doc/stamp-vti
 doc/version.texi
 gwl/www/config.scm
 test-suite.log
-tests/processes.log
-tests/processes.trs
+tests/*.log
+tests/*.trs
