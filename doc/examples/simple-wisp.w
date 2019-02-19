@@ -18,7 +18,7 @@ process: sleep
 process: (eat something)
   name
     string-append "eat-" something
-  procedure '(format #t "Eating ~a\n" something)
+  procedure `(format #t "Eating ~a\n" ,something)
 
 process: bye
   procedure '(display "Farewell, world!\n")
