@@ -1,6 +1,8 @@
 (define-module (example-workflow)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
+  #:use-module (gwl sugar) ; for inline bash snippet
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages compression)
   #:use-module (srfi srfi-1)) ; For "first" and "append"
 
@@ -19,17 +21,13 @@
 (define (compress-file input)
   (process
    (name (string-append "compress-file-" (basename input)))
-   (package-inputs (list gzip))
+   (package-inputs (list gzip bash))
    (data-inputs (list input))
    (outputs (list (string-append input ".gz")))
    (run-time (complexity
               (space   (megabytes 20))
               (time    10)))
-   (procedure
-    `(system ,(string-append "gzip "
-                             (first data-inputs)
-                             " -c > "
-                             (first outputs))))))
+   (procedure # bash { gzip {{data-inputs}} -c > {{outputs}} })))
 
 (define-public dynamic-workflow
   (workflow
