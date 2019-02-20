@@ -220,8 +220,19 @@ of PROCESS."
                            '#$(process->env process))
                  (apply system* "Rscript" '#$args)))))))
 
+(define language-bash
+  (language
+   (name 'bash)
+   (call (lambda (process code)
+           #~(begin
+               (for-each (lambda (pair)
+                           (setenv (car pair) (cdr pair)))
+                         '#$(process->env process))
+               (system* "bash" "-c" #$code))))))
+
 (define languages
-  (list language-python
+  (list language-bash
+        language-python
         language-r))
 
 

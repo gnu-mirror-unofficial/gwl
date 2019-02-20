@@ -161,8 +161,8 @@ Code snippets are introduced with @code{# interpreter @{}, where
 @code{interpreter} is the command line for running an interpreter, such
 as @code{/bin/bash -c}.  Make sure that the package inputs include a
 package providing the interpreter.  For convenience we provide the
-special interpreters @code{R} and @code{python}, so that you don't have
-to specify a more complicated command line.
+special interpreters @code{bash}, @code{R}, and @code{python}, so that
+you don't have to specify a more complicated command line.
 
 Code snippets must end with a closing brace, @code{@rbracechar{}}.
 
@@ -183,7 +183,7 @@ import
 process: run-bash
   package-inputs : list "bash"
   data-inputs: list "a" "b" "c"
-  procedure # /bin/bash -c @{
+  procedure # bash @{
     echo "The name of this process: @{@{name@}@}."
     echo "The data inputs are: @{@{data-inputs@}@}."
   @}
