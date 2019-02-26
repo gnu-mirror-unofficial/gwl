@@ -204,7 +204,7 @@ of PROCESS."
                (for-each (lambda (pair)
                            (setenv (car pair) (cdr pair)))
                          '#$(process->env process))
-               (system* "python" "-c" #$code))))))
+               (exit (zero? (system* "python" "-c" #$code))))))))
 
 (define language-r
   (language
@@ -218,7 +218,7 @@ of PROCESS."
                  (for-each (lambda (pair)
                              (setenv (car pair) (cdr pair)))
                            '#$(process->env process))
-                 (apply system* "Rscript" '#$args)))))))
+                 (exit (zero? (apply system* "Rscript" '#$args)))))))))
 
 (define language-bash
   (language
@@ -228,7 +228,7 @@ of PROCESS."
                (for-each (lambda (pair)
                            (setenv (car pair) (cdr pair)))
                          '#$(process->env process))
-               (system* "bash" "-c" #$code))))))
+               (exit (zero? (system* "bash" "-c" #$code))))))))
 
 (define languages
   (list language-bash
