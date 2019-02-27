@@ -38,6 +38,7 @@
 
             print-workflow-record
 
+            workflow-free-inputs
             workflow-run-order
             workflow-prepare
             workflow-run
@@ -138,6 +139,15 @@ dependencies."
         (((and association (source target ...)) ...)
          association)
         (_ '()))))
+
+(define (workflow-free-inputs workflow)
+  "Return a list of processes and their free inputs, i.e. inputs that
+are not provided by the outputs of any other process."
+  (let ((processes (workflow-processes workflow)))
+    (delete-duplicates
+     (lset-difference equal?
+                      (append-map process-data-inputs processes)
+                      (append-map process-outputs processes)))))
 
 (define (workflow-full-name workflow)
   "Return the name and version of WORKFLOW as a string."
