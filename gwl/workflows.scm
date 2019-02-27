@@ -115,12 +115,8 @@ with the outputs of other processes."
                      processes)))
     (map (lambda (process)
            (cons process
-                 (map (lambda (input)
-                        (or (assoc-ref process-by-output input)
-                            (error (format #f "~a: no process provides ~a~%"
-                                           (process-full-name process)
-                                           input))))
-                      (process-data-inputs process))))
+                 (filter-map (cut assoc-ref process-by-output <>)
+                             (process-data-inputs process))))
          processes)))
 
 ;; This procedure would better be named workflow-processes->list, but
