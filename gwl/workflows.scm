@@ -326,7 +326,13 @@ to existing files."
                     (begin
                       (format (current-error-port)
                               "Executing: ~{~a ~}~%" command)
-                      (apply system* command)
+                      (let ((retval (apply system* command)))
+                        (unless (zero? retval)
+                          (format (current-error-port)
+                                  "Error: process `~a' failed with return value ~a.~%"
+                                  (process-name process)
+                                  retval)
+                          (exit retval)))
                       ;; Wait before generated files are accessed.
                       ;; This may be needed for distributed file
                       ;; systems.
