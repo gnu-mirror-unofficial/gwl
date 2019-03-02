@@ -33,7 +33,7 @@
    '("Usage: guix workflow [OPTION]..."
      "Run multiple predefined computational process in a workflow"
      ""
-     "  -i, --input=LOCATION   set LOCATION as input for a workflow"
+     "  -i, --input=NAME=FILE  Specify workflow input NAME, optionally mapped to FILE"
      "  -o, --output=LOCATION  set LOCATION as output for a workflow"
      "  -e, --engine=ENGINE    set ENGINE for offloading to a cluster"
      "  -l, --list-available   list available workflows"
@@ -69,9 +69,10 @@
                   (alist-cons 'engine arg
                               (alist-delete 'engine result))))
         (option '(#\i "input") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'input arg
-                              (alist-delete 'input result))))
+                (lambda (opt name arg result . rest)
+                  (apply values
+                         (alist-cons 'input arg result)
+                         rest)))
         (option '(#\o "output") #t #f
                 (lambda (opt name arg result)
                   (alist-cons 'output arg
@@ -156,6 +157,10 @@
            (case action
              ((prepare) (workflow-prepare wf engine))
              ((run)     (workflow-run wf engine
+                                      #:inputs (filter-map (lambda (val)
+                                                             (and (eq? (car val) 'input)
+                                                                  (cdr val)))
+                                                           opts)
                                       #:dry-run? (assoc-ref opts 'dry-run)
                                       #:force? (assoc-ref opts 'force))))))
        #t)
