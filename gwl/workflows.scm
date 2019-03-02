@@ -209,11 +209,13 @@ can be used in a fold over the WORKFLOW's processes."
       (_ (cons (proc item) acc)))))
 
 (define* (workflow-prepare workflow engine #:key (parallel? #t))
+  "Print scripts to be run for WORKFLOW given ENGINE."
+  (define ordered-processes
+    (workflow-run-order workflow #:parallel? parallel?))
   (for-each (lambda (command)
               (display command) (newline))
             (reverse (fold (workflow-kons workflow (process->script engine))
-                           '()
-                           (workflow-run-order workflow #:parallel? parallel?)))))
+                           '() ordered-processes))))
 
 (define* (workflow-run workflow engine
                        #:key
