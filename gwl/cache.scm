@@ -15,7 +15,7 @@
 
 (define-module (gwl cache)
   #:use-module ((gwl processes)
-                #:select (process->script))
+                #:select (process->script process-data-inputs))
   #:use-module ((gwl workflows)
                 #:select (workflow-restrictions))
   #:use-module ((gwl workflows utils)
@@ -29,6 +29,8 @@
                 #:select (get-bytevector-all))
   #:use-module ((gcrypt hash)
                 #:select (sha256))
+  #:use-module ((ice-9 iconv)
+                #:select (string->bytevector))
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -45,9 +47,11 @@
 (define %cache-root (make-parameter "/tmp/gwl"))
 (define %cache-delay (make-parameter 0))
 
-(define (workflow->data-hashes workflow processes engine)
+(define (workflow->data-hashes workflow processes free-inputs-map engine)
   "Return an alist associating each of the WORKFLOW's PROCESSES with
-the hash of all the process scripts used to generate their outputs."
+the hash of all the process scripts used to generate their outputs.
+FREE-INPUTS-MAP is an alist of input names to file names that must be
+considered when computing the hash."
   (define make-script (process->script engine))
   (define graph (workflow-restrictions workflow))
 
@@ -59,19 +63,49 @@ the hash of all the process scripts used to generate their outputs."
       (cons
        (cons process
              (append hash
+                     ;; Hash of mapped free inputs.
+                     (match (filter-map (lambda (input)
+                                          (and=> (assoc-ref free-inputs-map input) first))
+                                        (process-data-inputs process))
+                       (() (list))
+                       (file-names
+                        (append-map (lambda (file-name)
+                                      (assoc-ref acc file-name))
+                                    file-names)))
                      ;; All outputs of processes this one depends on.
                      (append-map (cut assoc-ref acc <>)
                                  (or (assoc-ref graph process) '()))))
        acc)))
-  (map (match-lambda
-         ((process . hashes)
-          (cons process
-                (bytevector->base32-string
-                 (sha256
-                  (u8-list->bytevector hashes))))))
-       (fold kons '() processes)))
 
-(define (make-process->cache-prefix workflow ordered-processes engine)
+  ;; XXX: We don't hash all of the inputs, because that might be very
+  ;; expensive --- especially when done *every* time a workflow is
+  ;; supposed to be run.  We just hash the file name, the mtime and
+  ;; the file size and hope that's enough.
+
+  ;; XXX: We should probably have a cache for file hashes, so that
+  ;; hashing even large files can be acceptable as it only has to be
+  ;; done once.
+  (let ((input-hashes
+         (map (match-lambda
+                ((name file-name)
+                 (let ((st (stat file-name)))
+                   (cons file-name
+                         (bytevector->u8-list
+                          (sha256 (string->bytevector (format #f "~a~a~a"
+                                                              file-name
+                                                              (stat:mtime st)
+                                                              (stat:size st))
+                                                      "ISO-8859-1")))))))
+              free-inputs-map)))
+    (map (match-lambda
+           ((process . hashes)
+            (cons process
+                  (bytevector->base32-string
+                   (sha256
+                    (u8-list->bytevector hashes))))))
+         (fold kons input-hashes processes))))
+
+(define (make-process->cache-prefix workflow free-inputs-map ordered-processes engine)
   "Return a procedure that takes a process and returns the cache
 prefix for its outputs."
   (let ((hashes (workflow->data-hashes workflow
@@ -80,6 +114,7 @@ prefix for its outputs."
                                                      ((? list? l) l)
                                                      (l (list l)))
                                                    ordered-processes)
+                                       free-inputs-map
                                        engine)))
     (lambda (process)
       (and=> (assoc-ref hashes process)

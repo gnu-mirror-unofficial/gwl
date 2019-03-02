@@ -25,6 +25,7 @@
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9 gnu)
+  #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-26)
   #:export (workflow
             workflow?
@@ -219,31 +220,84 @@ can be used in a fold over the WORKFLOW's processes."
 
 (define* (workflow-run workflow engine
                        #:key
+                       (inputs '())
                        (parallel? #t)
                        dry-run?
                        force?)
   "Run the WORKFLOW with the given process ENGINE.  When PARALLEL? is
 #T try to run independent processes in parallel.  When DRY-RUN? is #T
-only display what would be done.  When FORCE? is #T ignore the cache."
+only display what would be done.  When FORCE? is #T ignore the cache.
+INPUTS is a list of strings mapping the names of free workflow inputs
+to existing files."
+  (define inputs-map
+    (match (map (lambda (value)
+                  ;; A mapping is optional, so normalize it.
+                  (if (string-contains value "=")
+                      (string-split value #\=)
+                      (list value value)))
+                inputs)
+      (() '())
+      (mapping mapping)))
+  (define (inputs-valid?)
+    (let-values (((input-names input-files)
+                  (match inputs-map
+                    (() (values '() '()))
+                    (_ (apply values
+                              (apply zip inputs-map))))))
+      (match (lset-difference equal?
+                              (workflow-free-inputs workflow)
+                              input-names)
+        (()
+         ;; verify input files
+         (match (filter (negate file-exists?) input-files)
+           (()
+            ;; Link all mapped input files to their target locations
+            ;; TODO: ensure that target directories exist.
+            (unless (null? inputs-map)
+              (for-each (match-lambda
+                          ((target source)
+                           (unless (file-exists? target)
+                             (link source target))))
+                        inputs-map))
+            #t)
+           (missing
+            (format (current-error-port)
+                    "Missing files: ~{~%  * ~a~}.~%"
+                    missing)
+            #f)))
+        (missing
+         ;; Try to find the files in the environment.
+         ;; XXX Tell user that we pick the files from the current
+         ;; working directory.
+         ;; XXX These files would need to be mapped into the
+         ;; container.
+         (let* ((found (filter file-exists? missing))
+               (really-missing (lset-difference equal? missing found)))
+           (or (null? really-missing)
+               (begin (format (current-error-port)
+                              "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
+                              really-missing)
+                      #f)))))))
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
-  (define process->cache-prefix
-    (make-process->cache-prefix workflow
-                                ordered-processes
-                                engine))
-  (define cached?
-    (if force?
-        (const #f)
-        (lambda (process)
-          (and (not (null? (process-outputs process)))
-               (let ((cache-prefix (process->cache-prefix process)))
-                 (every (lambda (out)
-                          (file-exists?
-                           (string-append cache-prefix out)))
-                        (process-outputs process)))))))
-  (define run
+  (define (run)
     (let ((make-script (process->script engine))
           (runner (process-engine-runner engine)))
+      (define process->cache-prefix
+        (make-process->cache-prefix workflow
+                                    inputs-map
+                                    ordered-processes
+                                    engine))
+      (define cached?
+        (if force?
+            (const #f)
+            (lambda (process)
+              (and (not (null? (process-outputs process)))
+                   (let ((cache-prefix (process->cache-prefix process)))
+                     (every (lambda (out)
+                              (file-exists?
+                               (string-append cache-prefix out)))
+                            (process-outputs process)))))))
       (lambda* (process #:key workflow)
         (let ((cache-prefix (process->cache-prefix process)))
           (if (cached? process)
@@ -281,5 +335,6 @@ only display what would be done.  When FORCE? is #T ignore the cache."
                       ;; Link files to the cache.
                       (for-each (cut cache! <> cache-prefix)
                                 (process-outputs process))))))))))
-  (fold (workflow-kons workflow run)
-        '() ordered-processes))
+  (when (inputs-valid?)
+    (fold (workflow-kons workflow (run))
+          '() ordered-processes)))
