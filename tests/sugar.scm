@@ -27,15 +27,31 @@
        #\# port))))
 
 (test-equal "reader supports string interpolation"
-  '(code-snippet (quote foo)
-                 (quote ("bar" "baz"))
-                 (apply string-append (list " print(\"hello " world "\") ")))
+  '(begin
+     (use-modules (ice-9 format))
+     (code-snippet (quote foo)
+                   (quote ("bar" "baz"))
+                   (apply string-append
+                          (map (lambda (val)
+                                 (cond
+                                  ((string? val) val)
+                                  ((list? val) (format #f "~{~a~^ ~}" val))
+                                  (else (format #f "~a" val))))
+                               (list " print(\"hello " world "\") ")))))
   (convert "foo bar baz { print(\"hello {{world}}\") }"))
 
 (test-equal "reader will not interpolate values with spaces"
-  '(code-snippet (quote foo)
-                 (quote ("bar" "baz"))
-                 (apply string-append (list " print(\"hello {{not a variable" "}" "}\") ")))
+  '(begin
+     (use-modules (ice-9 format))
+     (code-snippet (quote foo)
+                   (quote ("bar" "baz"))
+                   (apply string-append
+                          (map (lambda (val)
+                                 (cond
+                                  ((string? val) val)
+                                  ((list? val) (format #f "~{~a~^ ~}" val))
+                                  (else (format #f "~a" val))))
+                               (list " print(\"hello {{not a variable" "}" "}\") ")))))
   (convert "foo bar baz { print(\"hello {{not a variable}}\") }"))
 
 (test-error "reader complains about unbalanced curlies"
