@@ -40,6 +40,22 @@
                                (list " print(\"hello " world "\") ")))))
   (convert "foo bar baz { print(\"hello {{world}}\") }"))
 
+(test-equal "reader supports string interpolation for named references"
+  '(begin
+     (use-modules (ice-9 format))
+     (code-snippet (quote foo)
+                   (quote ("bar" "baz"))
+                   (apply string-append
+                          (map (lambda (val)
+                                 (cond
+                                  ((string? val) val)
+                                  ((list? val) (format #f "~{~a~^ ~}" val))
+                                  (else (format #f "~a" val))))
+                               (list " print(\"hello "
+                                     (and=> (memq #:europe world) cadr)
+                                     "\") ")))))
+  (convert "foo bar baz { print(\"hello {{world:europe}}\") }"))
+
 (test-equal "reader will not interpolate values with spaces"
   '(begin
      (use-modules (ice-9 format))
@@ -75,5 +91,13 @@
   "echo ${name} is great"
   (code-snippet-code
    (test-read-eval-string "# /bin/bash -c {echo ${name} is great}")))
+
+(define numbers
+  (list 100 200 #:my-number 300 400 500 #:boring 1000))
+(test-equal "string interpolation can access named items in lists"
+  "echo my number is 300, not 1000"
+  (code-snippet-code
+   (test-read-eval-string "# /bin/bash -c {echo my number is {{numbers:my-number}}, not {{numbers:boring}}}")))
+
 
 (test-end "sugar")

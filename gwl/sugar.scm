@@ -143,11 +143,25 @@ variable reference.
                              (begin
                                (read-char port) ; drop the closing "}"
                                (values (- balance 2)
-                                       (cons* (string->symbol
-                                               (list->string (reverse pre))) ; variable
-                                              ;; Drop the opening "{{"
-                                              (list->string (reverse (drop post 2)))
-                                              chunks)
+                                       (let ((reference
+                                              ;; Variables may access named
+                                              ;; values with ":name".
+                                              (call-with-values (lambda () (break (cut eq? #\: <>)
+                                                                             (reverse pre)))
+                                                (lambda (pre: post:)
+                                                  (match post:
+                                                    ;; Simple variable identifier
+                                                    (() (string->symbol (list->string pre:)))
+                                                    ;; Complex identifier.
+                                                    ((_ . kw)
+                                                     `(and=> (memq ,(symbol->keyword
+                                                                     (string->symbol (list->string kw)))
+                                                                   ,(string->symbol (list->string pre:)))
+                                                             cadr)))))))
+                                         (cons* reference
+                                                ;; Drop the opening "{{"
+                                                (list->string (reverse (drop post 2)))
+                                                chunks))
                                        '()
                                        #f))
                              ;; Not a variable
