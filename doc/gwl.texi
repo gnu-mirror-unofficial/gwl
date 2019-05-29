@@ -182,7 +182,7 @@ import
 
 process: run-bash
   package-inputs : list "bash"
-  data-inputs: list "a" "b" "c"
+  data-inputs : list "a" "b" "c"
   procedure # bash @{
     echo "The name of this process: @{@{name@}@}."
     echo "The data inputs are: @{@{data-inputs@}@}."
