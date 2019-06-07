@@ -269,6 +269,7 @@ discussions:
 @itemize @bullet
 @item Ludovic Courtès @email{ludo@@gnu.org}
 @item Simon Tournier
+@item Kyle Meyer @email{kyle@@kyleam.com}
 @end itemize
 
 Also thanks to the people who reviewed this project for joining the GNU
