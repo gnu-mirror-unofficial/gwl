@@ -6,12 +6,11 @@ import
   gwl sugar
 
 process: greet
-  package-inputs
-    list "hello"
+  package-inputs "hello"
   procedure '(system "hello")
 
 process: sleep
-  package-inputs : list "coreutils"
+  package-inputs "coreutils"
   procedure '(begin (display "Sleeping...\n")
                     (system* "sleep" "10"))
 
