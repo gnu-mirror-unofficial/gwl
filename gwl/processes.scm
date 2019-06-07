@@ -95,6 +95,52 @@
 ;;; RECORD TYPES
 ;;; ---------------------------------------------------------------------------
 
+;; A `complexity' is a way of describing the run-time complexity of a
+;; `process'.
+(define-class <complexity> ()
+  (threads
+   #:init-value 1
+   #:accessor complexity-threads)
+  (space
+   #:init-value #f
+   #:accessor complexity-space)
+  (time
+   #:init-value #f
+   #:accessor complexity-time))
+
+;; Convenient DSL-like constructor.
+(define-syntax complexity
+  (lambda (x)
+    (syntax-case x ()
+      ((_ fields ...)
+       #`(let ()
+           #,@(map (match-lambda
+                     ((empty-field)
+                      (syntax-violation #f "complexity: Empty field" empty-field))
+                     ((field single-value)
+                      #`(define #,(datum->syntax #'x field)
+                          #,(datum->syntax #'x single-value))))
+                   (syntax->datum #'(fields ...)))
+           (make <complexity>
+             #,@(append-map (match-lambda
+                              ((name . rest)
+                               (list (datum->syntax #'x (symbol->keyword name))
+                                     (datum->syntax #'x name))))
+                            (syntax->datum #'(fields ...)))))))))
+
+(define (complexity? thing)
+  (is-a? thing <complexity>))
+
+(define (print-complexity complexity port)
+  "Write a concise representation of COMPLEXITY to PORT."
+  (simple-format port "<#complexity ~a sec, ~a bytes, ~a threads>"
+                 (complexity-time complexity)
+                 (complexity-space complexity)
+                 (complexity-threads complexity)))
+
+(define-method (write (complexity <complexity>) port)
+  (print-complexity complexity port))
+
 ;;
 ;; A process is a stand-alone unit doing some work.  This is typically a
 ;; single program, configured through command-line options, given a certain
@@ -143,25 +189,6 @@
 
 (set-record-type-printer! <process> print-process)
 
-
-;;
-;; A `complexity' is a way of describing the run-time complexity of a
-;; `process'.
-;;
-(define-record-type* <complexity>
-  complexity make-complexity
-  complexity?
-
-  (threads complexity-threads (default 1))
-  (space complexity-space (default #f))
-  (time complexity-time (default #f)))
-
-(define (print-complexity complexity port)
-  "Write a concise representation of COMPLEXITY to PORT."
-  (match complexity
-    (($ <complexity> threads space time)
-     (simple-format port "<#complexity ~a sec, ~a bytes, ~a threads>"
-                    time space threads))))
 
 
 ;;; Support for embedding foreign language snippets
