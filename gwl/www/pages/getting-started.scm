@@ -1,4 +1,5 @@
-;;; Copyright © 2018  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2018 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -38,12 +39,6 @@
      (div (@ (class "figure"))
           (pre (code (@ (class "bash")) "guix package -i gwl")))
         
-     (p "If you are wondering about which editor to use, anything that "
-        "can edit text will do, but "
-        (a (@ (href "https://www.gnu.org/software/emacs")) "GNU Emacs") " with "
-        (a (@ (href "http://nongnu.org/geiser/")) " Geiser") " is an excellent "
-        "choice for interactively running the Scheme code used in this guide.")
-
      (h3 "Introduction")
 
      (p "In the GWL there are two concepts we need to know about: "
