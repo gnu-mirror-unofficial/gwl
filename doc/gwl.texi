@@ -161,8 +161,8 @@ import
   gwl sugar
 
 process: run-bash
-  package-inputs : list "bash"
-  procedure # /bin/bash -c @{ echo "hello from bash!" @}
+  package-inputs "bash"
+  procedure # bash @{ echo "hello from bash!" @}
 @end example
 
 Code snippets are introduced with @code{# interpreter @{}, where
@@ -189,8 +189,11 @@ import
   gwl sugar
 
 process: run-bash
-  package-inputs : list "bash"
-  data-inputs : list "a" "b" "c"
+  package-inputs "bash"
+  data-inputs
+    . "a"
+    . "b"
+    . "c"
   procedure # bash @{
     echo "The name of this process: @{@{name@}@}."
     echo "The data inputs are: @{@{data-inputs@}@}."
@@ -208,9 +211,13 @@ import
   gwl sugar
 
 process: run-bash
-  package-inputs : list "bash"
+  package-inputs "bash"
   data-inputs
-    list "a" #:mine "b" "c" #:yours "d"
+    . "a"
+    . #:mine
+    . "b"
+    . "c"
+    . #:yours "d"
   procedure # bash @{
     echo "This is mine: @{@{data-inputs:mine@}@}, and this is yours: @{@{data-inputs:yours@}@}."
   @}
