@@ -32,6 +32,7 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
+  #:use-module (oop goops)
   #:export (process
             process?
             process-name
@@ -164,13 +165,13 @@
 
 
 ;;; Support for embedding foreign language snippets
-
-(define-record-type* <language>
-  language
-  make-language
-  language?
-  (name          language-name)          ; symbol
-  (call          language-call))         ; procedure
+(define-class <language> ()
+  (name
+   #:init-keyword #:name
+   #:accessor language-name) ; symbol
+  (call
+   #:init-keyword #:call
+   #:accessor language-call)) ; procedure
 
 (define (process->env process)
   "Return an alist of environment variable names to values of fields
@@ -197,38 +198,38 @@ of PROCESS."
      ,(or (and=> (process-time process) number->string) ""))))
 
 (define language-python
-  (language
-   (name 'python)
-   (call (lambda (process code)
-           #~(begin
-               (for-each (lambda (pair)
-                           (setenv (car pair) (cdr pair)))
-                         '#$(process->env process))
-               (exit (zero? (system* "python" "-c" #$code))))))))
-
-(define language-r
-  (language
-   (name 'R)
-   (call (lambda (process code)
-           (let ((args (append-map (lambda (line)
-                                     (list "-e" line))
-                                   (filter (negate string-null?)
-                                           (string-split code #\newline)))))
+  (make <language>
+    #:name 'python
+    #:call (lambda (process code)
              #~(begin
                  (for-each (lambda (pair)
                              (setenv (car pair) (cdr pair)))
                            '#$(process->env process))
-                 (exit (zero? (apply system* "Rscript" '#$args)))))))))
+                 (exit (zero? (system* "python" "-c" #$code)))))))
+
+(define language-r
+  (make <language>
+    #:name 'R
+    #:call (lambda (process code)
+             (let ((args (append-map (lambda (line)
+                                       (list "-e" line))
+                                     (filter (negate string-null?)
+                                             (string-split code #\newline)))))
+               #~(begin
+                   (for-each (lambda (pair)
+                               (setenv (car pair) (cdr pair)))
+                             '#$(process->env process))
+                   (exit (zero? (apply system* "Rscript" '#$args))))))))
 
 (define language-bash
-  (language
-   (name 'bash)
-   (call (lambda (process code)
-           #~(begin
-               (for-each (lambda (pair)
-                           (setenv (car pair) (cdr pair)))
-                         '#$(process->env process))
-               (exit (zero? (system* "bash" "-c" #$code))))))))
+  (make <language>
+    #:name 'bash
+    #:call (lambda (process code)
+             #~(begin
+                 (for-each (lambda (pair)
+                             (setenv (car pair) (cdr pair)))
+                           '#$(process->env process))
+                 (exit (zero? (system* "bash" "-c" #$code)))))))
 
 (define languages
   (list language-bash
