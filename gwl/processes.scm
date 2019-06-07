@@ -21,7 +21,6 @@
                           build-derivations))
   #:use-module (guix gexp)
   #:use-module ((guix monads) #:select (mlet return))
-  #:use-module (guix records)
   #:use-module ((guix store)
                 #:select (run-with-store
                           with-store
@@ -30,7 +29,6 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
-  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
   #:export (process
@@ -141,44 +139,159 @@
 (define-method (write (complexity <complexity>) port)
   (print-complexity complexity port))
 
-;;
+
 ;; A process is a stand-alone unit doing some work.  This is typically a
 ;; single program, configured through command-line options, given a certain
 ;; input, producing a certain output.
-;;
-(define-record-type* <process>
-  process make-process
-  process?
 
-  (name             process-name)
-  (version          process-version        (default #f))
-  (synopsis         process-synopsis       (default ""))
-  (description      process-description    (default ""))
+(define-class <process> ()
+  ;; Slots
+  (name
+   #:accessor process-name
+   #:init-keyword #:name
+   #:required? #t)
+  (version
+   #:accessor process-version
+   #:init-keyword #:version
+   #:init-value #f)
+  (synopsis
+   #:accessor process-synopsis
+   #:init-keyword #:synopsis
+   #:init-value "")
+  (description
+   #:accessor process-description
+   #:init-keyword #:description
+   #:init-value "")
+  (package-inputs
+   #:accessor process-package-inputs
+   #:init-keyword #:package-inputs
+   #:init-value '()
+   #:implicit-list? #t)
+  (data-inputs
+   #:accessor process-data-inputs
+   #:init-keyword #:data-inputs
+   #:init-value '()
+   #:implicit-list? #t)
+  (output-path
+   #:accessor process-output-path
+   #:init-keyword #:output-path
+   #:init-value #f)
+  (outputs
+   #:accessor process-outputs*
+   #:init-keyword #:outputs
+   #:init-value '()
+   #:implicit-list? #t
+   #:validator list?)
+  (run-time
+   #:accessor process-run-time
+   #:init-keyword #:run-time
+   #:init-value #f
+   #:validator complexity?)
+  (procedure
+   #:accessor process-procedure
+   #:init-keyword #:procedure
+   #:required? #t)
+  ;; Class options
+  #:name "process")
 
-  ;; Inputs can be packages, files, and settings.
-  (package-inputs   process-package-inputs (default '()))
-  (data-inputs      process-data-inputs    (default '()))
+(define (process? thing)
+  (is-a? thing <process>))
 
-  ;; Outputs can be anything, but are mostly files (I guess).
-  (output-path      process-output-path    (default #f))
-  (outputs          process-outputs*       (default '()))
+;; As much as I'd like it, we cannot deal with implicit lists here
+;; because lists may contain keyword tagged items.  Keywords in lists
+;; may very well clash with class initialization keywords, so we need
+;; to use a macro to handle implicit lists.  This initialization
+;; method will only ever receive initargs with proper keyword/value
+;; pairs.
 
-  (run-time         process-run-time       (default #f))
-  (procedure        process-procedure))
+;; TODO: maybe move validation to setters instead of only running them
+;; at initialization time.
+(define-method (initialize (instance <process>) initargs)
+  (define klass (class-of instance))
+  ;; Validate slots
+  (for-each
+   (lambda (slot)
+     (let* ((options (slot-definition-options slot))
+            (keyword (slot-definition-init-keyword slot)))
+       ;; Ensure required slots are filled.
+       (and (memq #:required? options)
+            (or (member keyword initargs)
+                (error (format #f
+                               "~a: Required field `~a' missing.~%"
+                               (class-name klass)
+                               (slot-definition-name slot)))))
+
+       ;; Only perform these checks if a value is provided.
+       (and=> (member keyword initargs)
+              (lambda (tail)
+                ;; Ensure that values for fields accepting implicit lists are
+                ;; normalized.
+                (and (memq #:implicit-list? options)
+                     (match tail
+                       ((_ (? (negate list?) value) . rest)
+                        (list-cdr-set! (find-tail (cut eq? <> keyword) initargs)
+                                       0 (cons (list value) rest)))
+                       (_ #t))) ; it's a list, let it be
+                ;; Run validators on slot values
+                (match (memq #:validator options)
+                  ((_ validate . rest)
+                   (match tail
+                     ((_ value . rest)
+                      (or (validate value)
+                          (error (format #f
+                                         "~a: field `~a' has the wrong type.~%"
+                                         (class-name klass)
+                                         (slot-definition-name slot)))))))
+                  (_ #t))))))
+   (class-slots klass))
+
+  ;; Reject extraneous fields
+  (let* ((allowed (map slot-definition-init-keyword (class-slots klass)))
+         (provided (filter keyword? initargs)))
+    (match (lset-difference eq? provided allowed)
+      (() #t)
+      (extraneous
+       (error (format #f "~a: extraneous fields: ~{~a ~}~%"
+                      (class-name klass)
+                      (map keyword->symbol extraneous))))))
+  (next-method))
+
+;; This is a constructor for <process> instances.  It permits the use
+;; of multiple field values (implicit lists) and cross-field
+;; references.  It does not, however, validate any fields or their
+;; values.
+;; TODO: support "inherit" syntax.
+(define-syntax process
+  (lambda (x)
+    (syntax-case x ()
+      ((_ fields ...)
+       #`(let* (#,@(map (lambda (field)
+                          (syntax-case field ()
+                            ((empty-field)
+                             (syntax-violation #f "process: Empty field" #'empty-field))
+                            ((key value)
+                             #'(key value))
+                            ((key values ...)
+                             #'(key (list values ...)))))
+                        #'(fields ...)))
+           (make <process>
+             #,@(append-map (lambda (field)
+                              (syntax-case field ()
+                                ((name . rest)
+                                 #`((symbol->keyword 'name) name))))
+                            #'(fields ...))))))))
 
 (define (print-process process port)
   "Write a concise representation of PROCESS to PORT."
-  (match process
-    (($ <process> name version synopsis description run-time procedure)
-     (simple-format port "#<process ~a>" (process-full-name process)))))
-
+  (simple-format port "#<process ~a>" (process-full-name process)))
 
 (define* (print-process-record process #:optional (port #t))
-  "Write a multi-line representation of PROC to PORT."
-  (match process
-    (($ <process> name version synopsis description run-time procedure)
-     (format port "name: ~a~%version: ~a~%synopsis: ~a~%description: ~a~%~%"
-             name version synopsis description))))
+  "Write a multi-line representation of PROCESS to PORT."
+  (format port "name: ~a~%version: ~a~%synopsis: ~a~%description: ~a~%~%"
+          (process-name process)
+          (process-version process)
+          (process-synopsis process)
+          (process-description process)))
 
 (define (process-full-name process)
   "Returns the name and version of PROCESS."
@@ -187,8 +300,8 @@
                      (process-version process))
       (process-name process)))
 
-(set-record-type-printer! <process> print-process)
-
+(define-method (write (process <process>) port)
+  (print-process process port))
 
 
 ;;; Support for embedding foreign language snippets

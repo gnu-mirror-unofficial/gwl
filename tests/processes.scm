@@ -21,6 +21,40 @@
 
 (test-begin "processes")
 
+(test-assert "process macro supports implicit lists"
+  (let ((proc (process
+               (name "anything")
+               (procedure '(const #t))
+               (data-inputs 'this 'that 'whatever))))
+    (equal? '(this that whatever)
+            (process-data-inputs proc))))
+
+(test-assert "process macro supports implicit lists that are already lists"
+  (let ((proc (process
+               (name "anything")
+               (procedure '(const #t))
+               (data-inputs (list 'this 'that 'whatever)))))
+    (equal? '(this that whatever)
+            (process-data-inputs proc))))
+
+(test-error "process validates complexity type 1/2" #t
+            (process
+             (name "anything")
+             (procedure '(const #t))
+             (run-time 'invalid)))
+
+(test-assert "process validates complexity type 2/2"
+  (process? (process
+             (name "anything")
+             (procedure '(const #t))
+             (run-time (complexity (threads 2))))))
+
+(test-error "process rejects invalid field names" #t
+            (process
+             (name "anything")
+             (procedure '(const #t))
+             (garbage 'this-is)))
+
 (test-assert "procedure->gexp supports s-expressions"
   (let ((proc (process
                (name "s-exp")
