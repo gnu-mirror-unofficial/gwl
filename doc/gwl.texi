@@ -109,23 +109,31 @@ then perform the above steps.
 @chapter A Simple Workflow
 
 To get a little taste of what the workflow language looks like, let's
-start by writing a simple workflow.  The workflow language is a
-@dfn{domain specific language} (DSL) embedded in Guile Scheme.
+start by writing a simple workflow.
 
 Here is a simple workflow example:
+
+@example
+@verbatiminclude examples/simple-wisp.w
+@end example
+
+This white-space sensitive syntax is called Wisp and if your familiar
+with Python or YAML you should feel right at home.  To use this syntax
+simply save your workflow to a file ending on @file{.w}, @file{.wisp},
+or @file{.gwl}.
+
+The workflow language really is a @dfn{domain specific language} (DSL)
+embedded in Guile Scheme, so if you're a Lisper you may prefer to write
+your workflows directly in Scheme while basking in its parenthetical
+glow:
 
 @example
 @verbatiminclude examples/simple.scm
 @end example
 
-If you prefer a white-space sensitive syntax like that of Python or YAML
-over the native syntax of Scheme, you can use the Wisp syntax extension
-in files ending on @file{.w}, @file{.wisp}, or @file{.gwl}.  Here is the
-same workflow written in Wisp:
+Everything you can express in Scheme can also be expressed with the Wisp
+syntax, so the choice is down to personal preference.
 
-@example
-@verbatiminclude examples/simple-wisp.w
-@end example
 
 @c *********************************************************************
 @node Code Snippets
