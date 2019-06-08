@@ -23,7 +23,6 @@ godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache
 
 SOURCES =                                                 \
   guix/processes.scm                                      \
-  guix/scripts/process.scm                                \
   guix/scripts/workflow.scm                               \
   guix/workflows.scm                                      \
   gwl/cache.scm                                           \

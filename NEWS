@@ -17,6 +17,7 @@ Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
   * Support Wisp syntax.
   * Deprecate modules “(guix processes)” and “(guix workflows)”.  Use “(gwl processes)” and “(gwl workflows)” instead.
   * Deprecate the “restrictions” field in workflow records.
+  * Remove the “guix process” command.
 * Changes in 0.1.1 (since 0.1.0)
   * Disable interpreting shell escape characters.
   * Show more information in error messages.

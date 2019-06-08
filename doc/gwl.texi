@@ -81,7 +81,7 @@ command line, we write them as @ref{Creating Guile Modules,,,guile,
 Guile Scheme modules}.  Processes or workflows can be run
 programmatically using the @code{process->script->run} and
 @code{workflow-run} procedures, or on the command line by using the
-@code{guix process} and @code{guix workflow} commands.
+@code{guix workflow} command.
 
 
 @c *********************************************************************

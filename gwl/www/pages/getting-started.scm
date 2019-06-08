@@ -52,7 +52,7 @@
      (p "Running processes or workflows can be done programmatically using the "
         (code "process->script->run") " and " (code "workflow-run")
         " functions, or through the command-line by using the "
-        (code "guix process") " and " (code "guix workflow") " commands.")
+        (code "guix workflow") " command.")
 
      (p "To make processes and workflows available to Scheme and to the "
         "command-line, we write them as a "
@@ -150,47 +150,19 @@
         (code "data-inputs") " field will be put into the place of "
         (code ",data-inputs") " inside the " (code "system") " command.")
 
-     (h3 "Running processes")
-
-     (p "Now that we have the code of a Guile Scheme module that contains a "
-        (code "process") ", we are ready to test it.  To make sure Guile will"
-        " find the module, we must " (a (@ (href ,(string-append %guile-manual
-          "/Writing-new-Modules.html#Writing-new-Modules"))) "name the file"
-        " after the name we provided in the " (code "define-module")
-        " expression") ".  In our case, save the file as " (code "my-workflow.scm")
-        " in an otherwise empty folder.")
-
-     (p "In a terminal, set the " (code "GUIX_WORKFLOW_PATH") " environment"
-        " variable to the folder that contains " (code "my-workflow.scm") "."
-        " For example:")
-
-     (div (@ (class "figure"))
-          (pre (code (@ (class "bash")) "mkdir /tmp/workflows
-touch /tmp/workflow/my-workflow.scm # Make sure to put the code inside!
-export GUIX_WORKFLOW_PATH=/tmp/workflows")))
-
-     (p "Now we can list the available processes with the command:")
-
-     (div (@ (class "figure"))
-          (pre (code (@ (class "bash")) "guix process -l")))
-
-     (p "And run a process using:")
-     (div (@ (class "figure"))
-          (pre (code (@ (class "bash")) "guix process -r samtools-index")))
-
      (h3 (a (@ (href "http://www.gnu.org/philosophy/free-sw.html"))
             "Free Software") " all the way down")
 
      (p "Essentially, " (code "process-engines") " are a layer between "
         " the written Scheme code, and the running scripts.  Let's look"
         " at the " (code "grid-engine") " as an example.  If we "
-        (em "prepare") " a process using: ")
+        (em "prepare") " a workflow using: ")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "bash"))
-                     "guix process -p samtools-index -e grid-engine")))
+                     "guix workflow -p my-workflow.scm -e grid-engine")))
 
-     (p "The command will provide a new command it would use to schedule a job"
+     (p "scripts will be generated for each process containing a command to schedule a job"
         " in the grid engine system:")
 
      (div (@ (class "figure"))
