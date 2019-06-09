@@ -31,7 +31,7 @@
   (for-each
    (lambda (line) (display line) (newline))
    '("Usage: guix workflow [OPTION]..."
-     "Run multiple predefined computational process in a workflow"
+     "Run multiple predefined computational processes in a workflow"
      ""
      "  -i, --input=NAME=FILE  Specify workflow input NAME, optionally mapped to FILE"
      "  -o, --output=LOCATION  set LOCATION as output for a workflow"
