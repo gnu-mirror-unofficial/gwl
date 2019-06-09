@@ -35,8 +35,6 @@
   #:use-module ((guix search-paths)
                 #:select (search-path-specification->sexp
                           $PATH))
-  #:use-module ((gnu packages)
-                #:select (specification->package))
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -51,15 +49,7 @@ in PROCESS, with PROCEDURE's imported modules in its search path."
   (let* ((name (process-full-name process))
          (exp (procedure->gexp process))
          (out (process-output-path process))
-         (packages (map (match-lambda
-                          ((and (? string?) spec)
-                           (specification->package spec))
-                          ((and (? package?) pkg)
-                           pkg)
-                          (x
-                           (error (format #f "~a: no such package: ~a~%"
-                                          name x))))
-                        (process-package-inputs process)))
+         (packages (process-package-inputs process))
          (manifest (packages->manifest packages))
          (search-paths (delete-duplicates
                         (map search-path-specification->sexp

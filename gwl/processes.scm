@@ -19,6 +19,10 @@
   #:use-module ((guix derivations)
                 #:select (derivation->output-path
                           build-derivations))
+  #:use-module ((guix packages)
+                #:select (package?))
+  #:use-module ((gnu packages)
+                #:select (specification->package))
   #:use-module (guix gexp)
   #:use-module ((guix monads) #:select (mlet return))
   #:use-module ((guix store)
@@ -166,7 +170,26 @@
    #:accessor process-package-inputs
    #:init-keyword #:package-inputs
    #:init-value '()
-   #:implicit-list? #t)
+   #:implicit-list? #t
+   #:validator? (lambda (value)
+                  (every package? value))
+   #:transformer
+   ;; TODO: the instance name is not be available at this point, so we
+   ;; can't report the process name here.  We should move the
+   ;; transformers and validators to a point after initialization.
+   (lambda (instance value)
+     (map (match-lambda
+            ((and (? string?) spec)
+             (catch #t
+               (lambda ()
+                 (specification->package spec))
+               (lambda _
+                 (error (format #f "no such package: ~a~%" spec)))))
+            ((and (? package?) pkg)
+             pkg)
+            (x
+             (error (format #f "must provide package value or string: ~a~%" x))))
+          value)))
   (data-inputs
    #:accessor process-data-inputs
    #:init-keyword #:data-inputs
@@ -232,6 +255,16 @@
                         (list-cdr-set! (find-tail (cut eq? <> keyword) initargs)
                                        0 (cons (list value) rest)))
                        (_ #t))) ; it's a list, let it be
+                ;; Run transformers on slot values
+                (match (memq #:transformer options)
+                  ((_ transform . rest)
+                   (match tail
+                     ((_ value . rest)
+                      (let ((new-value (transform instance value)))
+                        (list-cdr-set! (find-tail (cut eq? <> keyword) initargs)
+                                       0 (cons new-value rest))))))
+                  (_ #t))
+
                 ;; Run validators on slot values
                 (match (memq #:validator options)
                   ((_ validate . rest)
