@@ -34,6 +34,7 @@
      (if (getenv "GWL_UNINSTALLED")
          (string-append (getcwd) "/doc/examples")
          "@prefix@/share/@PACKAGE@/doc/examples"))
+    ('workflows-directory #f)
     ('max-file-size 2500000000)
     ('port 5000)
     ('dot "@DOT@")))

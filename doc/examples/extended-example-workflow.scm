@@ -1,11 +1,8 @@
-(define-module (extended-example-workflow)
-  #:use-module (gwl processes)
-  #:use-module (gwl workflows)
-  #:use-module (gwl sugar) ; for embedded bash snippet
-  #:use-module ((gnu packages compression) #:select (gzip))
-  #:use-module ((gnu packages bash) #:select (bash))
-  #:use-module (srfi srfi-1)
-  #:use-module (example-workflow)) ; We are going to extend "example-workflow".
+(import (gnu packages compression)
+        (gnu packages bash))
+
+;; We are going to extend "example-workflow".
+(include "example-workflow.scm")
 
 (define (list-file-template filename)
   (process
@@ -36,3 +33,5 @@
       (append
        (workflow-restrictions dynamic-workflow)
        (zip list-file-processes compress-file-processes))))))
+
+extended-dynamic-workflow

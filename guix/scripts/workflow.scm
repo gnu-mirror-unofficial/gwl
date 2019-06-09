@@ -35,28 +35,16 @@
      ""
      "  -i, --input=NAME=FILE  Specify workflow input NAME, optionally mapped to FILE"
      "  -o, --output=LOCATION  set LOCATION as output for a workflow"
-     "  -e, --engine=ENGINE    set ENGINE for offloading to a cluster"
-     "  -l, --list-available   list available workflows"
-     "  -p, --prepare=WORKFLOW Prepare to run WORKFLOW"
-     "  -r, --run=WORKFLOW     Run WORKFLOW"
+     "  -e, --engine=ENGINE    set ENGINE, e.g. for offloading to a cluster"
+     "  -p, --prepare=FILE     Prepare to run workflow from FILE"
+     "  -r, --run=FILE         Run workflow from FILE"
      "  -n, --dry-run          Prepare scripts and show what would be done"
      "  -f, --force            Bypass the cache and execute all processes"
-     "  -s, --search=REGEXP    search in synopsis and description using REGEXP"
-     "  -g, --graph=WORKFLOW   Output the workflow in Dot-format"
+     "  -g, --graph=FILE       Load the workflow FILE and generate a graph in Dot-format"
      "  -w, --web-interface    Start the web interface"
      "  -h, --help             display this help and exit"
      "  -V, --version          display version information and exit"
      "")))
-
-(define (show-available-workflows args)
-  "Display available workflows."
-  (let ((wfs (fold-workflows cons '())))
-    (format #t "Available workflows:~%")
-    (for-each (lambda (wf)
-                (format #t "  * ~a~%"
-                        (workflow-full-name wf)))
-              wfs))
-  (newline))
 
 (define %options
   ;; List of command-line options.
@@ -98,14 +86,6 @@
                   (alist-cons 'query 'graph
                               (alist-cons 'value arg
                                           (alist-delete 'graph result)))))
-        (option '(#\s "search") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'query 'search
-                              (alist-cons 'value arg
-                                          (alist-delete 'search result)))))
-        (option '(#\l "list-available") #f #f
-                (lambda args
-                  (show-available-workflows args)))
         (option '(#\w "web-interface") #f #f
                 (lambda args
                   (run-web-interface)
@@ -133,24 +113,12 @@
 
   (let ((opts (parse-options)))
     (match (assoc-ref opts 'query)
-      ;; Handle searching for a workflow.
-      ('search
-       (for-each print-workflow-record
-                 (find-workflows (assoc-ref opts 'value)))
-       #t)
       ;; Handle running or preparing workflows.
       ((and (or 'prepare 'run) action)
-       ;; TODO: Deal with the situation wherein multiple workflows
-       ;; with the same name are defined.
-       (let ((wf (match (find-workflow-by-name (assoc-ref opts 'value))
-                   ((first . rest) first)
-                   (_ #f)))
-             (engine-name (assoc-ref opts 'engine))
-             (wf-name (assoc-ref opts 'value)))
-         (unless (and engine-name wf-name)
-           (leave (G_ "Please provide --engine and --run arguments.~%")))
-         (unless wf
-           (leave (G_ "Cannot find a workflow with name ~s.~%") wf-name))
+       (let ((wf (load-workflow (assoc-ref opts 'value)))
+             (engine-name (assoc-ref opts 'engine)))
+         (unless engine-name
+           (leave (G_ "Please provide --engine argument.~%")))
          (let ((engine (find-engine-by-name engine-name)))
            (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
@@ -166,10 +134,10 @@
        #t)
       ;; Handle workflow visualization
       ('graph
-       (match (find-workflow-by-name (assoc-ref opts 'value))
-         ((wf . rest)
+       (match (load-workflow (assoc-ref opts 'value))
+         ((? workflow? wf)
           (format #t "~a\n" (workflow->dot wf)))
-         (_ (leave (G_ "Could not find the workflow to graph.~%"))))
+         (_ (leave (G_ "Failed to process the workflow.~%"))))
        #t)
       ;; Ignore everything else
       (_ #t))))

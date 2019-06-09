@@ -22,16 +22,37 @@
   #:use-module (gwl www pages)
   #:use-module (gwl www config)
   #:use-module (ice-9 format)
+  #:use-module (ice-9 ftw)
   #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-11)
   #:use-module ((web uri) #:select (uri-decode))
   #:export (page-workflow-viewer))
 
+(define %all-workflows
+  (let* ((dir (or (web-config 'workflows-directory)
+                  (web-config 'examples-root)))
+         (files (filter (lambda (file)
+                          (or (wisp-suffix file)
+                              (string-suffix? ".scm" file)))
+                        (scandir dir))))
+    (filter workflow? (map (lambda (file)
+                             (load-workflow (string-append dir "/" file)))
+                           files))))
+
+(define (find-workflow-by-name name version)
+  (find (lambda (wf)
+          (and (string=? (workflow-name wf) name)
+               (or (and=> (workflow-version wf)
+                          (lambda (v) (string=? v version)))
+                   #t)))
+        %all-workflows))
+
 (define (workflow-graph-svg-object workflow-name version)
   "Return the SXML to render an SVG containing the graph of WORKFLOW-NAME."
   (match (find-workflow-by-name workflow-name version)
-    (() `(p "Sorry, I could not render graph."))
-    ((workflow . _)
+    (#f `(p "Sorry, there is no matching workflow."))
+    (workflow
      (let* ((dot-file (string-append (web-config 'static-root)
                                      "/graphs/" workflow-name ".dot"))
             (svg-file (string-append (dirname dot-file) "/"
@@ -47,12 +68,12 @@
                 (style "max-height: 100%; max-width: 100%")))))))
 
 (define page-workflow-viewer
-  (let* ((workflows (fold-workflows
+  (let* ((workflows (fold
                      (lambda (wf acc)
                        (cons (cons (workflow-name wf)
                                    (workflow-version wf))
                              acc))
-                     '()))
+                     '() %all-workflows))
          (num-workflows (length workflows)))
     (lambda* (request-path #:key (post-data ""))
       (page-root-template

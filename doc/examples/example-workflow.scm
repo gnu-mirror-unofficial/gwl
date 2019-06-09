@@ -1,10 +1,5 @@
-(define-module (example-workflow)
-  #:use-module (gwl processes)
-  #:use-module (gwl workflows)
-  #:use-module (gwl sugar) ; for inline bash snippet
-  #:use-module (gnu packages bash)
-  #:use-module (gnu packages compression)
-  #:use-module (srfi srfi-1)) ; For "first" and "append"
+(import (gnu packages bash)
+        (gnu packages compression))
 
 (define (create-file filename)
   (process
@@ -29,7 +24,7 @@
               (time    10)))
    (procedure # bash { gzip {{data-inputs}} -c > {{outputs}} })))
 
-(define-public dynamic-workflow
+(define dynamic-workflow
   (workflow
    (name "dynamic-workflow")
    (processes
@@ -43,3 +38,5 @@
       (apply auto-connect
              (append compress-file-processes
                      create-file-processes))))))
+
+dynamic-workflow

@@ -1,7 +1,4 @@
-(define-module (simple)
-  #:use-module (gwl processes)
-  #:use-module (gwl workflows)
-  #:use-module (gnu packages base))
+(import (gnu packages base))
 
 (define-public greet
   (process

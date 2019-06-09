@@ -1,5 +1,6 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
 ;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2012-2019 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,129 +16,29 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl utils)
+  #:use-module (guix sets)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
-  #:use-module ((guix utils)
-                #:select (version>?))
-  #:use-module ((guix ui)
-                #:select (G_ warning warn-about-load-error))
-  #:use-module ((guix combinators)
-                #:select (fold2))
-  #:use-module ((guix discovery)
-                #:select (scheme-modules))
-  #:use-module ((guix build syscalls)
-                #:select (scandir*))
-  #:use-module (ice-9 vlist)
   #:use-module (ice-9 match)
+  #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-9)
+  #:use-module (srfi srfi-31)
+  #:use-module (srfi srfi-34)
   ;; For wisp support
   #:use-module (system base compile)
+  #:use-module (language wisp)
   #:use-module (language wisp spec)
   #:use-module (language tree-il optimize)
   #:use-module (language cps optimize)
-  #:export (%workflow-module-path
-            all-workflow-modules
-
-            fold-workflows
-            find-workflows
-            find-workflow-by-name
-
-            fold-processes
-            find-processes
-            find-process-by-name))
-
-(define %workflow-module-path
-  ;; Search path for process modules.  Each item must be either a directory
-  ;; name or a pair whose car is a directory and whose cdr is a sub-directory
-  ;; to narrow the search.
-  (let* ((not-colon   (char-set-complement (char-set #\:)))
-         (environment (string-tokenize (or (getenv "GUIX_WORKFLOW_PATH") "")
-                                       not-colon)))
-    (for-each (lambda (directory)
-                ;; Put the workflow paths at the end because there are likely
-                ;; only few modules to load workflows and more modules to load
-                ;; other Guix-related stuff.  Putting the workflow path at the
-                ;; end of the load path may therefore be faster at run-time.
-                (set! %load-path
-                      (append %load-path (list directory)))
-                (set! %load-compiled-path
-                      (append %load-compiled-path (list directory))))
-              environment)
-    (make-parameter environment)))
+  #:export (load-workflow
+            wisp-suffix))
 
 (define (wisp-suffix file)
   (cond ((string-suffix? ".w" file) ".w")
         ((string-suffix? ".wisp" file) ".wisp")
-        ((string-suffix? ".gwl" file) ".gwl")))
-
-;; This is the same as "scheme-files" in (guix discovery), except that
-;; it looks for ".wisp"/".gwl"/".w" files.
-(define* (wisp-files directory)
-  "Return the list of Wisp files found under DIRECTORY, recursively.  The
-returned list is sorted in alphabetical order.  Return the empty list if
-DIRECTORY is not accessible."
-  (define (entry-type name properties)
-    (match (assoc-ref properties 'type)
-      ('unknown
-       (stat:type (lstat name)))
-      ((? symbol? type)
-       type)))
-
-  ;; Use 'scandir*' so we can avoid an extra 'lstat' for each entry, as
-  ;; opposed to Guile's 'scandir' or 'file-system-fold'.
-  (fold-right (lambda (entry result)
-                (match entry
-                  (("." . _)
-                   result)
-                  ((".." . _)
-                   result)
-                  ((name . properties)
-                   (let ((absolute (string-append directory "/" name)))
-                     (case (entry-type absolute properties)
-                       ((directory)
-                        (append (wisp-files absolute) result))
-                       ((regular)
-                        (if (or (string-suffix? ".wisp" name)
-                                (string-suffix? ".gwl" name)
-                                (string-suffix? ".w" name))
-                            (cons absolute result)
-                            result))
-                       ((symlink)
-                        (cond ((or (string-suffix? ".wisp" name)
-                                   (string-suffix? ".gwl" name)
-                                   (string-suffix? ".w" name))
-                               (cons absolute result))
-                              ((stat absolute #f)
-                               =>
-                               (match-lambda
-                                 (#f result)
-                                 ((= stat:type 'directory)
-                                  (append (wisp-files absolute)
-                                          result))
-                                 (_ result)))))
-                       (else
-                        result))))))
-              '()
-              (catch 'system-error
-                (lambda ()
-                  (scandir* directory))
-                (lambda args
-                  (let ((errno (system-error-errno args)))
-                    (unless (= errno ENOENT)
-                      (warning (G_ "cannot access `~a': ~a~%")
-                               directory (strerror errno)))
-                    '())))))
-
-
-;; This is the same as "file-name->module-name" in (guix modules),
-;; except that it looks for ".wisp" files.
-(define wisp-file-name->module-name
-  (let ((not-slash (char-set-complement (char-set #\/))))
-    (lambda (file)
-      "Return the module name (a list of symbols) corresponding to FILE."
-      (map string->symbol
-           (string-tokenize (basename file (wisp-suffix file)) not-slash)))))
+        ((string-suffix? ".gwl" file) ".gwl")
+        (else #f)))
 
 ;; Copied from Guile's (scripts compile) module.
 (define (available-optimizations)
@@ -154,151 +55,253 @@ DIRECTORY is not accessible."
       ((kw val . options)
        (cons* kw (> level 1) (lp options))))))
 
-(define* (wisp-modules directory #:optional sub-directory)
-  "Return the list of Wisp modules available under DIRECTORY, and
-compile them if necessary.  Optionally, narrow the search to
-SUB-DIRECTORY."
-  (define prefix-len
-    (string-length directory))
+(define* (compile-wisp file #:key env)
+  "Compile the Wisp file FILE and return the name of the compiled
+file."
+  (let ((compiled (string-append
+                   (dirname file) "/"
+                   (basename file (wisp-suffix file))
+                   ".go")))
+    (catch #t
+      (lambda ()
+        (when (getenv "GWL_DEBUG")
+          (pretty-print (call-with-input-file file wisp-scheme-read-all)))
+        (when (or (not (file-exists? compiled))
+                  (let ((sc (stat compiled))
+                        (ss (stat file)))
+                    (> (stat:mtime ss)
+                       (stat:mtime sc))))
+          (format (current-error-port) "Compiling ~a..." file)
+          (force-output (current-error-port))
+          (compile-file file
+                        #:output-file compiled
+                        #:from wisp
+                        #:opts (optimizations-for-level 0)
+                        #:env env)
+          (format (current-error-port) "OK\n")
+          (force-output (current-error-port)))
+        compiled)
+      (lambda args
+        ;; TODO: produce more detailed error message
+        (format (current-error-port)
+                "Failed to compile ~a~%" file)
+        #f))))
 
-  (filter-map (lambda (path)
-                (let* ((file     (substring path prefix-len))
-                       (compiled (string-append
-                                  (dirname path) "/"
-                                  (basename path (wisp-suffix path))
-                                  ".go"))
-                       (module   (wisp-file-name->module-name file)))
-                  (catch #t
-                    (lambda ()
-                      (when (or (not (file-exists? compiled))
-                                (let ((sc (stat compiled))
-                                      (ss (stat path)))
-                                  (> (stat:mtime ss)
-                                     (stat:mtime sc))))
-                        (format (current-error-port) "Compiling ~a..." path)
-                        (force-output (current-error-port))
-                        (compile-file path
-                                      #:output-file compiled
-                                      #:from wisp
-                                      #:opts (optimizations-for-level 0))
-                        (format (current-error-port) "OK\n")
-                        (force-output (current-error-port))
-                        (load-compiled compiled))
-                      (resolve-interface module))
-                    (lambda args
-                      ;; Report the error, but keep going.
-                      (warn-about-load-error module args)
-                      #f))))
-              (wisp-files (if sub-directory
-                              (string-append directory "/" sub-directory)
-                              directory))))
+;; Taken from (guix ui).
+(define (make-user-module modules)
+  "Return a new user module with the additional MODULES loaded."
+  ;; Module in which the machine description file is loaded.
+  (let ((module (make-fresh-user-module)))
+    (for-each (lambda (iface)
+                (module-use! module (resolve-interface iface)))
+              modules)
+    module))
 
-(define* (all-workflow-modules #:optional (path (%workflow-module-path)))
-  "Return the list of workflow modules found in PATH, a list of directories to
-search."
-  (fold-right (lambda (spec result)
-                (match spec
-                  ((? string? directory)
-                   (append (scheme-modules directory
-                                           #:warn warn-about-load-error)
-                           (wisp-modules directory)
-                           result))
-                  ((directory . sub-directory)
-                   (append (scheme-modules directory sub-directory
-                                           #:warn warn-about-load-error)
-                           (wisp-modules directory sub-directory)
-                           result))))
-              '()
-              path))
+(define (load-workflow file)
+  "Load the workflow specified in FILE in the context of a new module
+where all the basic GWL modules are available."
+  (load* file (make-user-module '((gwl processes)
+                                  (gwl workflows)
+                                  (gwl sugar)
+                                  (srfi srfi-1)))))
 
 
-(define (fold-thing pred proc init)
-  "Call (PROC ITEM RESULT) for each item matching PRED in workflow
-modules, using INIT as the initial value of RESULT.  It is guaranteed
-to never traverse the same item twice."
-  (identity   ; discard second return value
-   (fold2 (lambda (module result seen)
-            (fold2 (lambda (var result seen)
-                     (if (and (pred var)
-                              (not (vhash-assq var seen)))
-                         (values (proc var result)
-                                 (vhash-consq var #t seen))
-                         (values result seen)))
-                   result
-                   seen
-                   (module-map (lambda (sym var)
-                                 (false-if-exception (variable-ref var)))
-                               module)))
-          init
-          vlist-null
-          (all-workflow-modules))))
+(define-record-type <location>
+  (make-location file line column)
+  location?
+  (file          location-file)         ; file name
+  (line          location-line)         ; 1-indexed line
+  (column        location-column))      ; 0-indexed column
 
-(define (fold-workflows proc init)
-  (fold-thing workflow? proc init))
+(define (location file line column)
+  "Return the <location> object for the given FILE, LINE, and COLUMN."
+  (and line column file
+       (make-location file line column)))
 
-(define (fold-processes proc init)
-  (fold-thing process? proc init))
+(define (source-properties->location loc)
+  "Return a location object based on the info in LOC, an alist as returned
+by Guile's `source-properties', `frame-source', `current-source-location',
+etc."
+  ;; In accordance with the GCS, start line and column numbers at 1.  Note
+  ;; that unlike LINE and `port-column', COL is actually 1-indexed here...
+  (match loc
+    ((('line . line) ('column . col) ('filename . file)) ;common case
+     (and file line col
+          (make-location file (+ line 1) col)))
+    (#f
+     #f)
+    (_
+     (let ((file (assq-ref loc 'filename))
+           (line (assq-ref loc 'line))
+           (col  (assq-ref loc 'column)))
+       (location file (and line (+ line 1)) col)))))
+
+(define (location->source-properties loc)
+  "Return the source property association list based on the info in LOC,
+a location object."
+  `((line     . ,(and=> (location-line loc) 1-))
+    (column   . ,(location-column loc))
+    (filename . ,(location-file loc))))
+
+;; TODO: add gettext support
+(define (G_ msg) msg)
+
+;; TODO: prettify, add colors, etc
+(define (report-error . args)
+  (apply format (current-error-port) args))
+(define (display-hint . args)
+  (apply format (current-error-port) args))
+
+;; Taken from (guix ui).
+(define (known-variable-definition variable)
+  "Search among the currently loaded modules one that defines a variable named
+VARIABLE and return it, or #f if none was found."
+  (define (module<? m1 m2)
+    (match (module-name m2)
+      (('gwl _ ...) #t)
+      (_ #f)))
+
+  (let loop ((modules     (list (resolve-module '() #f #f #:ensure #f)))
+             (suggestions '())
+             (visited     (setq)))
+    (match modules
+      (()
+       ;; Pick the "best" suggestion.
+       (match (sort suggestions module<?)
+         (() #f)
+         ((first _ ...) first)))
+      ((head tail ...)
+       (if (set-contains? visited head)
+           (loop tail suggestions visited)
+           (let ((visited (set-insert head visited))
+                 (next    (append tail
+                                  (hash-map->list (lambda (name module)
+                                                    module)
+                                                  (module-submodules head)))))
+             (match (module-local-variable head variable)
+               (#f (loop next suggestions visited))
+               (_
+                (match (module-name head)
+                  (('gwl _ ...) head)   ;must be that one
+                  (_ (loop next (cons head suggestions) visited)))))))))))
+
+(define* (report-unbound-variable-error args #:key frame)
+  "Return the given unbound-variable error, where ARGS is the list of 'throw'
+arguments."
+  (match args
+    ((key . args)
+     (print-exception (current-error-port) frame key args)))
+  (match args
+    (('unbound-variable proc message (variable) _ ...)
+     (match (known-variable-definition variable)
+       (#f
+        (display-hint (G_ "Did you forget a @code{use-modules} form?")))
+       ((? module? module)
+        (display-hint (format #f (G_ "Did you forget @code{(use-modules ~a)}?")
+                              (module-name module))))))))
+
+;; Adapted from (guix ui).
+(define* (report-load-error file args #:optional frame)
+  "Report the failure to load FILE, a user-provided Scheme or Wisp file.
+ARGS is the list of arguments received by the 'throw' handler."
+  (match args
+    (('system-error . rest)
+     (let ((err (system-error-errno args)))
+       (report-error (G_ "failed to load '~a': ~a~%") file (strerror err))))
+    (('read-error "scm_i_lreadparen" message _ ...)
+     ;; Guile's missing-paren messages are obscure so we make them more
+     ;; intelligible here.
+     (if (string-suffix? "end of file" message)
+         (let ((location (string-drop-right message
+                                            (string-length "end of file"))))
+           (format (current-error-port) (G_ "~amissing closing parenthesis~%")
+                   location))
+         (apply throw args)))
+    (('syntax-error proc message properties form . rest)
+     (let ((loc (source-properties->location properties)))
+       (report-error loc (G_ "~a~%") message)))
+    (('unbound-variable _ ...)
+     (report-unbound-variable-error args #:frame frame))
+    ((key args ...)
+     (report-error (G_ "failed to load '~a':~%") file)
+     (match args
+       (((? symbol? proc) (? string? message) (args ...) . rest)
+        (display-error frame (current-error-port) proc message
+                       args rest))
+       (_
+        ;; Some exceptions like 'git-error' do not follow Guile's convention
+        ;; above and need to be printed with 'print-exception'.
+        (print-exception (current-error-port) frame key args))))))
+
+(define (last-frame-with-source stack)
+  "Walk stack upwards and return the last frame that has source location
+information, or #f if it could not be found."
+  (define (frame-with-source frame)
+    ;; Walk from FRAME upwards until source location information is found.
+    (let loop ((frame    frame)
+               (previous frame))
+      (if (not frame)
+          previous
+          (if (frame-source frame)
+              frame
+              (loop (frame-previous frame) frame)))))
+
+  (let* ((depth (stack-length stack))
+         (last  (and (> depth 0) (stack-ref stack 0))))
+    (frame-with-source (if (> depth 1)
+                           (stack-ref stack 1)    ;skip the 'throw' frame
+                           last))))
 
 
-(define find-workflow-by-name
-  (let ((workflows (delay
-                     (fold-workflows (lambda (p r)
-                                       (vhash-cons (workflow-name p) p r))
-                                     vlist-null)))
-        (version>? (lambda (p1 p2)
-                     (version>? (workflow-version p1) (workflow-version p2)))))
-    (lambda* (name #:optional version)
-      "Return the list of workflows with the given NAME.  If VERSION is not #f,
-then only return workflows whose version is prefixed by VERSION, sorted in
-decreasing version order."
-      (let ((matching (sort (vhash-fold* cons '() name (force workflows))
-                            version>?)))
-        (if version
-            (filter (lambda (workflow)
-                      (and=> (workflow-version workflow)
-                             (cut string-prefix? version <>)))
-                    matching)
-            matching)))))
+;; Adapted from (guix ui).
+(define* (load* file user-module)
+  "Load the user provided Scheme or Wisp source code FILE."
+  (define (error-string frame args)
+    (call-with-output-string
+      (lambda (port)
+        (apply display-error frame port (cdr args)))))
 
-(define find-workflows
-  (let ((workflows (delay (fold-workflows cons '()))))
-    (lambda (keyword)
-      "Return the list of workflows matching the given KEYWORD."
-      (filter
-       (lambda (workflow)
-         (any (lambda (accessor)
-                (string-contains-ci (accessor workflow) keyword))
-              (list workflow-full-name workflow-synopsis workflow-description)))
-       (force workflows)))))
+  (define tag
+    (make-prompt-tag "user-code"))
 
-
-(define find-process-by-name
-  (let ((processes (delay
-                     (fold-processes (lambda (p r)
-                                       (vhash-cons (process-name p) p r))
-                                     vlist-null)))
-        (version>? (lambda (p1 p2)
-                     (version>? (process-version p1) (process-version p2)))))
-    (lambda* (name #:optional version)
-      "Return the list of processes with the given NAME.  If VERSION is not #f,
-then only return processes whose version is prefixed by VERSION, sorted in
-decreasing version order."
-      (let ((matching (sort (vhash-fold* cons '() name (force processes))
-                            version>?)))
-        (if version
-            (filter (lambda (process)
-                      (and=> (process-version process)
-                             (cut string-prefix? version <>)))
-                    matching)
-            matching)))))
+  (catch #t
+    (lambda ()
+      (save-module-excursion
+       (lambda ()
+         (set-current-module user-module)
 
-(define find-processes
-  (let ((processes (delay (fold-processes cons '()))))
-    (lambda (keyword)
-      "Return the list of processes matching the given KEYWORD."
-      (filter
-       (lambda (process)
-         (any (lambda (accessor)
-                (string-contains-ci (accessor process) keyword))
-              (list process-name process-synopsis process-description)))
-       (force processes)))))
+         ;; Hide the "auto-compiling" messages.
+         (call-with-prompt tag
+           (lambda ()
+             (and=> (if (wisp-suffix file)
+                        (compile-wisp file #:env user-module)
+                        (let ((compiled (string-append
+                                         (dirname file) "/"
+                                         (basename file ".scm") ".go")))
+                          (compile-file file #:env user-module
+                                        #:output-file compiled)
+                          compiled))
+                    (lambda (compiled)
+                      ;; Give 'load-compiled' an absolute file name
+                      ;; so that it doesn't try to search for FILE
+                      ;; in %LOAD-COMPILED-PATH.
+                      (load-compiled (canonicalize-path compiled)))))
+           (const #f)))))
+    (lambda args
+      ;; TODO: error handling should happen in the unwind handler, but
+      ;; not all errors end up there, so for now we just print
+      ;; everything here :-/
+      (format (current-error-port) "Error: ~a~%" args)
+      ;; Keep going...
+      #f)
+    (rec (handle-error . args)
+         ;; Capture the stack up to this procedure call, excluded, and pass
+         ;; the faulty stack frame to 'report-load-error'.
+
+         ;; TODO: (make-stack #t tag handle-error) returns #F, so the
+         ;; stack trace is now longer than it should be.
+         (let* ((stack (make-stack #t tag))
+                (frame (last-frame-with-source stack)))
+           (report-load-error file args frame)
+           (newline (current-error-port))
+           (display-backtrace stack (current-error-port))))))

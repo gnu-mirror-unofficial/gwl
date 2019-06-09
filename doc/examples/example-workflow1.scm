@@ -1,10 +1,5 @@
-(define-module (example-workflow1)
-  #:use-module (gwl processes)
-  #:use-module (gwl workflows)
-  #:use-module (gwl sugar) ; for inline bash snippet
-  #:use-module ((gnu packages bash) #:select (bash))
-  #:use-module ((gnu packages compression) #:select (gzip))
-  #:use-module (srfi srfi-1))
+(import (gnu packages bash)
+        (gnu packages compression))
 
 (define-public create-file
   (process

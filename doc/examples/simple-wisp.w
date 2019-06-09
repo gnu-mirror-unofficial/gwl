@@ -1,10 +1,3 @@
-define-module : simple-wisp
-
-import
-  gwl processes
-  gwl workflows
-  gwl sugar
-
 process: greet
   package-inputs "hello"
   procedure '(system "hello")
