@@ -1,9 +1,4 @@
-define-module
-    test
-
-use-modules
-    gwl workflows
-    gwl processes
+import
     gnu packages python
 
 process: python-test
