@@ -152,14 +152,11 @@ Sometimes it may be more convenient, though, to express the procedure in
 a different language, such as GNU R, Python, or maybe even in Bash.
 
 The GWL provides special syntax for embedding code snippets.  The
-special syntax is provided in the @code{(gwl sugar)} module.  Here is an
-example of a process that runs an embedded Bash shell script:
+special syntax is provided in the @code{(gwl sugar)} module, and is
+loaded by default.  Here is an example of a process that runs an
+embedded Bash shell script:
 
 @example
-import
-  gwl processes
-  gwl sugar
-
 process: run-bash
   packages "bash"
   procedure # bash @{ echo "hello from bash!" @}
@@ -184,10 +181,6 @@ refers to the @code{name} and @code{inputs} fields of the current
 process:
 
 @example
-import
-  gwl processes
-  gwl sugar
-
 process: run-bash
   packages "bash"
   inputs
@@ -206,10 +199,6 @@ example, the shell snippet refers to only selected values of the
 @code{inputs} field of the current process:
 
 @example
-import
-  gwl processes
-  gwl sugar
-
 process: run-bash
   packages "bash"
   inputs
