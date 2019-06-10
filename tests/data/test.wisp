@@ -7,7 +7,7 @@ process: python-test
     inputs
         list "A" "B" "C"
     procedure
-        . ##python
+        . # python {
 import os
 
 def hello():
@@ -16,7 +16,7 @@ def hello():
   print("name:", os.environ["_GWL_PROCESS_NAME"])
 
 hello()
-##
+}
 
 workflow: test-workflow
     processes
