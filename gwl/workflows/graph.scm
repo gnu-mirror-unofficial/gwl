@@ -43,8 +43,8 @@ label=<<FONT POINT-SIZE=\"14\">~a</FONT><BR/>\
             (take-color)
             (string-upcase pretty-name)
             (process-synopsis process)
-            (let ((inputs (process-package-inputs process)))
-              (match (process-package-inputs process)
+            (let ((inputs (process-packages process)))
+              (match (process-packages process)
                 (() "")
                 (inputs (format #f "<BR/>Uses: ~{~a~^, ~}."
                                 (map (match-lambda

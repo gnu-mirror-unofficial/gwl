@@ -23,8 +23,8 @@
                process-name
                process-full-name
                process-version
-               process-package-inputs
-               process-data-inputs
+               process-packages
+               process-inputs
                process-run-time
                process-procedure
                process-synopsis
@@ -67,4 +67,9 @@
 
                ;; For the lack of a better place.
                derivation->script
-               default-guile))
+               default-guile)
+  #:export (process-package-inputs
+            process-data-inputs))
+
+(define process-package-inputs process-packages)
+(define process-data-inputs process-inputs)

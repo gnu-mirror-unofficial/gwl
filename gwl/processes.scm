@@ -40,8 +40,8 @@
             process-name
             process-full-name
             process-version
-            process-package-inputs
-            process-data-inputs
+            process-packages
+            process-inputs
             process-run-time
             process-procedure
             process-synopsis
@@ -166,9 +166,9 @@
    #:accessor process-description
    #:init-keyword #:description
    #:init-value "")
-  (package-inputs
-   #:accessor process-package-inputs
-   #:init-keyword #:package-inputs
+  (packages
+   #:accessor process-packages
+   #:init-keyword #:packages
    #:init-value '()
    #:implicit-list? #t
    #:validator? (lambda (value)
@@ -190,9 +190,9 @@
             (x
              (error (format #f "must provide package value or string: ~a~%" x))))
           value)))
-  (data-inputs
-   #:accessor process-data-inputs
-   #:init-keyword #:data-inputs
+  (inputs
+   #:accessor process-inputs
+   #:init-keyword #:inputs
    #:init-value '()
    #:implicit-list? #t)
   (output-path
@@ -357,8 +357,8 @@ of PROCESS."
      ,(or (process-description process) ""))
     ;; TODO: this doesn't always make sense as data inputs could be
     ;; procedures.
-    ("_GWL_PROCESS_DATA_INPUTS" .
-     ,(string-join (remove keyword? (process-data-inputs process))))
+    ("_GWL_PROCESS_INPUTS" .
+     ,(string-join (remove keyword? (process-inputs process))))
     ("_GWL_PROCESS_OUTPUT_PATH" .
      ,(or (process-output-path process) ""))
     ("_GWL_PROCESS_OUTPUTS" .
@@ -464,7 +464,7 @@ plain S-expression."
 
 (define (process-takes-available process)
   "Returns #T when the data inputs of the PROCESS exist."
-  (match (process-data-inputs process)
+  (match (process-inputs process)
     ((? list? inputs)
      (every file-exists? inputs))
     (_ #t)))

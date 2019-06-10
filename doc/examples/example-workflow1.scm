@@ -16,10 +16,10 @@
 (define-public compress-file
   (process
    (name "compress-file")
-   (package-inputs (list gzip bash))
-   (data-inputs (list "/tmp/file.txt"))
+   (packages (list gzip bash))
+   (inputs (list "/tmp/file.txt"))
    (outputs (list "/tmp/file.txt.gz"))
    (run-time (complexity
               (space (megabytes 20))
               (time  10)))
-   (procedure # bash { gzip {{data-inputs}} -c > {{outputs}} })))
+   (procedure # bash { gzip {{inputs}} -c > {{outputs}} })))

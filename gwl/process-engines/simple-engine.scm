@@ -49,7 +49,7 @@ in PROCESS, with PROCEDURE's imported modules in its search path."
   (let* ((name (process-full-name process))
          (exp (procedure->gexp process))
          (out (process-output-path process))
-         (packages (process-package-inputs process))
+         (packages (process-packages process))
          (manifest (packages->manifest packages))
          (search-paths (delete-duplicates
                         (map search-path-specification->sexp

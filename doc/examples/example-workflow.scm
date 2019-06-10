@@ -16,13 +16,13 @@
 (define (compress-file input)
   (process
    (name (string-append "compress-file-" (basename input)))
-   (package-inputs (list gzip bash))
-   (data-inputs (list input))
+   (packages (list gzip bash))
+   (inputs (list input))
    (outputs (list (string-append input ".gz")))
    (run-time (complexity
               (space   (megabytes 20))
               (time    10)))
-   (procedure # bash { gzip {{data-inputs}} -c > {{outputs}} })))
+   (procedure # bash { gzip {{inputs}} -c > {{outputs}} })))
 
 (define dynamic-workflow
   (workflow

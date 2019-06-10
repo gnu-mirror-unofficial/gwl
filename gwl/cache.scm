@@ -15,7 +15,7 @@
 
 (define-module (gwl cache)
   #:use-module ((gwl processes)
-                #:select (process->script process-data-inputs))
+                #:select (process->script process-inputs))
   #:use-module ((gwl workflows)
                 #:select (workflow-restrictions))
   #:use-module ((gwl workflows utils)
@@ -66,7 +66,7 @@ considered when computing the hash."
                      ;; Hash of mapped free inputs.
                      (match (filter-map (lambda (input)
                                           (and=> (assoc-ref free-inputs-map input) first))
-                                        (process-data-inputs process))
+                                        (process-inputs process))
                        (() (list))
                        (file-names
                         (append-map (lambda (file-name)

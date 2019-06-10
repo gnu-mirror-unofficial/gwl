@@ -118,7 +118,7 @@ with the outputs of other processes."
     (map (lambda (process)
            (cons process
                  (filter-map (cut assoc-ref process-by-output <>)
-                             (process-data-inputs process))))
+                             (process-inputs process))))
          processes)))
 
 ;; This procedure would better be named workflow-processes->list, but
@@ -147,7 +147,7 @@ are not provided by the outputs of any other process."
   (let ((processes (workflow-processes workflow)))
     (delete-duplicates
      (lset-difference equal?
-                      (append-map process-data-inputs processes)
+                      (append-map process-inputs processes)
                       (append-map process-outputs processes)))))
 
 (define (workflow-full-name workflow)

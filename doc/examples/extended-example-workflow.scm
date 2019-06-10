@@ -7,13 +7,13 @@
 (define (list-file-template filename)
   (process
    (name (string-append "list-file-" (basename filename)))
-   (package-inputs (list bash gzip))
-   (data-inputs (list filename))
+   (packages (list bash gzip))
+   (inputs (list filename))
    (outputs (list (string-append filename ".list")))
    (run-time (complexity
               (space (megabytes 20))
               (time 10)))
-   (procedure # bash { gzip --list {{data-inputs}} > {{outputs}} })))
+   (procedure # bash { gzip --list {{inputs}} > {{outputs}} })))
 
 (define-public extended-dynamic-workflow
   (let* (;; Get all processes of the other workflow.

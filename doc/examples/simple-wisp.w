@@ -1,9 +1,9 @@
 process: greet
-  package-inputs "hello"
+  packages "hello"
   procedure '(system "hello")
 
 process: sleep
-  package-inputs "coreutils"
+  packages "coreutils"
   procedure '(begin (display "Sleeping...\n")
                     (system* "sleep" "10"))
 

@@ -122,15 +122,15 @@
 (" (span (@ (class "syntax-special")) "define-public") " samtools-index
   (process
     (name " (span (@ (class "syntax-string")) "\"samtools-index\"") ")
-" (strong "    (package-inputs (list samtools))
-    (data-inputs " (span (@ (class "syntax-string"))"\"/tmp/sample.bam\"") ")")
+" (strong "    (packages (list samtools))
+    (inputs " (span (@ (class "syntax-string"))"\"/tmp/sample.bam\"") ")")
 "
     (run-time (complexity
                 (space (megabytes 500))
                 (time  (hours 2))))
     (procedure
      " (strong "`(system (string-append " (span (@ (class "syntax-string"))
-     "\"samtools index \"") " ,data-inputs" (span (@ (class "syntax-close")) "))"))
+     "\"samtools index \"") " ,inputs" (span (@ (class "syntax-close")) "))"))
 (span (@ (class "syntax-close")) ")))"))))
 
      (p "In the module " (code "(gnu packages bioinformatics)") " we can find"
@@ -139,7 +139,7 @@
         " program is available when running the process.")
 
      (p "It is important to list " (em "all") " packages required to run the"
-        " process in the " (code "package-inputs") " field.")
+        " process in the " (code "packages") " field.")
 
      (p "For the newcomer to Scheme, the comma might seem misplaced.  However,"
         " notice the backquote (`) before " (code "system") "?  This is the "
@@ -147,8 +147,8 @@
         (a (@ (href ,(string-append %guile-manual "/Expression-Syntax.html")))
            "quasiquote") ", and the seemingly misplaced comma"
         " is in on the plot.  As you might have guessed, the value of the "
-        (code "data-inputs") " field will be put into the place of "
-        (code ",data-inputs") " inside the " (code "system") " command.")
+        (code "inputs") " field will be put into the place of "
+        (code ",inputs") " inside the " (code "system") " command.")
 
      (h3 (a (@ (href "http://www.gnu.org/philosophy/free-sw.html"))
             "Free Software") " all the way down")

@@ -3,13 +3,13 @@
 (define-public greet
   (process
    (name "greet")
-   (package-inputs (list hello))
+   (packages (list hello))
    (procedure '(system "hello"))))
 
 (define-public sleep
   (process
    (name "sleep")
-   (package-inputs (list coreutils))
+   (packages (list coreutils))
     (procedure
      '(begin
         (display "Sleeping...\n")

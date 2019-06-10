@@ -83,14 +83,14 @@ returns a process.  This is what it looks like:")
 (define (compress-file input)
   (process
     (name (string-append \"compress-file-\" (basename input)))
-    (package-inputs (list gzip))
-    (data-inputs (list input))
+    (packages (list gzip))
+    (inputs (list input))
     (outputs (list (string-append input \".gz\")))
     (run-time (complexity
                 (space   (megabytes 20))
                 (time    10)))
     (procedure
-     `(system ,(string-append \"gzip \" (first data-inputs)
+     `(system ,(string-append \"gzip \" (first inputs)
                               \" -c > \" (first outputs))))))")))))
 
      (h3 "Dynamic workflows")
@@ -109,7 +109,7 @@ simplify the work for us:")
 
      (p "In GWL, we can define process dependencies explicitly.  This
 is useful when processes don't have explicit " (code "outputs") "
-or " (code "data-inputs") ".  Processes can do something other than
+or " (code "inputs") ".  Processes can do something other than
 producing output files, such as inserting data in a database, so
 process dependencies can be specified manually.")
 

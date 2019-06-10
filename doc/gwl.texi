@@ -161,7 +161,7 @@ import
   gwl sugar
 
 process: run-bash
-  package-inputs "bash"
+  packages "bash"
   procedure # bash @{ echo "hello from bash!" @}
 @end example
 
@@ -180,7 +180,7 @@ Within code snippets a special syntax is supported for accessing
 variables.  Any uninterrupted value enclosed in double braces is
 considered a reference to a variable, which may also be the name of
 other process fields.  In the following example, the shell snippet
-refers to the @code{name} and @code{data-inputs} fields of the current
+refers to the @code{name} and @code{inputs} fields of the current
 process:
 
 @example
@@ -189,21 +189,21 @@ import
   gwl sugar
 
 process: run-bash
-  package-inputs "bash"
-  data-inputs
+  packages "bash"
+  inputs
     . "a"
     . "b"
     . "c"
   procedure # bash @{
     echo "The name of this process: @{@{name@}@}."
-    echo "The data inputs are: @{@{data-inputs@}@}."
+    echo "The data inputs are: @{@{inputs@}@}."
   @}
 @end example
 
 @cindex accessing named values in variables, code snippets
 You can even access named or tagged values in lists.  In the following
 example, the shell snippet refers to only selected values of the
-@code{data-inputs} field of the current process:
+@code{inputs} field of the current process:
 
 @example
 import
@@ -211,15 +211,15 @@ import
   gwl sugar
 
 process: run-bash
-  package-inputs "bash"
-  data-inputs
+  packages "bash"
+  inputs
     . "a"
     . #:mine
     . "b"
     . "c"
     . #:yours "d"
   procedure # bash @{
-    echo "This is mine: @{@{data-inputs:mine@}@}, and this is yours: @{@{data-inputs:yours@}@}."
+    echo "This is mine: @{@{inputs:mine@}@}, and this is yours: @{@{inputs:yours@}@}."
   @}
 @end example
 
@@ -238,7 +238,7 @@ The following variables may be set:
 @item @code{_GWL_PROCESS_NAME}
 @item @code{_GWL_PROCESS_SYNOPSIS}
 @item @code{_GWL_PROCESS_DESCRIPTION}
-@item @code{_GWL_PROCESS_DATA_INPUTS}
+@item @code{_GWL_PROCESS_INPUTS}
 @item @code{_GWL_PROCESS_OUTPUT_PATH}
 @item @code{_GWL_PROCESS_OUTPUTS}
 @item @code{_GWL_PROCESS_COMPLEXITY_TIME}

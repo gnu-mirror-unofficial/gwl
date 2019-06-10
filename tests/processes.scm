@@ -1,4 +1,4 @@
-;;; Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -25,17 +25,17 @@
   (let ((proc (process
                (name "anything")
                (procedure '(const #t))
-               (data-inputs 'this 'that 'whatever))))
+               (inputs 'this 'that 'whatever))))
     (equal? '(this that whatever)
-            (process-data-inputs proc))))
+            (process-inputs proc))))
 
 (test-assert "process macro supports implicit lists that are already lists"
   (let ((proc (process
                (name "anything")
                (procedure '(const #t))
-               (data-inputs (list 'this 'that 'whatever)))))
+               (inputs (list 'this 'that 'whatever)))))
     (equal? '(this that whatever)
-            (process-data-inputs proc))))
+            (process-inputs proc))))
 
 (test-error "process validates complexity type 1/2" #t
             (process
