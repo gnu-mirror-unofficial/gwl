@@ -22,15 +22,19 @@
                 #:select (derivation->output-path
                           build-derivations))
   #:use-module ((guix packages)
-                #:select (package?))
+                #:select (package-file package?))
   #:use-module ((gnu packages)
                 #:select (specification->package))
   #:use-module (guix gexp)
-  #:use-module ((guix monads) #:select (mlet return))
+  #:use-module ((guix monads) #:select (mlet mapm return))
   #:use-module ((guix store)
                 #:select (run-with-store
                           with-store
                           %store-monad))
+  #:use-module ((guix modules)
+                #:select (source-module-closure))
+  #:use-module (gnu system file-systems)
+  #:use-module (gnu build linux-container)
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -354,33 +358,84 @@ of PROCESS."
   (code      code-snippet-code))
 
 (define (procedure->gexp process)
-  "Transform the procedure of PROCESS to a G-expression or return the
-plain S-expression."
+  "Transform the procedure of PROCESS to a G-expression."
   (define (sanitize-path path)
     (string-join (delete ".." (string-split path #\/))
                  "/"))
-  (match (process-procedure process)
-    ((? gexp? g) g)
-    ((? list? s) s)
-    (($ <code-snippet> name arguments code)
-     (let ((call (or (and=> (find (lambda (lang)
-                                    (eq? name (language-name lang)))
-                                  languages)
-                            language-call)
-                     ;; There is no pre-defined way to execute the
-                     ;; snippet.  Use generic approach.
-                     (lambda (process code)
-                       #~(begin
-                           (for-each (lambda (pair)
-                                       (setenv (car pair) (cdr pair)))
-                                     '#$(process->env process))
-                           (apply system*
-                                  (string-append (getenv "_GWL_PROFILE")
-                                                 #$(sanitize-path (symbol->string name)))
-                                  '#$(append arguments
-                                             (list code))))))))
-       (call process code)))
-    (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
+  (let ((gexp
+         (match (process-procedure process)
+           ((? gexp? g) g)
+           ((? list? s) s)
+           (($ <code-snippet> name arguments code)
+            (let ((call (or (and=> (find (lambda (lang)
+                                           (eq? name (language-name lang)))
+                                         languages)
+                                   language-call)
+                            ;; There is no pre-defined way to execute the
+                            ;; snippet.  Use generic approach.
+                            (lambda (process code)
+                              #~(begin
+                                  (for-each (lambda (pair)
+                                              (setenv (car pair) (cdr pair)))
+                                            '#$(process->env process))
+                                  (apply system*
+                                         (string-append (getenv "_GWL_PROFILE")
+                                                        #$(sanitize-path (symbol->string name)))
+                                         '#$(append arguments
+                                                    (list code))))))))
+              (call process code)))
+           (whatever (error (format #f "unsupported procedure: ~a\n" whatever))))))
+    (containerize gexp process)))
+
+(define (containerize exp process)
+  "Wrap EXP, an S-expression or G-expression, in a G-expression that
+causes EXP to be run in a container according to the requirements
+specified in PROCESS."
+  (let* ((package-dirs
+          (with-store store
+            (run-with-store store
+              (mapm %store-monad package-file
+                    (process-packages process)))))
+         (data-inputs
+          (remove keyword? (process-inputs process)))
+         (output-dirs
+          (delete-duplicates
+           (map dirname (process-outputs process))))
+         (input-mappings
+          (map (lambda (location)
+                 (file-system-mapping
+                  (source location)
+                  (target location)
+                  (writable? #f)))
+               (lset-difference string=?
+                                (append package-dirs
+                                        data-inputs)
+                                output-dirs)))
+         (output-mappings
+          (map (lambda (dir)
+                 (file-system-mapping
+                  (source dir)
+                  (target dir)
+                  (writable? #t)))
+               output-dirs))
+         (specs
+          (map (compose file-system->spec
+                        file-system-mapping->bind-mount)
+               (append input-mappings
+                       output-mappings))))
+    (with-imported-modules (source-module-closure
+                            '((gnu build linux-container)
+                              (gnu system file-systems)))
+      #~(begin
+          (use-modules (gnu build linux-container)
+                       (gnu system file-systems))
+          (let ((thunk (lambda () #$exp)))
+            (if (getenv "GWL_CONTAINERIZE")
+                (call-with-container (append %container-file-systems
+                                             (map spec->file-system
+                                                  '#$specs))
+                  thunk)
+                (thunk)))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; ADDITIONAL FUNCTIONS
@@ -463,6 +518,7 @@ ENGINE and runs the resulting script."
 (define (hours number)
   (* number 3600))
 
+;; TODO: don't use primitive-eval!
 (define-syntax-rule
   (define-dynamically name value)
   (primitive-eval `(define-public ,name ,value)))

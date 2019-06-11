@@ -55,13 +55,6 @@
              (procedure '(const #t))
              (garbage 'this-is)))
 
-(test-assert "procedure->gexp supports s-expressions"
-  (let ((proc (process
-               (name "s-exp")
-               (procedure '(display "hello")))))
-    (equal? (procedure->gexp proc)
-            (process-procedure proc))))
-
 (test-assert "procedure->gexp supports Python code"
   (let* ((proc (process
                 (name "python")
