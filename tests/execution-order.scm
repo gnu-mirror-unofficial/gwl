@@ -45,6 +45,19 @@
           (list p5 p2 p3 p4)
           (list p6 p5)))))
 
+(define wf2
+  (workflow
+   (name "test-workflow")
+   (processes
+    (graph (p2 -> p1)
+           (p3 -> p1)
+           (p5 -> p2 p3 p4)
+           (p6 -> p5)))))
+
+(test-equal "deprecated restrictions can be expressed with processes field"
+  (workflow-restrictions wf2)
+  (workflow-restrictions wf))
+
 (test-assert "sequential-execution-order"
   (let* ((order (sequential-execution-order
                  (workflow-processes wf)
