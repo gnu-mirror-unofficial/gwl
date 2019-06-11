@@ -26,6 +26,7 @@ SOURCES =                                                 \
   guix/scripts/workflow.scm                               \
   guix/workflows.scm                                      \
   gwl/cache.scm                                           \
+  gwl/oop.scm                                             \
   gwl/processes.scm                                       \
   gwl/process-engines.scm                                 \
   gwl/process-engines/bash-engine.scm                     \

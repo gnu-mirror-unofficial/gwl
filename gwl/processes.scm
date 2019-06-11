@@ -15,6 +15,8 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl processes)
+  #:use-module (oop goops)
+  #:use-module (gwl oop)
   #:use-module (gwl process-engines)
   #:use-module ((guix derivations)
                 #:select (derivation->output-path
@@ -34,7 +36,6 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
-  #:use-module (oop goops)
   #:export (process
             process?
             process-name
@@ -148,7 +149,7 @@
 ;; single program, configured through command-line options, given a certain
 ;; input, producing a certain output.
 
-(define-class <process> ()
+(define-class <process> (<gwl-class>)
   ;; Slots
   (name
    #:accessor process-name
@@ -219,75 +220,6 @@
 
 (define (process? thing)
   (is-a? thing <process>))
-
-;; As much as I'd like it, we cannot deal with implicit lists here
-;; because lists may contain keyword tagged items.  Keywords in lists
-;; may very well clash with class initialization keywords, so we need
-;; to use a macro to handle implicit lists.  This initialization
-;; method will only ever receive initargs with proper keyword/value
-;; pairs.
-
-;; TODO: maybe move validation to setters instead of only running them
-;; at initialization time.
-(define-method (initialize (instance <process>) initargs)
-  (define klass (class-of instance))
-  ;; Validate slots
-  (for-each
-   (lambda (slot)
-     (let* ((options (slot-definition-options slot))
-            (keyword (slot-definition-init-keyword slot)))
-       ;; Ensure required slots are filled.
-       (and (memq #:required? options)
-            (or (member keyword initargs)
-                (error (format #f
-                               "~a: Required field `~a' missing.~%"
-                               (class-name klass)
-                               (slot-definition-name slot)))))
-
-       ;; Only perform these checks if a value is provided.
-       (and=> (member keyword initargs)
-              (lambda (tail)
-                ;; Ensure that values for fields accepting implicit lists are
-                ;; normalized.
-                (and (memq #:implicit-list? options)
-                     (match tail
-                       ((_ (? (negate list?) value) . rest)
-                        (list-cdr-set! (find-tail (cut eq? <> keyword) initargs)
-                                       0 (cons (list value) rest)))
-                       (_ #t))) ; it's a list, let it be
-                ;; Run transformers on slot values
-                (match (memq #:transformer options)
-                  ((_ transform . rest)
-                   (match tail
-                     ((_ value . rest)
-                      (let ((new-value (transform instance value)))
-                        (list-cdr-set! (find-tail (cut eq? <> keyword) initargs)
-                                       0 (cons new-value rest))))))
-                  (_ #t))
-
-                ;; Run validators on slot values
-                (match (memq #:validator options)
-                  ((_ validate . rest)
-                   (match tail
-                     ((_ value . rest)
-                      (or (validate value)
-                          (error (format #f
-                                         "~a: field `~a' has the wrong type.~%"
-                                         (class-name klass)
-                                         (slot-definition-name slot)))))))
-                  (_ #t))))))
-   (class-slots klass))
-
-  ;; Reject extraneous fields
-  (let* ((allowed (map slot-definition-init-keyword (class-slots klass)))
-         (provided (filter keyword? initargs)))
-    (match (lset-difference eq? provided allowed)
-      (() #t)
-      (extraneous
-       (error (format #f "~a: extraneous fields: ~{~a ~}~%"
-                      (class-name klass)
-                      (map keyword->symbol extraneous))))))
-  (next-method))
 
 ;; This is a constructor for <process> instances.  It permits the use
 ;; of multiple field values (implicit lists) and cross-field

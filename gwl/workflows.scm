@@ -16,17 +16,18 @@
 
 (define-module (gwl workflows)
   #:use-module (gwl cache)
+  #:use-module (gwl oop)
   #:use-module (gwl processes)
   #:use-module (gwl process-engines)
   #:use-module (gwl workflows execution-order)
   #:use-module (gwl workflows utils)
-  #:use-module (guix records)
   #:use-module (ice-9 match)
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-26)
+  #:use-module (oop goops)
   #:export (workflow
             workflow?
             workflow-name
@@ -51,53 +52,94 @@
 ;;; RECORD TYPES
 ;;; ---------------------------------------------------------------------------
 
-(define-record-type* <workflow>
-  workflow* make-workflow
-  workflow?
+(define-class <workflow> (<gwl-class>)
+  ;; Slots
+  (name
+   #:accessor workflow-name
+   #:init-keyword #:name
+   #:required? #t)
+  (version
+   #:accessor workflow-version
+   #:init-keyword #:version
+   #:init-value #f)
+  (synopsis
+   #:accessor workflow-synopsis
+   #:init-keyword #:synopsis
+   #:init-value "")
+  (description
+   #:accessor workflow-description
+   #:init-keyword #:description
+   #:init-value "")
+  (processes
+   #:accessor workflow-processes*
+   #:init-keyword #:processes
+   #:init-value '()
+   #:implicit-list? #t
+   #:validator? (lambda (value)
+                  (and (list? value)
+                       (every process? value))))
+  (_restrictions)
+  (restrictions
+   #:accessor workflow-restrictions
+   #:init-keyword #:restrictions
+   #:init-value #f
+   #:allocation #:virtual
+   #:slot-ref
+   (lambda (o)
+     (or (slot-ref o '_restrictions)
+         (match (slot-ref o 'processes)
+           (((and association (source target ...)) ...)
+            association)
+           (_ '()))))
+   #:slot-set!
+   (lambda (o a)
+     (format (current-error-port)
+             "workflow: The \"restrictions\" field is deprecated.  \
+Use \"processes\" to specify process dependencies.~%")
+     (slot-set! o '_restrictions a)))
+  ;; Class options
+  #:name "workflow")
 
-  ;; Basic information about the workflow
-  (name workflow-name)
-  (version workflow-version           (default #f))
-  (synopsis workflow-synopsis         (default ""))
-  (description workflow-description   (default ""))
+;; This procedure would better be named workflow-processes->list, but
+;; we keep the name for the benefit of existing workflows depending on
+;; the behaviour of the old record accessor.
+;; TODO: integrate into class definition?
+(define (workflow-processes workflow)
+  "Return a list of all processes."
+  (match (workflow-processes* workflow)
+    (((and association (source target ...)) ...)
+     (delete-duplicates
+      (apply append association) eq?))
+    (x x)))
 
-  ;; Processes are values of the <process> record type.  This field
-  ;; can hold either a plain list of processes or an adjacency list of
-  ;; processes and their dependencies.
-  (processes workflow-processes*)
+(define (workflow? thing)
+  (is-a? thing <workflow>))
 
-  ;; This field is deprecated!
-  ;;
-  ;; The legacy way to specify process dependencies is by providing an
-  ;; adjacency list of processes.
-  (restrictions _workflow-restrictions (default #f)))
-
-;; Taken from (guix deprecation)
-(define (source-properties->location-string properties)
-  "Return a human-friendly, GNU-standard representation of PROPERTIES, a
-source property alist."
-  (let ((file   (assq-ref properties 'filename))
-        (line   (assq-ref properties 'line))
-        (column (assq-ref properties 'column)))
-    (if (and file line column)
-        (format #f "~a:~a:~a" file (+ 1 line) column)
-        ;; TODO: Translate
-        "<unknown location>")))
-
+;; This is a constructor for <workflow> instances.  It permits the use
+;; of multiple field values (implicit lists) and cross-field
+;; references.  It does not, however, validate any fields or their
+;; values.
+;; TODO: support "inherit" syntax.
+;; TODO: merge with "process" macro
 (define-syntax workflow
   (lambda (x)
     (syntax-case x ()
-      ((_ . fields)
-       #`(workflow*
-          #,@(begin (for-each (match-lambda
-                                ;; Warn about deprecated fields
-                                (('restrictions . _)
-                                 (format (current-error-port)
-                                         "~a: The \"restrictions\" field is deprecated.  Use \"processes\" instead.~%"
-                                         (source-properties->location-string (syntax-source x))))
-                                (_ #f))
-                              (syntax->datum #'fields))
-                    #'fields))))))
+      ((_ fields ...)
+       #`(let* (#,@(map (lambda (field)
+                          (syntax-case field ()
+                            ((empty-field)
+                             (syntax-violation #f "workflow: Empty field" #'empty-field))
+                            ((key value)
+                             #'(key value))
+                            ((key values ...)
+                             #'(key (list values ...)))))
+                        #'(fields ...)))
+           (make <workflow>
+             #,@(append-map (lambda (field)
+                              (syntax-case field ()
+                                ((name . rest)
+                                 #`((symbol->keyword 'name) name))))
+                            #'(fields ...))))))))
 
 (define-syntax graph
   (lambda (x)
@@ -120,26 +162,6 @@ with the outputs of other processes."
                  (filter-map (cut assoc-ref process-by-output <>)
                              (process-inputs process))))
          processes)))
-
-;; This procedure would better be named workflow-processes->list, but
-;; we keep the name for the benefit of existing workflows depending on
-;; the behaviour of the old record accessor.
-(define (workflow-processes workflow)
-  "Return a list of all processes."
-  (match (workflow-processes* workflow)
-    (((and association (source target ...)) ...)
-     (delete-duplicates
-      (apply append association) eq?))
-    (x x)))
-
-(define (workflow-restrictions workflow)
-  "Return process restrictions as an alist mapping processes to their
-dependencies."
-  (or (_workflow-restrictions workflow) ; legacy
-      (match (workflow-processes*  workflow)
-        (((and association (source target ...)) ...)
-         association)
-        (_ '()))))
 
 (define (workflow-free-inputs workflow)
   "Return a list of processes and their free inputs, i.e. inputs that
@@ -176,7 +198,8 @@ description: ~a~%processes: ~{~%  * ~a~}~%"
              (map process-full-name
                   (workflow-processes workflow))))))
 
-(set-record-type-printer! <workflow> print-workflow)
+(define-method (write (workflow <workflow>) port)
+  (print-workflow workflow port))
 
 ;;; ---------------------------------------------------------------------------
 ;;; RUNNER FUNCTIONALITY
