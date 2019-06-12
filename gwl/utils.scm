@@ -97,7 +97,7 @@ file."
               modules)
     module))
 
-(define (load-workflow file)
+(define (load-workflow* file)
   "Load the workflow specified in FILE in the context of a new module
 where all the basic GWL modules are available."
   (let ((result (load* file (make-user-module '((gwl processes)
@@ -110,6 +110,15 @@ where all the basic GWL modules are available."
               file)
       (exit 1))
     result))
+
+;; Helper to handle relative file names.
+(define-syntax-rule (load-workflow file)
+  (let ((target (string-append (dirname (or (current-filename) ""))
+                               "/" file)))
+    (if (file-exists? target)
+        (load-workflow* target)
+        (load-workflow* file))))
+
 
 
 (define-record-type <location>
