@@ -54,10 +54,12 @@
   (lambda (x)
     (syntax-case x ()
       ((_ id rest ...)
-       #`(define-public id
-           (workflow
-            (name #,(symbol->string (syntax->datum #'id)))
-            rest ...))))))
+       #`(begin
+           (define-public id
+             (workflow
+              (name #,(symbol->string (syntax->datum #'id)))
+              rest ...))
+           id)))))
 
 (eval-when (expand load compile eval)
   (define (reader-extension-inline-code chr port)
