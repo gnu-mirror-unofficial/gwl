@@ -1,4 +1,4 @@
-(import (gnu packages compression)
+(import (only (gnu packages compression) gzip)
         (gnu packages bash))
 
 ;; We are going to extend "example-workflow".
