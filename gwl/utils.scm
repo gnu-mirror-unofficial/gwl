@@ -100,10 +100,16 @@ file."
 (define (load-workflow file)
   "Load the workflow specified in FILE in the context of a new module
 where all the basic GWL modules are available."
-  (load* file (make-user-module '((gwl processes)
-                                  (gwl workflows)
-                                  (gwl sugar)
-                                  (srfi srfi-1)))))
+  (let ((result (load* file (make-user-module '((gwl processes)
+                                                (gwl workflows)
+                                                (gwl sugar)
+                                                (srfi srfi-1))))))
+    (unless (workflow? result)
+      (format (current-error-port)
+              "File `~a' does not evaluate to a workflow value.~%"
+              file)
+      (exit 1))
+    result))
 
 
 (define-record-type <location>
