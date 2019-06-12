@@ -149,12 +149,25 @@ a location object."
     (column   . ,(location-column loc))
     (filename . ,(location-file loc))))
 
+(define (location->string loc)
+  "Return a human-friendly, GNU-standard representation of LOC."
+  (match loc
+    (#f (G_ "<unknown location>"))
+    (($ <location> file line column)
+     (format #f "~a:~a:~a" file line column))))
+
 ;; TODO: add gettext support
 (define (G_ msg) msg)
 
 ;; TODO: prettify, add colors, etc
 (define (report-error . args)
-  (apply format (current-error-port) args))
+  (match args
+    (((? location? loc) . rest)
+     (format (current-error-port)
+             "~a: ~a" (location->string loc)
+             (apply format #f rest)))
+    (_
+     (apply format (current-error-port) args))))
 (define (display-hint . args)
   (apply format (current-error-port) args))
 
