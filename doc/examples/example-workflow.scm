@@ -24,19 +24,16 @@
               (time    10)))
    (procedure # bash { gzip {{inputs}} -c > {{outputs}} })))
 
-(define dynamic-workflow
-  (workflow
-   (name "dynamic-workflow")
-   (processes
-    (let* ((files '("/tmp/one.txt"
-                    "/tmp/two.txt"
-                    "/tmp/three.txt"))
-           (create-file-processes
-            (map create-file files))
-           (compress-file-processes
-            (map compress-file files)))
-      (apply auto-connect
-             (append compress-file-processes
-                     create-file-processes))))))
-
-dynamic-workflow
+(workflow
+ (name "dynamic-workflow")
+ (processes
+  (let* ((files '("/tmp/one.txt"
+                  "/tmp/two.txt"
+                  "/tmp/three.txt"))
+         (create-file-processes
+          (map create-file files))
+         (compress-file-processes
+          (map compress-file files)))
+    (apply auto-connect
+           (append compress-file-processes
+                   create-file-processes)))))

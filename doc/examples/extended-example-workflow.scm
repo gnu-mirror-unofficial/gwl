@@ -1,8 +1,10 @@
 (import (only (gnu packages compression) gzip)
-        (gnu packages bash))
+        (gnu packages bash)
+        (gwl utils)) ; for load-workflow
 
 ;; We are going to extend "example-workflow".
-(include "example-workflow.scm")
+(define dynamic-workflow
+  (load-workflow "example-workflow.scm"))
 
 (define (list-file-template filename)
   (process
