@@ -1,5 +1,5 @@
 (import (gnu packages bash)
-        (gnu packages compression))
+        (only (gnu packages compression) gzip))
 
 (define-public create-file
   (process
