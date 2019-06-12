@@ -93,9 +93,10 @@
            (_ '()))))
    #:slot-set!
    (lambda (o a)
-     (format (current-error-port)
-             "workflow: The \"restrictions\" field is deprecated.  \
-Use \"processes\" to specify process dependencies.~%")
+     (when a
+       (format (current-error-port)
+               "workflow: The \"restrictions\" field is deprecated.  \
+Use \"processes\" to specify process dependencies.~%"))
      (slot-set! o '_restrictions a)))
   ;; Class options
   #:name "workflow")
