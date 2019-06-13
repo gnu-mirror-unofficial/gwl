@@ -262,46 +262,51 @@ to existing files."
                 inputs)
       (() '())
       (mapping mapping)))
+
+  (define-values (input-names input-files)
+    (match inputs-map
+      (() (values '() '()))
+      (_ (apply values
+                (apply zip inputs-map)))))
+
+  (define unspecified-inputs
+    (lset-difference equal?
+                     (workflow-free-inputs workflow)
+                     input-names))
+
   (define (inputs-valid?)
-    (let-values (((input-names input-files)
-                  (match inputs-map
-                    (() (values '() '()))
-                    (_ (apply values
-                              (apply zip inputs-map))))))
-      (match (lset-difference equal?
-                              (workflow-free-inputs workflow)
-                              input-names)
-        (()
-         ;; verify input files
-         (match (filter (negate file-exists?) input-files)
-           (()
-            ;; Link all mapped input files to their target locations
-            ;; TODO: ensure that target directories exist.
-            (unless (null? inputs-map)
-              (for-each (match-lambda
-                          ((target source)
-                           (unless (file-exists? target)
-                             (link source target))))
-                        inputs-map))
-            #t)
-           (missing
-            (format (current-error-port)
-                    "Missing files: ~{~%  * ~a~}.~%"
-                    missing)
-            #f)))
-        (missing
-         ;; Try to find the files in the environment.
-         ;; XXX Tell user that we pick the files from the current
-         ;; working directory.
-         ;; XXX These files would need to be mapped into the
-         ;; container.
-         (let* ((found (filter file-exists? missing))
-               (really-missing (lset-difference equal? missing found)))
-           (or (null? really-missing)
-               (begin (format (current-error-port)
-                              "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
-                              really-missing)
-                      #f)))))))
+    (match unspecified-inputs
+      (()
+       ;; verify input files
+       (match (filter (negate file-exists?) input-files)
+         (()
+          ;; Link all mapped input files to their target locations
+          ;; TODO: ensure that target directories exist.
+          (unless (null? inputs-map)
+            (for-each (match-lambda
+                        ((target source)
+                         (unless (file-exists? target)
+                           (link source target))))
+                      inputs-map))
+          #t)
+         (missing
+          (format (current-error-port)
+                  "Missing files: ~{~%  * ~a~}.~%"
+                  missing)
+          #f)))
+      (missing
+       ;; Try to find the files in the environment.
+       ;; XXX Tell user that we pick the files from the current
+       ;; working directory.
+       ;; XXX These files would need to be mapped into the
+       ;; container.
+       (let* ((found (filter file-exists? missing))
+              (really-missing (lset-difference equal? missing found)))
+         (or (null? really-missing)
+             (begin (format (current-error-port)
+                            "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
+                            really-missing)
+                    #f))))))
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
   (define (run)
