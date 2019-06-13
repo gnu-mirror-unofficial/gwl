@@ -520,7 +520,7 @@ ENGINE and runs the resulting script."
 (define (processes-filter processes filter)
   "Returns a list of PROCESSES after applying FILTER.  FILTER
 is a function that takes a process and returns the process to include it
-of #f to exclude it."
+or #f to exclude it."
   (filter-map filter processes))
 
 (define (processes-filter-by-name processes name)

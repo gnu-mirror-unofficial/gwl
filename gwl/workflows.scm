@@ -150,7 +150,7 @@ Use \"processes\" to specify process dependencies.~%"))
 
 (define (auto-connect . processes)
   "Return an association list mapping processes to processes they
-depend on.  This is accomplished by matching a the inputs of a process
+depend on.  This is accomplished by matching the inputs of a process
 with the outputs of other processes."
   (let ((process-by-output
          (append-map (lambda (process)
@@ -181,7 +181,7 @@ are not provided by the outputs of any other process."
       (workflow-name workflow)))
 
 (define (print-workflow workflow port)
-  "Write a decent human-representation of a workflow of WORKFLOW to PORT."
+  "Write a decent human-representation of WORKFLOW to PORT."
   (simple-format port "#<workflow ~a>" (workflow-full-name workflow)))
 
 (define* (print-workflow-record workflow #:optional (port #t))
@@ -208,7 +208,7 @@ description: ~a~%processes: ~{~%  * ~a~}~%"
 
 (define* (workflow-run-order workflow #:key (parallel? #t))
   "Returns a list of processes in WORKFLOW in the order in which the
-processes can be executed.  When parallel? is set to #T, the list
+processes can be executed.  When PARALLEL? is set to #T, the list
 contains lists of processes that can be executed in parallel."
   (let ((order-function (if parallel?
                             parallel-step-execution-order
