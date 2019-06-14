@@ -22,11 +22,13 @@
                 #:select (derivation->output-path
                           build-derivations))
   #:use-module ((guix packages)
-                #:select (package-file package?))
+                #:select (package-output package?))
+  #:use-module ((guix profiles)
+                #:select (packages->manifest profile-derivation))
   #:use-module ((gnu packages)
                 #:select (specification->package))
   #:use-module (guix gexp)
-  #:use-module ((guix monads) #:select (mlet mapm return))
+  #:use-module ((guix monads) #:select (mlet return))
   #:use-module ((guix store)
                 #:select (run-with-store
                           with-store
@@ -393,9 +395,17 @@ causes EXP to be run in a container according to the requirements
 specified in PROCESS."
   (let* ((package-dirs
           (with-store store
-            (run-with-store store
-              (mapm %store-monad package-file
-                    (process-packages process)))))
+            ;; Return profile directory and individual package
+            ;; directories.
+            (cons (run-with-store store
+                    (mlet %store-monad
+                        ((profile-drv
+                          (profile-derivation
+                           (packages->manifest
+                            (process-packages process)))))
+                      (return (derivation->output-path profile-drv))))
+                  (map (lambda (pkg) (package-output store pkg))
+                       (process-packages process)))))
          (data-inputs
           (remove keyword? (process-inputs process)))
          (output-dirs
