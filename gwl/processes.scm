@@ -90,6 +90,7 @@
             code-snippet-code
 
             procedure->gexp
+            containerize
 
             ;; For the lack of a better place.
             derivation->script
@@ -364,30 +365,28 @@ of PROCESS."
   (define (sanitize-path path)
     (string-join (delete ".." (string-split path #\/))
                  "/"))
-  (let ((gexp
-         (match (process-procedure process)
-           ((? gexp? g) g)
-           ((? list? s) s)
-           (($ <code-snippet> name arguments code)
-            (let ((call (or (and=> (find (lambda (lang)
-                                           (eq? name (language-name lang)))
-                                         languages)
-                                   language-call)
-                            ;; There is no pre-defined way to execute the
-                            ;; snippet.  Use generic approach.
-                            (lambda (process code)
-                              #~(begin
-                                  (for-each (lambda (pair)
-                                              (setenv (car pair) (cdr pair)))
-                                            '#$(process->env process))
-                                  (apply system*
-                                         (string-append (getenv "_GWL_PROFILE")
-                                                        #$(sanitize-path (symbol->string name)))
-                                         '#$(append arguments
-                                                    (list code))))))))
-              (call process code)))
-           (whatever (error (format #f "unsupported procedure: ~a\n" whatever))))))
-    (containerize gexp process)))
+  (match (process-procedure process)
+    ((? gexp? g) g)
+    ((? list? s) s)
+    (($ <code-snippet> name arguments code)
+     (let ((call (or (and=> (find (lambda (lang)
+                                    (eq? name (language-name lang)))
+                                  languages)
+                            language-call)
+                     ;; There is no pre-defined way to execute the
+                     ;; snippet.  Use generic approach.
+                     (lambda (process code)
+                       #~(begin
+                           (for-each (lambda (pair)
+                                       (setenv (car pair) (cdr pair)))
+                                     '#$(process->env process))
+                           (apply system*
+                                  (string-append (getenv "_GWL_PROFILE")
+                                                 #$(sanitize-path (symbol->string name)))
+                                  '#$(append arguments
+                                             (list code))))))))
+       (call process code)))
+    (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
 (define (containerize exp process)
   "Wrap EXP, an S-expression or G-expression, in a G-expression that
@@ -480,14 +479,12 @@ specified in PROCESS."
 ;;; DERIVATIONS AND SCRIPTS FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
-(define* (derivation->script drv #:optional (build? #t))
+(define (derivation->script drv)
   "Write the output of a derivation DRV to a file.  When BUILD? is
 set to #f, it only returns the output path."
   (with-store store
-    (run-with-store store
-      (mlet %store-monad ((drv drv))
-        (when build? (build-derivations store (list drv)))
-        (return (derivation->output-path drv))))))
+    (build-derivations store (list drv))
+    (derivation->output-path drv)))
 
 (define (process->script engine)
   "Builds a procedure that builds a derivation of the process PROCESS

@@ -21,8 +21,10 @@
   #:use-module (gwl process-engines)
   #:use-module (gwl processes)
   #:use-module (guix gexp)
+  #:use-module ((guix derivations)
+                #:select (build-derivations))
   #:use-module ((guix store)
-                #:select (%store-monad))
+                #:select (%store-monad with-store run-with-store))
   #:use-module ((guix monads)
                 #:select (mlet))
   #:use-module ((guix profiles)
@@ -44,8 +46,10 @@
                                             #:key
                                             (guile (default-guile))
                                             workflow)
-  "Return an executable Guile script that runs the PROCEDURE described
-in PROCESS, with PROCEDURE's imported modules in its search path."
+  "Return a derivation for an executable Guile script that runs the
+procedure described in PROCESS, with the procedure's imported modules in
+its search path."
+
   (let* ((name (process-full-name process))
          (exp (procedure->gexp process))
          (out (process-output-path process))
@@ -56,46 +60,46 @@ in PROCESS, with PROCEDURE's imported modules in its search path."
                              (cons $PATH
                                    (append-map manifest-entry-search-paths
                                                (manifest-entries manifest)))))))
-    (mlet %store-monad ((set-load-path
-                         (load-path-expression (gexp-modules exp)))
-                        (profile (profile-derivation manifest)))
-      (gexp->derivation
-       name
-       #~(begin
-           (use-modules (ice-9 pretty-print)
-                        (ice-9 format)
-                        (ice-9 match)
-                        (srfi srfi-26))
-           (call-with-output-file #$output
-             (lambda (port)
-               (format port "#!~a/bin/guile --no-auto-compile~%-s~%!#~%" #$guile)
-               ;; The destination can be outside of the store.
-               ;; TODO: We have to mount this location when building inside
-               ;; a container.
-               (format port "~s" '#$(if out `(setenv "out" ,out) ""))
-               (format port "~s" '(setenv "_GWL_PROFILE" #$profile))
-               (format port "~%;; Code to create a proper Guile environment.~%")
-               (pretty-print '#$set-load-path port)
-
-               ;; Load the profile that contains the programs for this
-               ;; script.
-               (format port
-                       "~%;; Prepare environment~%~{~s~}"
-                       (map (match-lambda
-                              ((variable files separator type pattern)
-                               `(setenv ,variable
-                                        ,(string-join
-                                          (map (cut string-append #$profile "/" <>)
-                                               files)
-                                          separator))))
-                            '#$search-paths))
-               (format port
-                       "~%;; Set the current working directory.~%~s~%"
-                       '(chdir #$(getcwd)))
-               (format port "~%;; Actual code from the procedure.~%")
-               (pretty-print '#$exp port)
-               (chmod port #o555))))
-       #:graft? #f))))
+    (with-store store
+      (run-with-store store
+        (mlet %store-monad ((set-load-path
+                             (load-path-expression (gexp-modules exp)))
+                            (profile (profile-derivation manifest)))
+          ;; Ensure that the manifest is in fact instantiated.
+          (build-derivations store (list profile))
+          (gexp->derivation
+           name
+           #~(begin
+               (use-modules (ice-9 pretty-print)
+                            (ice-9 format)
+                            (ice-9 match)
+                            (srfi srfi-26))
+               (call-with-output-file #$output
+                 (lambda (port)
+                   (format port "#!~a/bin/guile --no-auto-compile~%-s~%!#~%" #$guile)
+                   (pretty-print
+                    '#$(containerize
+                        `(begin
+                           ;; The destination can be outside of the store.
+                           ;; TODO: We have to mount this location when building inside
+                           ;; a container.
+                           ,(if out `(setenv "out" ,out) "")
+                           (setenv "_GWL_PROFILE" ,profile)
+                           ";; Code to create a proper Guile environment."
+                           ,set-load-path
+                           ,@(map (match-lambda
+                                    ((variable files separator type pattern)
+                                     `(setenv ,variable
+                                              (string-join
+                                               (map (lambda (file)
+                                                      (string-append ,profile "/" file))
+                                                    ',files)
+                                               ,separator))))
+                                  search-paths)
+                           ,exp)
+                        process)
+                    port)
+                   (chmod port #o555))))))))))
 
 (define simple-engine
   (process-engine
