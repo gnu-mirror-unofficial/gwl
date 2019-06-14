@@ -17,6 +17,7 @@
 
 (define-module (gwl utils)
   #:use-module (guix sets)
+  #:use-module (gwl ui)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (ice-9 match)
@@ -164,9 +165,6 @@ a location object."
     (#f (G_ "<unknown location>"))
     (($ <location> file line column)
      (format #f "~a:~a:~a" file line column))))
-
-;; TODO: add gettext support
-(define (G_ msg) msg)
 
 ;; TODO: prettify, add colors, etc
 (define (report-error . args)

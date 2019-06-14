@@ -20,7 +20,7 @@
   #:use-module (gwl workflows graph)
   #:use-module (gwl workflows)
   #:use-module (gwl utils)
-  #:use-module (guix ui)
+  #:use-module (gwl ui)
   #:use-module (gwl config)
   #:use-module (guix scripts)
   #:use-module (ice-9 match)

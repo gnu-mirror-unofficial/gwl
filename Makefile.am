@@ -34,6 +34,7 @@ SOURCES =                                                 \
   gwl/process-engines/grid-engine.scm                     \
   gwl/process-engines/simple-engine.scm                   \
   gwl/utils.scm                                           \
+  gwl/ui.scm                                              \
   gwl/workflows.scm                                       \
   gwl/workflows/execution-order.scm                       \
   gwl/workflows/graph.scm                                 \
