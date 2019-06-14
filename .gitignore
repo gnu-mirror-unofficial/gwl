@@ -15,6 +15,7 @@ doc/.dirstamp
 doc/stamp-vti
 doc/version.texi
 gwl/www/config.scm
+gwl/config.scm
 test-suite.log
 tests/*.log
 tests/*.trs

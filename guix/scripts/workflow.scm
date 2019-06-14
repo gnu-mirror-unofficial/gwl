@@ -21,6 +21,7 @@
   #:use-module (gwl workflows)
   #:use-module (gwl utils)
   #:use-module (guix ui)
+  #:use-module (gwl config)
   #:use-module (guix scripts)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-37)
@@ -45,6 +46,23 @@
      "  -h, --help             display this help and exit"
      "  -V, --version          display version information and exit"
      "")))
+
+(define* (show-version-and-exit #:optional (command (car (command-line))))
+  "Display version information for COMMAND and `(exit 0)'."
+  (simple-format #t "~a (~a) ~a~%"
+                 command %gwl-package-name %gwl-version)
+  (format #t "Copyright ~a 2019 ~a"
+          ;; TRANSLATORS: Translate "(C)" to the copyright symbol
+          ;; (C-in-a-circle), if this symbol is available in the user's
+          ;; locale.  Otherwise, do not translate "(C)"; leave it as-is.  */
+          (G_ "(C)")
+          (G_ "the Guix Workflow Language authors\n"))
+  (display (G_"\
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+"))
+  (exit 0))
 
 (define %options
   ;; List of command-line options.

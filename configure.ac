@@ -38,7 +38,7 @@ if test "x$DOT" = "x"; then
    AC_MSG_ERROR(['dot' could not be found; please check your Graphviz installation.])
 fi
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile gwl/config.scm])
 AC_CONFIG_FILES([gwl/www/config.scm])
 AC_CONFIG_FILES([env], [chmod +x env])
 AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
