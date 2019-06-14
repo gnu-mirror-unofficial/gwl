@@ -33,7 +33,7 @@
                           manifest-entries
                           manifest-entry-search-paths))
   #:use-module ((guix packages)
-                #:select (package?))
+                #:select (package-output package?))
   #:use-module ((guix search-paths)
                 #:select (search-path-specification->sexp
                           $PATH))
@@ -97,7 +97,15 @@ its search path."
                                                ,separator))))
                                   search-paths)
                            ,exp)
-                        process)
+                        #:inputs
+                        (cons profile
+                              (append
+                               ;; Individual package locations
+                               (map (lambda (pkg) (package-output store pkg)) packages)
+                               ;; Data inputs
+                               (remove keyword? (process-inputs process))))
+                        #:outputs
+                        (process-outputs process))
                     port)
                    (chmod port #o555))))))))))
 

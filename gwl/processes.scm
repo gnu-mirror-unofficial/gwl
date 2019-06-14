@@ -22,17 +22,12 @@
                 #:select (derivation->output-path
                           build-derivations))
   #:use-module ((guix packages)
-                #:select (package-output package?))
-  #:use-module ((guix profiles)
-                #:select (packages->manifest profile-derivation))
+                #:select (package?))
   #:use-module ((gnu packages)
                 #:select (specification->package))
   #:use-module (guix gexp)
-  #:use-module ((guix monads) #:select (mlet return))
   #:use-module ((guix store)
-                #:select (run-with-store
-                          with-store
-                          %store-monad))
+                #:select (with-store))
   #:use-module ((guix modules)
                 #:select (source-module-closure))
   #:use-module (gnu system file-systems)
@@ -388,28 +383,12 @@ of PROCESS."
        (call process code)))
     (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
-(define (containerize exp process)
+(define* (containerize exp #:key inputs outputs)
   "Wrap EXP, an S-expression or G-expression, in a G-expression that
-causes EXP to be run in a container according to the requirements
-specified in PROCESS."
-  (let* ((package-dirs
-          (with-store store
-            ;; Return profile directory and individual package
-            ;; directories.
-            (cons (run-with-store store
-                    (mlet %store-monad
-                        ((profile-drv
-                          (profile-derivation
-                           (packages->manifest
-                            (process-packages process)))))
-                      (return (derivation->output-path profile-drv))))
-                  (map (lambda (pkg) (package-output store pkg))
-                       (process-packages process)))))
-         (data-inputs
-          (remove keyword? (process-inputs process)))
-         (output-dirs
-          (delete-duplicates
-           (map dirname (process-outputs process))))
+causes EXP to be run in a container where the provided INPUTS and
+OUTPUTS are mapped."
+  (let* ((output-dirs
+          (delete-duplicates (map dirname outputs)))
          (input-mappings
           (map (lambda (location)
                  (file-system-mapping
@@ -417,8 +396,7 @@ specified in PROCESS."
                   (target location)
                   (writable? #f)))
                (lset-difference string=?
-                                (append package-dirs
-                                        data-inputs)
+                                inputs
                                 output-dirs)))
          (output-mappings
           (map (lambda (dir)
