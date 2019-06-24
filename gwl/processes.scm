@@ -232,21 +232,36 @@
   (lambda (x)
     (syntax-case x ()
       ((_ fields ...)
-       #`(let* (#,@(map (lambda (field)
-                          (syntax-case field ()
-                            ((empty-field)
-                             (syntax-violation #f "process: Empty field" #'empty-field))
-                            ((key value)
-                             #'(key value))
-                            ((key values ...)
-                             #'(key (list values ...)))))
-                        #'(fields ...)))
-           (make <process>
-             #,@(append-map (lambda (field)
-                              (syntax-case field ()
-                                ((name . rest)
-                                 #`((symbol->keyword 'name) name))))
-                            #'(fields ...))))))))
+       ;; If the last field is a plain code snippet produced with
+       ;; special syntax, add the field name.
+       (let ((fields* (match (reverse #'(fields ...))
+                        ((last-field before ___)
+                         (match (syntax->datum last-field)
+                           ;; Wisp rules let the code-snippet be
+                           ;; wrapped in an extra pair of parens
+                           ;; unless we start the line with a dot.
+                           ((('code-snippet . _))
+                            (cons #`(procedure #,@last-field)
+                                  (reverse before)))
+                           (('code-snippet . _)
+                            (cons #`(procedure #,last-field)
+                                  (reverse before)))
+                           (_ #'(fields ...)))))))
+         #`(let* (#,@(map (lambda (field)
+                            (syntax-case field ()
+                              ((empty-field)
+                               (syntax-violation #f "process: Empty field" #'empty-field))
+                              ((key value)
+                               #'(key value))
+                              ((key values ...)
+                               #'(key (list values ...)))))
+                          fields*))
+             (make <process>
+               #,@(append-map (lambda (field)
+                                (syntax-case field ()
+                                  ((name . rest)
+                                   #`((symbol->keyword 'name) name))))
+                              fields*))))))))
 
 (define (print-process process port)
   "Write a concise representation of PROCESS to PORT."

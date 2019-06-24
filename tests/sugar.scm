@@ -99,5 +99,18 @@
   (code-snippet-code
    (test-read-eval-string "# /bin/bash -c {echo my number is {{numbers:my-number}}, not {{numbers:boring}}}")))
 
+(test-assert "process macro allows key-less procedure"
+  (let ((proc (process
+               (name "anything")
+               (inputs 'this 'that 'whatever)
+               # bash { echo "hello" })))
+    (code-snippet? (process-procedure proc))))
+
+(test-assert "process macro allows nested key-less procedure"
+  (let ((proc (process
+               (name "anything")
+               (inputs 'this 'that 'whatever)
+               (# bash { echo "hello" }))))
+    (code-snippet? (process-procedure proc))))
 
 (test-end "sugar")

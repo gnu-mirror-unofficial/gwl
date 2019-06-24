@@ -159,7 +159,7 @@ embedded Bash shell script:
 @example
 process: run-bash
   packages "bash"
-  procedure # bash @{ echo "hello from bash!" @}
+  # bash @{ echo "hello from bash!" @}
 @end example
 
 Code snippets are introduced with @code{# interpreter @{}, where
@@ -187,7 +187,7 @@ process: run-bash
     . "a"
     . "b"
     . "c"
-  procedure # bash @{
+  # bash @{
     echo "The name of this process: @{@{name@}@}."
     echo "The data inputs are: @{@{inputs@}@}."
   @}
@@ -207,7 +207,7 @@ process: run-bash
     . "b"
     . "c"
     . #:yours "d"
-  procedure # bash @{
+  # bash @{
     echo "This is mine: @{@{inputs:mine@}@}, and this is yours: @{@{inputs:yours@}@}."
   @}
 @end example
