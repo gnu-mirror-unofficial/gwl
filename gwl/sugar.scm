@@ -177,10 +177,10 @@ variable reference.
                                maybe-variable?)))))
               (if (zero? new-balance)
                   (let ((last-chunk (list->string (reverse acc))))
-                    `(begin
-                       (use-modules (ice-9 format))
-                       (code-snippet ',(string->symbol language)
-                                     ',(string-split arguments #\space)
+                    `(code-snippet ',(string->symbol language)
+                                   ',(string-split arguments #\space)
+                                   (begin
+                                     (use-modules (ice-9 format))
                                      (apply string-append
                                             (map (lambda (val)
                                                    (cond

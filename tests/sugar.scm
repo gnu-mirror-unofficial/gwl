@@ -27,10 +27,10 @@
        #\# port))))
 
 (test-equal "reader supports string interpolation"
-  '(begin
-     (use-modules (ice-9 format))
-     (code-snippet (quote foo)
-                   (quote ("bar" "baz"))
+  '(code-snippet (quote foo)
+                 (quote ("bar" "baz"))
+                 (begin
+                   (use-modules (ice-9 format))
                    (apply string-append
                           (map (lambda (val)
                                  (cond
@@ -41,10 +41,10 @@
   (convert "foo bar baz { print(\"hello {{world}}\") }"))
 
 (test-equal "reader supports string interpolation for named references"
-  '(begin
-     (use-modules (ice-9 format))
-     (code-snippet (quote foo)
-                   (quote ("bar" "baz"))
+  '(code-snippet (quote foo)
+                 (quote ("bar" "baz"))
+                 (begin
+                   (use-modules (ice-9 format))
                    (apply string-append
                           (map (lambda (val)
                                  (cond
@@ -57,10 +57,10 @@
   (convert "foo bar baz { print(\"hello {{world:europe}}\") }"))
 
 (test-equal "reader will not interpolate values with spaces"
-  '(begin
-     (use-modules (ice-9 format))
-     (code-snippet (quote foo)
-                   (quote ("bar" "baz"))
+  '(code-snippet (quote foo)
+                 (quote ("bar" "baz"))
+                 (begin
+                   (use-modules (ice-9 format))
                    (apply string-append
                           (map (lambda (val)
                                  (cond
