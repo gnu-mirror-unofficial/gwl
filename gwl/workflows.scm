@@ -314,7 +314,14 @@ to existing files."
           (runner (process-engine-runner engine)))
       (define process->cache-prefix
         (make-process->cache-prefix workflow
-                                    inputs-map
+                                    (append inputs-map
+                                            ;; Consider changes to
+                                            ;; unspecified inputs that
+                                            ;; are picked up from the
+                                            ;; current working
+                                            ;; directory.
+                                            (map (lambda (x) (list x x))
+                                                 unspecified-inputs))
                                     ordered-processes
                                     engine))
       (define cached?
