@@ -1,19 +1,23 @@
 process: greet
   packages "hello"
-  procedure '(system "hello")
+  # { hello }
 
 process: sleep
   packages "coreutils"
-  procedure '(begin (display "Sleeping...\n")
-                    (system* "sleep" "10"))
+  # {
+    echo "Sleeping..."
+    sleep 10
+  }
 
 process: (eat something)
   name
     string-append "eat-" something
-  procedure `(format #t "Eating ~a\n" ,something)
+  # {
+    echo "Eating {{something}}"
+  }
 
 process: bye
-  procedure '(display "Farewell, world!\n")
+  # { echo "Farewell, world!" }
 
 workflow: simple-wisp
   processes

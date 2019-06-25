@@ -90,6 +90,12 @@ variable reference.
     => (code-snippet '/bin/bash \"-c\"
          (apply string-append (list \"echo \" name \" is great\")))
 
+When no interpreter is provided it uses /bin/sh:
+
+    # { echo \"hello world\" }
+    => (code-snippet 'sh \"-c\"
+         (apply string-append (list \" echo hello world \")))
+
 "
     ;; Throw away any number of blank characters
     (let loop ((next (lookahead-char port)))
@@ -106,8 +112,6 @@ variable reference.
                           (cons (substring prelude 0 index)
                                 (substring prelude (1+ index)))))
                  (cons prelude "")))
-      (("" . _)
-       (throw 'inline-code-language-undefined))
       ((language . arguments)
        (let search-delim ((acc '())
                           (char (read-char port))
@@ -177,7 +181,9 @@ variable reference.
                                maybe-variable?)))))
               (if (zero? new-balance)
                   (let ((last-chunk (list->string (reverse acc))))
-                    `(code-snippet ',(string->symbol language)
+                    `(code-snippet ',(match language
+                                       ("" 'sh)
+                                       (_ (string->symbol language)))
                                    ',(string-split arguments #\space)
                                    (begin
                                      (use-modules (ice-9 format))

@@ -353,8 +353,20 @@ of PROCESS."
                            '#$(process->env process))
                  (exit (zero? (system* "bash" "-c" #$code)))))))
 
+(define language-sh
+  (make <language>
+    #:name 'sh
+    #:call (lambda (process code)
+             #~(begin
+                 (for-each (lambda (pair)
+                             (setenv (car pair) (cdr pair)))
+                           '#$(process->env process))
+                 (exit (zero? (system* "/bin/sh"
+                                       "-c" #$code)))))))
+
 (define languages
-  (list language-bash
+  (list language-sh
+        language-bash
         language-python
         language-r))
 

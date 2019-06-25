@@ -78,9 +78,19 @@
             '(inline-code-unbalanced-braces 1)
             (convert "foo { this { is { still garbage }}"))
 
-(test-error "reader complains about unspecified language"
-            'inline-code-language-undefined
-            (convert " { what is this? }"))
+(test-equal "reader defaults to /bin/sh"
+  '(code-snippet (quote sh)
+                 (quote (""))
+                 (begin
+                   (use-modules (ice-9 format))
+                   (apply string-append
+                          (map (lambda (val)
+                                 (cond
+                                  ((string? val) val)
+                                  ((list? val) (format #f "~{~a~^ ~}" val))
+                                  (else (format #f "~a" val))))
+                               (list " just the default ")))))
+  (convert " { just the default }"))
 
 (define name "Bender")
 (test-equal "string interpolation works"

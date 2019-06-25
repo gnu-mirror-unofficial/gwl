@@ -164,12 +164,19 @@ process: run-bash
 
 Code snippets are introduced with @code{# interpreter @{}, where
 @code{interpreter} is the command line for running an interpreter, such
-as @code{/bin/bash -c}.  Make sure that the package inputs include a
-package providing the interpreter.  For convenience we provide the
-special interpreters @code{bash}, @code{R}, and @code{python}, so that
-you don't have to specify a more complicated command line.
+as @code{/bin/bash -c}.  Code snippets must end with a closing brace,
+@code{@rbracechar{}}.
 
-Code snippets must end with a closing brace, @code{@rbracechar{}}.
+Make sure that the package inputs include a package providing the
+interpreter.  For convenience we provide the special interpreters
+@code{bash}, @code{R}, and @code{python}, so that you don't have to
+specify a more complicated command line.  When no interpreter is
+provided the generic shell interpreter @code{/bin/sh} will be used:
+
+@example
+process: run-sh
+  # @{ echo "hello from a shell!" @}
+@end example
 
 @cindex string interpolation, code snippets
 @cindex accessing variables, code snippets
