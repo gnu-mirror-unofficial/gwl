@@ -13,7 +13,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (test-execution-order)
+(define-module (test-workflows)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows execution-order)
@@ -21,7 +21,7 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64))
 
-(test-begin "execution-order")
+(test-begin "workflows")
 
 ;; 1 -> 2 -\
 ;;   -> 3 -> 5 --> 6
@@ -115,4 +115,4 @@ workflow
             (p5 -> p2 p3 p4)
             (p6 -> p5)))))
 
-(test-end "execution-order")
+(test-end "workflows")
