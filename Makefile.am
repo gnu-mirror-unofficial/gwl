@@ -68,8 +68,11 @@ nobase_dist_examples_DATA =                               \
   doc/examples/simple.scm                                 \
   doc/examples/simple-wisp.w                              \
   doc/examples/example-workflow1.scm                      \
+  doc/examples/example-workflow1.w                        \
   doc/examples/example-workflow.scm                       \
-  doc/examples/extended-example-workflow.scm
+  doc/examples/example-workflow.w                         \
+  doc/examples/extended-example-workflow.scm              \
+  doc/examples/extended-example-workflow.w
 
 info_TEXINFOS = doc/gwl.texi
 

@@ -22,8 +22,6 @@
   #:use-module (syntax-highlight scheme)
   #:export (page-beyond-started))
 
-(define %guile-manual "https://www.gnu.org/software/guile/manual/html_node")
-
 (define (page-beyond-started request-path)
   (page-root-template "Guix Workflow Language" request-path
    `((h2 "Beyond started with the Guix workflow language")
@@ -31,18 +29,14 @@
      (h3 "Recap")
 
      (p "In the " (a (@ (href "/getting-started")) "previous
-section") " we defined a Scheme module, a process, and we disected a
-grid engine job script to get to the details of how processes work.")
-
-     (p "This section builds on the knowledge from the previous
-section, so if you haven't read that, now is the time
-to " (a (@ (href "/getting-started")) "get started") ".")
+section") " we defined a simple process.  Now it's time to look more
+closely at workflows.")
 
      (h3 "Defining workflows")
 
      (p "A " (em "workflow") " describes how " (em "processes") "
 relate to each other.  So before we can write the workflow, we must
-define some processes.  In the example we will create a file with a
+define some processes.  In this example we will create a file with a
 process named " (code "create-file") ", and we will compress that file
 using a process named " (code "compress-file") ".")
 
@@ -50,19 +44,18 @@ using a process named " (code "compress-file") ".")
           (pre (code (@ (class "scheme"))
                      ,(with-input-from-file
                           (string-append (web-config 'examples-root)
-                                         "/example-workflow1.scm")
+                                         "/example-workflow1.w")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
-     (p "With these definitions in place, we can run both in a single
-go by defining a workflow.")
+     (p "With these definitions in place, we can run both in one go by
+defining a workflow.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme "\
-(define-public file-workflow
-  (workflow
-    (name \"file-workflow\")
-    (processes (auto-connect create-file compress-file))))")))))
+workflow: file-workflow
+  processes
+    auto-connect create-file compress-file")))))
 
      (p "The workflow specifies all processes that should run.
 The " (code "auto-connect") " procedure links up all inputs and outputs of
@@ -72,43 +65,46 @@ dependencies.")
 
      (h3 "Process templates")
 
-     (p "We can make the inputs and outputs for a process variable, so
-that the same procedure can serve for multiple inputs and outputs.
-Instead of writing a process directly, we can write a function that
-returns a process.  This is what it looks like:")
+     (p "We can parameterize the inputs and outputs for a process, so
+that the same process template can serve for different inputs and
+outputs.  Here is a process template that is parameterized
+on " (code "input") ":")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme "\
-(define (compress-file input)
-  (process
-    (name (string-append \"compress-file-\" (basename input)))
-    (packages (list gzip))
-    (inputs (list input))
-    (outputs (list (string-append input \".gz\")))
-    (run-time (complexity
-                (space   (megabytes 20))
-                (time    10)))
-    (procedure
-     `(system ,(string-append \"gzip \" (first inputs)
-                              \" -c > \" (first outputs))))))")))))
+process: (compress-file input)
+  name
+    string-append \"compress-file-\"
+                  basename input
+  packages \"gzip\"
+  inputs input
+  outputs
+    string-append input \".gz\"
+  run-time
+    complexity
+      space : megabytes 20
+      time    10
+  # {
+    gzip {{input}} -c > {{outputs}}
+  }")))))
 
      (h3 "Dynamic workflows")
 
      (p "We can now dynamically create compression processes by
-applying the " (code "compress-file") " procedure to input and output
-file names.  We use Scheme's " (code "let") ", and " (code "map") " to
-simplify the work for us:")
+instantiating the " (code "compress-file") " template with specific
+input file names.  We use Scheme's " (code "let") ",
+and " (code "map") " to simplify the work for us:")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(with-input-from-file
                           (string-append (web-config 'examples-root)
-                                         "/example-workflow.scm")
+                                         "/example-workflow.w")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
-     (p "In GWL, we can define process dependencies explicitly.  This
-is useful when processes don't have explicit " (code "outputs") "
+     (p "In the GWL, we can define process dependencies explicitly.
+This is useful when processes don't have explicit " (code "outputs") "
 or " (code "inputs") ".  Processes can do something other than
 producing output files, such as inserting data in a database, so
 process dependencies can be specified manually.")
@@ -120,17 +116,18 @@ convenient " (code "graph") " syntax.")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme "\
-(workflow
- (name \"graph-example\")
- (processes
-  (graph (A -> B C)
-         (B -> D)
-         (C -> B))))")))))
+workflow: graph-example
+  processes
+    graph
+      A -> B C
+      B -> D
+      C -> B")))))
 
      (h3 "Reusing workflows in new workflows")
 
      (p "On the " (a (@ (href "/extended-start")) "next page") ", we
-will extend " (code "dynamic-workflow") " in a new workflow.")
+will reuse parts of " (code "dynamic-workflow") " above in a new
+workflow.")
 
      (div (@ (style "text-align: center"))
           (div (@ (class "action-button"))

@@ -22,8 +22,6 @@
   #:use-module (syntax-highlight scheme)
   #:export (page-extended-start))
 
-(define %guile-manual "https://www.gnu.org/software/guile/manual/html_node")
-
 (define (page-extended-start request-path)
   (page-root-template "Guix Workflow Language" request-path
    `((h2 "Beyond started with the Guix workflow language")
@@ -38,16 +36,16 @@ started") ".")
 
      (h3 "Extending workflows")
 
-     (p "In the " (code "dynamic-workflow") " we create files and
-compressed those files.  In the following workflow we will generate a
-file containing some information about these compressed files to learn
-how we can extend a workflow at any point in a new workflow.")
+     (p "In the " (code "dynamic-workflow") " we created files and
+compressed them.  In the following workflow we will generate a file
+containing some information about these compressed files to learn how
+we can extend a workflow at any point in a new workflow.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(with-input-from-file
                           (string-append (web-config 'examples-root)
-                                         "/extended-example-workflow.scm")
+                                         "/extended-example-workflow.w")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
      (p "With " (code "list-file-template") " we created a procedure
@@ -57,9 +55,7 @@ in " (code "extended-dynamic-workflow") " to run after
 each " (code "compress-file") " process.")
 
      (p "In the " (code "processes") " field we include the contents
-of " (code "dynamic-workflow") ", thereby concisely extending it.
-Because " (code "dynamic-workflow") " is defined in a Scheme module,
-we can use the " (code "#:use-module") " facility to refer to it.")
+of " (code "dynamic-workflow") ", thereby concisely extending it.")
 
      (h3 "Further reading")
 
