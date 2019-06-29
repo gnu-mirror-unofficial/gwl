@@ -22,23 +22,22 @@ moddir=$(prefix)/share/guile/site/@GUILE_EFFECTIVE_VERSION@
 godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache
 
 SOURCES =                                                 \
-  guix/processes.scm                                      \
-  guix/scripts/workflow.scm                               \
-  guix/workflows.scm                                      \
-  gwl/cache.scm                                           \
   gwl/config.scm                                          \
   gwl/oop.scm                                             \
   gwl/processes.scm                                       \
+  guix/processes.scm                                      \
   gwl/process-engines.scm                                 \
   gwl/process-engines/bash-engine.scm                     \
   gwl/process-engines/grid-engine.scm                     \
   gwl/process-engines/simple-engine.scm                   \
   gwl/utils.scm                                           \
   gwl/ui.scm                                              \
-  gwl/workflows.scm                                       \
   gwl/workflows/execution-order.scm                       \
   gwl/workflows/graph.scm                                 \
   gwl/workflows/utils.scm                                 \
+  gwl/workflows.scm                                       \
+  guix/workflows.scm                                      \
+  gwl/cache.scm                                           \
   gwl/sugar.scm                                           \
   gwl/web-interface.scm                                   \
   gwl/www/config.scm                                      \
@@ -50,7 +49,8 @@ SOURCES =                                                 \
   gwl/www/pages/welcome.scm                               \
   gwl/www/pages/workflow-viewer.scm                       \
   gwl/www/render.scm                                      \
-  gwl/www/util.scm
+  gwl/www/util.scm                                        \
+  guix/scripts/workflow.scm
 
 assetsdir = $(prefix)/share/@PACKAGE@
 nobase_dist_assets_DATA =                                 \
