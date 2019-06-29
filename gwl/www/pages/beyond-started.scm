@@ -83,8 +83,8 @@ process: (compress-file input)
     string-append input \".gz\"
   run-time
     complexity
-      space : megabytes 20
-      time    10
+      space 20 mebibytes
+      time  10 seconds
   # {
     gzip {{input}} -c > {{outputs}}
   }")))))

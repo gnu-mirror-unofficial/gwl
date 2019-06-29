@@ -15,8 +15,8 @@ process: (list-file-template filename)
     string-append filename ".list"
   run-time
     complexity
-      space : megabytes 20
-      time 10
+      space 20 mebibytes
+      time  30 seconds
   # { gzip --list {{inputs}} > {{outputs}} }
 
 

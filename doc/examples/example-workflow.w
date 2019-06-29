@@ -5,8 +5,8 @@ process: (create-file filename)
   outputs filename
   run-time
     complexity
-      space : megabytes 20
-      time    10
+      space 20 mebibytes
+      time  10 seconds
   # { echo "Hello, world!" > {{filename}} }
 
 process: (compress-file input)
@@ -19,8 +19,8 @@ process: (compress-file input)
     string-append input ".gz"
   run-time
     complexity
-      space : megabytes 20
-      time    10
+      space 20 mebibytes
+      time  10 seconds
   # { gzip {{inputs}} -c > {{outputs}} }
 
 

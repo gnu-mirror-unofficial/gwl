@@ -2,8 +2,8 @@ process: create-file
   outputs "/tmp/file.txt"
   run-time
     complexity
-      space : megabytes 20
-      time  10 ; in seconds
+      space 20 MiB
+      time  10 seconds
   # { echo hello > {{outputs}} }
 
 process: compress-file
@@ -12,6 +12,6 @@ process: compress-file
   outputs "/tmp/file.txt.gz"
   run-time
     complexity
-      space : megabytes 20
-      time  10
+      space 20 mebibytes
+      time   2 minutes
   # { gzip {{inputs}} -c > {{outputs}} }
