@@ -63,9 +63,15 @@
             process->script->run
 
             ;; Convenience functions
-            gigabytes
-            megabytes
-            kilobytes
+            kibibytes
+            mebibytes
+            gibibytes
+
+            KiB
+            MiB
+            GiB
+
+            seconds
             minutes
             hours
 
@@ -519,20 +525,22 @@ ENGINE and runs the resulting script."
 ;;; CONVENIENCE FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
-(define (gigabytes number)
-  (* number 1024 1024 1024))
-
-(define (megabytes number)
-  (* number 1024 1024))
-
-(define (kilobytes number)
+(define (kibibytes number)
   (* number 1024))
+(define (mebibytes number)
+  (* (kibibytes number) 1024))
+(define (gibibytes number)
+  (* (mebibytes number) 1024))
 
+(define KiB kibibytes)
+(define MiB mebibytes)
+(define GiB gibibytes)
+
+(define seconds identity)
 (define (minutes number)
   (* number 60))
-
 (define (hours number)
-  (* number 3600))
+  (* (minutes number) 60))
 
 ;; TODO: don't use primitive-eval!
 (define-syntax-rule
