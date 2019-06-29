@@ -105,12 +105,15 @@
 (define-class <complexity> ()
   (threads
    #:init-value 1
+   #:init-keyword #:threads
    #:accessor complexity-threads)
   (space
    #:init-value #f
+   #:init-keyword #:space
    #:accessor complexity-space)
   (time
    #:init-value #f
+   #:init-keyword #:time
    #:accessor complexity-time))
 
 ;; Convenient DSL-like constructor.
