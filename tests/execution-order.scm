@@ -89,4 +89,30 @@
                (list p5)
                (list p6))))
 
+;; The (wisp) module thinks its called as a script when (command-line)
+;; is a list of more than one value...
+(set-program-arguments '())
+(use-modules (wisp))
+
+(test-equal "wisp syntax produces the expected S-expression"
+  (with-input-from-string (wisp2lisp "
+workflow
+  name \"test-workflow\"
+  processes
+    graph
+      p2 -> p1
+      p3 -> p1
+      p5 -> p2 p3 p4
+      p6 -> p5
+")
+    (lambda ()
+      (read (current-input-port))))
+  '(workflow
+    (name "test-workflow")
+    (processes
+     (graph (p2 -> p1)
+            (p3 -> p1)
+            (p5 -> p2 p3 p4)
+            (p6 -> p5)))))
+
 (test-end "execution-order")
