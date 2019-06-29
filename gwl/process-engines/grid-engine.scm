@@ -71,8 +71,7 @@ requirements of PROCESS."
 requirements of PROCESS."
   (or (and=> (process-space process)
              (lambda (space)
-               (format #f "-l h_vmem=~a"
-                       (+ space (mebibytes 65)))))
+               (format #f "-l h_vmem=~a" space)))
       ""))
 
 (define* (process->grid-engine-derivation process
