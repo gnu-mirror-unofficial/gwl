@@ -79,8 +79,6 @@
             process-time
             process-threads
 
-            define-dynamically
-
             processes-filter
             processes-filter-by-name
 
@@ -541,11 +539,6 @@ ENGINE and runs the resulting script."
   (* number 60))
 (define (hours number)
   (* (minutes number) 60))
-
-;; TODO: don't use primitive-eval!
-(define-syntax-rule
-  (define-dynamically name value)
-  (primitive-eval `(define-public ,name ,value)))
 
 (define (process-space process)
   (and=> (process-run-time process) complexity-space))
