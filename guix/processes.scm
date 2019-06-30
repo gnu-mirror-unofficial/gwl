@@ -44,17 +44,12 @@
                process->script->run
 
                ;; Convenience functions
-               gigabytes
-               megabytes
-               kilobytes
                minutes
                hours
 
                process-space
                process-time
                process-threads
-
-               define-dynamically
 
                processes-filter
                processes-filter-by-name
@@ -69,7 +64,13 @@
                derivation->script
                default-guile)
   #:export (process-package-inputs
-            process-data-inputs))
+            process-data-inputs
+            gigabytes
+            megabytes
+            kilobytes))
 
 (define process-package-inputs process-packages)
 (define process-data-inputs process-inputs)
+(define kilobytes kibibytes)
+(define megabytes mebibytes)
+(define gigabytes gibibytes)
