@@ -123,4 +123,11 @@
                (# bash { echo "hello" }))))
     (code-snippet? (process-procedure proc))))
 
+(test-assert "code snippet has access to process fields"
+  (let ((proc (process
+               (name "anything")
+               (inputs 'this 'that 'whatever)
+               # bash { echo {{inputs}} })))
+    (code-snippet-code (process-procedure proc))))
+
 (test-end "sugar")

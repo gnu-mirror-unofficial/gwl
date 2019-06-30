@@ -249,11 +249,11 @@
                            ;; wrapped in an extra pair of parens
                            ;; unless we start the line with a dot.
                            ((('code-snippet . _))
-                            (cons #`(procedure #,@last-field)
-                                  (reverse before)))
+                            (append (reverse before)
+                                    (list #`(procedure #,@last-field))))
                            (('code-snippet . _)
-                            (cons #`(procedure #,last-field)
-                                  (reverse before)))
+                            (append (reverse before)
+                                    (list #`(procedure #,last-field))))
                            (_ #'(fields ...)))))))
          #`(let* (#,@(map (lambda (field)
                             (syntax-case field ()
