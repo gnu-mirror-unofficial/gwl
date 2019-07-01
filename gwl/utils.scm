@@ -104,6 +104,7 @@ where all the basic GWL modules are available."
   (let ((result (load* file (make-user-module '((gwl processes)
                                                 (gwl workflows)
                                                 (gwl sugar)
+                                                (gwl utils)
                                                 (srfi srfi-1))))))
     (unless (workflow? result)
       (format (current-error-port)

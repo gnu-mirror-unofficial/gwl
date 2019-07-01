@@ -1,6 +1,5 @@
 (import (only (gnu packages compression) gzip)
-        (gnu packages bash)
-        (gwl utils)) ; for load-workflow
+        (gnu packages bash))
 
 ;; We are going to extend "example-workflow".
 (define dynamic-workflow

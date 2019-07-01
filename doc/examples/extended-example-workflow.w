@@ -1,5 +1,3 @@
-import : gwl utils ; for load-workflow
-
 ;; We are going to extend the workflow defined in the file
 ;; "example-workflow.w".
 define dynamic-workflow
