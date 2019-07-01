@@ -29,7 +29,7 @@ define compress-file-processes
 ;; Create the new processes.
 define list-file-processes
   map list-file-template
-      map (compose first process-outputs) compress-file-processes
+      append-map process-outputs compress-file-processes
 
 workflow: extended-dynamic-workflow
   processes
