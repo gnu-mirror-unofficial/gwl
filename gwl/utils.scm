@@ -33,7 +33,13 @@
   #:use-module (language tree-il optimize)
   #:use-module (language cps optimize)
   #:export (load-workflow
-            wisp-suffix))
+            wisp-suffix
+            on))
+
+;; Convenience procedure to simplify Wisp syntax of higher-order
+;; procedures such as "map" by having the collection first.
+(define (on collection higher-proc item-proc)
+  (higher-proc item-proc collection))
 
 (define (wisp-suffix file)
   (cond ((string-suffix? ".w" file) ".w")
