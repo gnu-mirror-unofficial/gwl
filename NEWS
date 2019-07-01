@@ -19,6 +19,9 @@ Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
   * Deprecate the “restrictions” field in workflow records.
   * Remove the “guix process” command.
   * Remove GUIX_WORKFLOW_PATH; load workflows from files instead.
+  * Fields of the “process” form that expect lists now also accept multiple values.
+  * Remove “define-dynamically” macro
+  * Add “on” procedure for application of higher-order functions to collections
 * Changes in 0.1.1 (since 0.1.0)
   * Disable interpreting shell escape characters.
   * Show more information in error messages.
