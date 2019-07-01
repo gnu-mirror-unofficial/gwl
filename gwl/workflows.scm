@@ -152,17 +152,28 @@ Use \"processes\" to specify process dependencies.~%"))
   "Return an association list mapping processes to processes they
 depend on.  This is accomplished by matching the inputs of a process
 with the outputs of other processes."
-  (let ((process-by-output
-         (append-map (lambda (process)
-                       (filter-map (lambda (out)
-                                     (cons out process))
-                                   (process-outputs process)))
-                     processes)))
-    (map (lambda (process)
-           (cons process
-                 (filter-map (cut assoc-ref process-by-output <>)
-                             (process-inputs process))))
-         processes)))
+  ;; Normalize the arguments.  Ensure that this is just a simple list
+  ;; of processes, not a nested list.  This makes for nicer syntax as
+  ;; users can avoid "apply".
+  (let ((processes*
+         (letrec ((flatten (lambda (sub)
+                             (append-map
+                              (match-lambda
+                                ((? list? l) (flatten l))
+                                (x (list x)))
+                              sub))))
+           (flatten processes))))
+    (let ((process-by-output
+           (append-map (lambda (process)
+                         (filter-map (lambda (out)
+                                       (cons out process))
+                                     (process-outputs process)))
+                       processes*)))
+      (map (lambda (process)
+             (cons process
+                   (filter-map (cut assoc-ref process-by-output <>)
+                               (process-inputs process))))
+           processes*))))
 
 (define (workflow-free-inputs workflow)
   "Return a list of processes and their free inputs, i.e. inputs that

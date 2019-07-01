@@ -39,5 +39,4 @@ define compress-file-processes
 
 workflow: dynamic-workflow
   processes
-    apply auto-connect
-          append compress-file-processes create-file-processes
+    auto-connect compress-file-processes create-file-processes
