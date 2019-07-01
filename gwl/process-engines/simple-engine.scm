@@ -22,7 +22,8 @@
   #:use-module (gwl processes)
   #:use-module (guix gexp)
   #:use-module ((guix derivations)
-                #:select (build-derivations))
+                #:select (build-derivations
+                          derivation->output-path))
   #:use-module ((guix store)
                 #:select (%store-monad with-store run-with-store))
   #:use-module ((guix monads)
@@ -67,47 +68,48 @@ its search path."
                             (profile (profile-derivation manifest)))
           ;; Ensure that the manifest is in fact instantiated.
           (build-derivations store (list profile))
-          (gexp->derivation
-           name
-           #~(begin
-               (use-modules (ice-9 pretty-print)
-                            (ice-9 format)
-                            (ice-9 match)
-                            (srfi srfi-26))
-               (call-with-output-file #$output
-                 (lambda (port)
-                   (format port "#!~a/bin/guile --no-auto-compile~%-s~%!#~%" #$guile)
-                   (pretty-print
-                    '#$(containerize
-                        `(begin
-                           ;; The destination can be outside of the store.
-                           ;; TODO: We have to mount this location when building inside
-                           ;; a container.
-                           ,(if out `(setenv "out" ,out) "")
-                           (setenv "_GWL_PROFILE" ,profile)
-                           ";; Code to create a proper Guile environment."
-                           ,set-load-path
-                           ,@(map (match-lambda
-                                    ((variable files separator type pattern)
-                                     `(setenv ,variable
-                                              (string-join
-                                               (map (lambda (file)
-                                                      (string-append ,profile "/" file))
-                                                    ',files)
-                                               ,separator))))
-                                  search-paths)
-                           ,exp)
-                        #:inputs
-                        (cons profile
-                              (append
-                               ;; Individual package locations
-                               (map (lambda (pkg) (package-output store pkg)) packages)
-                               ;; Data inputs
-                               (remove keyword? (process-inputs process))))
-                        #:outputs
-                        (process-outputs process))
-                    port)
-                   (chmod port #o555))))))))))
+          (let ((profile-dir (derivation->output-path profile)))
+            (gexp->derivation
+             name
+             #~(begin
+                 (use-modules (ice-9 pretty-print)
+                              (ice-9 format)
+                              (ice-9 match)
+                              (srfi srfi-26))
+                 (call-with-output-file #$output
+                   (lambda (port)
+                     (format port "#!~a/bin/guile --no-auto-compile~%-s~%!#~%" #$guile)
+                     (pretty-print
+                      '#$(containerize
+                          `(begin
+                             ;; The destination can be outside of the store.
+                             ;; TODO: We have to mount this location when building inside
+                             ;; a container.
+                             ,(if out `(setenv "out" ,out) "")
+                             (setenv "_GWL_PROFILE" ,profile-dir)
+                             ";; Code to create a proper Guile environment."
+                             ,set-load-path
+                             ,@(map (match-lambda
+                                      ((variable files separator type pattern)
+                                       `(setenv ,variable
+                                                (string-join
+                                                 (map (lambda (file)
+                                                        (string-append ,profile-dir "/" file))
+                                                      ',files)
+                                                 ,separator))))
+                                    search-paths)
+                             ,exp)
+                          #:inputs
+                          (cons profile-dir
+                                (append
+                                 ;; Individual package locations
+                                 (map (lambda (pkg) (package-output store pkg)) packages)
+                                 ;; Data inputs
+                                 (remove keyword? (process-inputs process))))
+                          #:outputs
+                          (process-outputs process))
+                      port)
+                     (chmod port #o555)))))))))))
 
 (define simple-engine
   (process-engine
