@@ -117,9 +117,10 @@ where all the basic GWL modules are available."
 (define-syntax-rule (load-workflow file)
   (let ((target (string-append (dirname (or (current-filename) ""))
                                "/" file)))
-    (if (file-exists? target)
-        (load-workflow* target)
-        (load-workflow* file))))
+    (if (or (absolute-file-name? file)
+            (not (file-exists? target)))
+        (load-workflow* file)
+        (load-workflow* target))))
 
 
 
