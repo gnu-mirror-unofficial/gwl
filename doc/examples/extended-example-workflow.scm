@@ -12,7 +12,7 @@
    (inputs (list filename))
    (outputs (list (string-append filename ".list")))
    (run-time (complexity
-              (space (megabytes 20))
+              (space 20 mebibytes)
               (time 10)))
    (procedure # bash { gzip --list {{inputs}} > {{outputs}} })))
 

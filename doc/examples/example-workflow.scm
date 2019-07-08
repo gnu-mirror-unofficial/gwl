@@ -6,7 +6,7 @@
    (name (string-append "create-file-" (basename filename)))
    (outputs (list filename))
    (run-time (complexity
-              (space   (megabytes 20))
+              (space   20 mebibytes)
               (time    10)))
    (procedure
     `(call-with-output-file ,(first outputs)
@@ -20,7 +20,7 @@
    (inputs (list input))
    (outputs (list (string-append input ".gz")))
    (run-time (complexity
-              (space   (megabytes 20))
+              (space   20 mebibytes)
               (time    10)))
    (procedure # bash { gzip {{inputs}} -c > {{outputs}} })))
 
