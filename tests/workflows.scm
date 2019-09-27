@@ -17,6 +17,7 @@
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows execution-order)
+  #:use-module (language wisp spec)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-64))
@@ -89,13 +90,8 @@
                (list p5)
                (list p6))))
 
-;; The (wisp) module thinks its called as a script when (command-line)
-;; is a list of more than one value...
-(set-program-arguments '())
-(use-modules (wisp))
-
 (test-equal "wisp syntax produces the expected S-expression"
-  (with-input-from-string (wisp2lisp "
+  (with-input-from-string "\
 workflow
   name \"test-workflow\"
   processes
@@ -104,9 +100,11 @@ workflow
       p3 -> p1
       p5 -> p2 p3 p4
       p6 -> p5
-")
+"
     (lambda ()
-      (read (current-input-port))))
+      ((@@ (language wisp spec) read-one-wisp-sexp)
+       (current-input-port)
+       (current-module))))
   '(workflow
     (name "test-workflow")
     (processes
