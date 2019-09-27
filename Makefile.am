@@ -63,7 +63,8 @@ nobase_dist_assets_DATA =                                 \
   gwl/static/fonts/Roboto-Light.ttf                       \
   gwl/static/fonts/OFL.txt                                \
   gwl/static/graphs/index.html                            \
-  gwl/static/images/grid.png
+  gwl/static/images/grid.png                              \
+  gwl/static/images/logo.png
 
 examplesdir = $(prefix)/share/@PACKAGE@/doc/examples
 nobase_dist_examples_DATA =                               \
