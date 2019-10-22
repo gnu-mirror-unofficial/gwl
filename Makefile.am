@@ -67,7 +67,7 @@ nobase_dist_assets_DATA =                                 \
   gwl/static/images/logo.png
 
 examplesdir = $(prefix)/share/@PACKAGE@/doc/examples
-nobase_dist_examples_DATA =                               \
+dist_examples_DATA =                                      \
   doc/examples/simple.scm                                 \
   doc/examples/simple-wisp.w                              \
   doc/examples/example-workflow1.scm                      \
