@@ -20,6 +20,7 @@
              (gnu packages gnupg)
              (gnu packages guile)
              (gnu packages guile-xyz)
+             (gnu packages graphviz)
              (gnu packages package-management)
              (gnu packages pkg-config)
              (gnu packages tex))
@@ -38,7 +39,8 @@
        ("automake" ,automake)
        ("pkg-config" ,pkg-config)
        ;; This is only needed for make distcheck
-       ("texlive" ,texlive-tiny)))
+       ("texlive" ,texlive-tiny)
+       ("graphviz" ,graphviz)))
     (inputs
      `(("guile" ,guile-2.2)))
     (propagated-inputs
