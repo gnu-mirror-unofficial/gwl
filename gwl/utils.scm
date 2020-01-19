@@ -16,10 +16,10 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl utils)
-  #:use-module (guix sets)
   #:use-module (gwl ui)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
+  #:use-module (pfds sets)
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
@@ -197,7 +197,7 @@ VARIABLE and return it, or #f if none was found."
 
   (let loop ((modules     (list (resolve-module '() #f #f #:ensure #f)))
              (suggestions '())
-             (visited     (setq)))
+             (visited     (make-set <)))
     (match modules
       (()
        ;; Pick the "best" suggestion.
@@ -205,7 +205,7 @@ VARIABLE and return it, or #f if none was found."
          (() #f)
          ((first _ ...) first)))
       ((head tail ...)
-       (if (set-contains? visited head)
+       (if (set-member? visited head)
            (loop tail suggestions visited)
            (let ((visited (set-insert head visited))
                  (next    (append tail

@@ -1,4 +1,4 @@
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@
      `(("guix" ,guix)
        ("guile-commonmark" ,guile-commonmark)
        ("guile-gcrypt" ,guile-gcrypt)
+       ("guile-pfds" ,guile-pfds)
        ("guile-syntax-highlight" ,guile-syntax-highlight)
        ("guile-wisp" ,guile-wisp)))
     (home-page "https://www.guixwl.org")

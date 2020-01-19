@@ -1,6 +1,6 @@
 dnl gwl - Workflow management extension for GNU Guix
 dnl Copyright © 2017 Roel Janssen <roel@gnu.org>
-dnl Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+dnl Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ fi
 
 GUILE_MODULE_REQUIRED(language wisp spec)
 GUILE_MODULE_REQUIRED(gcrypt hash)
+GUILE_MODULE_REQUIRED(pfds sets)
 AC_PATH_PROG([DOT], [dot])
 if test "x$DOT" = "x"; then
    AC_MSG_ERROR(['dot' could not be found; please check your Graphviz installation.])
