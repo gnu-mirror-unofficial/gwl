@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;; Copyright © 2012-2019 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
@@ -28,10 +28,9 @@
   #:use-module (srfi srfi-34)
   ;; For wisp support
   #:use-module (system base compile)
+  #:use-module (language scheme spec)
   #:use-module (language wisp)
   #:use-module (language wisp spec)
-  #:use-module (language tree-il optimize)
-  #:use-module (language cps optimize)
   #:export (load-workflow
             wisp-suffix
             on))
@@ -47,52 +46,23 @@
         ((string-suffix? ".gwl" file) ".gwl")
         (else #f)))
 
-;; Copied from Guile's (scripts compile) module.
-(define (available-optimizations)
-  (append (tree-il-default-optimization-options)
-          (cps-default-optimization-options)))
-
-;; Copied from Guile's (scripts compile) module.
-(define (optimizations-for-level level)
-  (let lp ((options (available-optimizations)))
-    (match options
-      (() '())
-      ((#:partial-eval? val . options)
-       (cons* #:partial-eval? (> level 0) (lp options)))
-      ((kw val . options)
-       (cons* kw (> level 1) (lp options))))))
-
 (define* (compile-wisp file #:key env)
-  "Compile the Wisp file FILE and return the name of the compiled
-file."
-  (let ((compiled (string-append
-                   (dirname file) "/"
-                   (basename file (wisp-suffix file))
-                   ".go")))
-    (catch #t
-      (lambda ()
-        (when (getenv "GWL_DEBUG")
-          (pretty-print (call-with-input-file file wisp-scheme-read-all)))
-        (when (or (not (file-exists? compiled))
-                  (let ((sc (stat compiled))
-                        (ss (stat file)))
-                    (> (stat:mtime ss)
-                       (stat:mtime sc))))
-          (format (current-error-port) "Compiling ~a..." file)
-          (force-output (current-error-port))
-          (compile-file file
-                        #:output-file compiled
-                        #:from wisp
-                        #:opts (optimizations-for-level 0)
-                        #:env env)
-          (format (current-error-port) "OK\n")
-          (force-output (current-error-port)))
-        compiled)
-      (lambda args
-        ;; TODO: produce more detailed error message
-        (format (current-error-port)
-                "Failed to compile ~a~%" file)
-        #f))))
+  "Convert the Wisp file FILE to Scheme and return the name of the
+output file."
+  (let ((exps (call-with-input-file file wisp-scheme-read-all))
+        ;; TODO: use the standard cache locations
+        (output-file (string-append
+                      (dirname file) "/."
+                      (basename file (wisp-suffix file))
+                      "-from-wisp.scm")))
+    (when (or (not (file-exists? output-file))
+              (let ((sc (stat output-file))
+                    (ss (stat file)))
+                (> (stat:mtime ss)
+                   (stat:mtime sc))))
+      (with-output-to-file output-file
+        (lambda () (for-each pretty-print exps))))
+    output-file))
 
 ;; Taken from (guix ui).
 (define (make-user-module modules)
@@ -123,10 +93,10 @@ where all the basic GWL modules are available."
 (define-syntax-rule (load-workflow file)
   (let ((target (string-append (dirname (or (current-filename) ""))
                                "/" file)))
-    (if (or (absolute-file-name? file)
-            (not (file-exists? target)))
-        (load-workflow* file)
-        (load-workflow* target))))
+    (load-workflow*
+     (if (or (absolute-file-name? file)
+             (not (file-exists? target)))
+         file target))))
 
 
 
@@ -290,37 +260,31 @@ information, or #f if it could not be found."
 ;; Adapted from (guix ui).
 (define* (load* file user-module)
   "Load the user provided Scheme or Wisp source code FILE."
-  (define (error-string frame args)
-    (call-with-output-string
-      (lambda (port)
-        (apply display-error frame port (cdr args)))))
-
   (define tag
     (make-prompt-tag "user-code"))
 
   (catch #t
     (lambda ()
+
+      ;; Force re-compilation to avoid ABI issues
+      (set! %fresh-auto-compile #t)
+      (set! %load-should-auto-compile #t)
+
       (save-module-excursion
        (lambda ()
          (set-current-module user-module)
 
          ;; Hide the "auto-compiling" messages.
-         (call-with-prompt tag
-           (lambda ()
-             (and=> (if (wisp-suffix file)
-                        (compile-wisp file #:env user-module)
-                        (let ((compiled (string-append
-                                         (dirname file) "/"
-                                         (basename file ".scm") ".go")))
-                          (compile-file file #:env user-module
-                                        #:output-file compiled)
-                          compiled))
-                    (lambda (compiled)
-                      ;; Give 'load-compiled' an absolute file name
-                      ;; so that it doesn't try to search for FILE
-                      ;; in %LOAD-COMPILED-PATH.
-                      (load-compiled (canonicalize-path compiled)))))
-           (const #f)))))
+         (parameterize ((current-warning-port (%make-void-port "w")))
+           (call-with-prompt tag
+             (lambda ()
+               (let ((file* (if (wisp-suffix file)
+                                (compile-wisp file #:env user-module)
+                                file)))
+                 ;; Give 'load' an absolute file name so that it doesn't
+                 ;; try to search for FILE in %LOAD-COMPILED-PATH.
+                 (load (canonicalize-path file*))))
+             (const #f))))))
     (lambda args
       ;; TODO: error handling should happen in the unwind handler, but
       ;; not all errors end up there, so for now we just print
