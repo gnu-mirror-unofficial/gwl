@@ -1,4 +1,4 @@
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -118,88 +118,88 @@ When no interpreter is provided it uses /bin/sh:
                           (balance 1)
                           (chunks '())
                           (maybe-variable? #f))
-         (match char
-           ((? eof-object? c)
-            (throw 'inline-code-unbalanced-braces balance))
-           (_
-            (let-values
-                (((new-balance new-chunks new-acc new-maybe-variable?)
-                  (match char
-                    (#\{
-                     (values (1+ balance)
-                             chunks
-                             (cons char acc)
-                             ;; If previous char was also #\{ we are
-                             ;; probably reading a variable reference
-                             ;; next.
-                             (match acc
-                               ((#\{ . _) #t)
-                               (_ #f))))
-                    (#\}
-                     (call-with-values
-                         (lambda () (break (cut eq? #\{ <>) acc))
-                       (lambda (pre post)
-                         (if (and maybe-variable?
-                                  (not (null? post))
-                                  (>= (length post) 2)
-                                  (equal? (take post 2) '(#\{ #\{))
-                                  (eq? (peek-char port) #\})
-                                  (not (any (cut char-set-contains? char-set:whitespace <>) pre)))
-                             ;; This is a variable reference
-                             (begin
-                               (read-char port) ; drop the closing "}"
-                               (values (- balance 2)
-                                       (let ((reference
-                                              ;; Variables may access named
-                                              ;; values with ":name".
-                                              (call-with-values (lambda () (break (cut eq? #\: <>)
-                                                                             (reverse pre)))
-                                                (lambda (pre: post:)
-                                                  (match post:
-                                                    ;; Simple variable identifier
-                                                    (() (string->symbol (list->string pre:)))
-                                                    ;; Complex identifier.
-                                                    ((_ . kw)
-                                                     `(and=> (memq ,(symbol->keyword
-                                                                     (string->symbol (list->string kw)))
-                                                                   ,(string->symbol (list->string pre:)))
-                                                             cadr)))))))
-                                         (cons* reference
-                                                ;; Drop the opening "{{"
-                                                (list->string (reverse (drop post 2)))
-                                                chunks))
-                                       '()
-                                       #f))
-                             ;; Not a variable
-                             (values (1- balance)
-                                     (cons (list->string (reverse acc))
-                                           chunks)
-                                     (list char)
-                                     #f)))))
-                    (_ (values balance chunks
-                               (cons char acc)
-                               maybe-variable?)))))
-              (if (zero? new-balance)
-                  (let ((last-chunk (list->string (reverse acc))))
-                    `(code-snippet ',(match language
-                                       ("" 'sh)
-                                       (_ (string->symbol language)))
-                                   ',(string-split arguments #\space)
-                                   (begin
-                                     (use-modules (ice-9 format))
-                                     (apply string-append
-                                            (map (lambda (val)
-                                                   (cond
-                                                    ((string? val) val)
-                                                    ((list? val)
-                                                     (format #f "~{~a~^ ~}" val))
-                                                    (else (format #f "~a" val))))
-                                                 (list ,@(reverse (cons last-chunk chunks))))))))
-                  (search-delim new-acc
-                                (read-char port)
-                                new-balance
-                                new-chunks
-                                new-maybe-variable?)))))))))
+         ;; TODO: don't use "throw", raise an exception!
+         (when (eof-object? char)
+           (throw 'inline-code-unbalanced-braces balance))
+
+         (let-values
+             (((new-balance new-chunks new-acc new-maybe-variable?)
+               (match char
+                 (#\{
+                  (values (1+ balance)
+                          chunks
+                          (cons char acc)
+                          ;; If previous char was also #\{ we are
+                          ;; probably reading a variable reference
+                          ;; next.
+                          (match acc
+                            ((#\{ . _) #t)
+                            (_ #f))))
+                 (#\}
+                  (call-with-values
+                      (lambda () (break (cut eq? #\{ <>) acc))
+                    (lambda (pre post)
+                      (if (and maybe-variable?
+                               (not (null? post))
+                               (>= (length post) 2)
+                               (equal? (take post 2) '(#\{ #\{))
+                               (eq? (peek-char port) #\})
+                               (not (any (cut char-set-contains? char-set:whitespace <>) pre)))
+                          ;; This is a variable reference
+                          (begin
+                            (read-char port) ; drop the closing "}"
+                            (values (- balance 2)
+                                    (let ((reference
+                                           ;; Variables may access named
+                                           ;; values with ":name".
+                                           (call-with-values (lambda () (break (cut eq? #\: <>)
+                                                                          (reverse pre)))
+                                             (lambda (pre: post:)
+                                               (match post:
+                                                 ;; Simple variable identifier
+                                                 (() (string->symbol (list->string pre:)))
+                                                 ;; Complex identifier.
+                                                 ((_ . kw)
+                                                  `(and=> (memq ,(symbol->keyword
+                                                                  (string->symbol (list->string kw)))
+                                                                ,(string->symbol (list->string pre:)))
+                                                          cadr)))))))
+                                      (cons* reference
+                                             ;; Drop the opening "{{"
+                                             (list->string (reverse (drop post 2)))
+                                             chunks))
+                                    '()
+                                    #f))
+                          ;; Not a variable
+                          (values (1- balance)
+                                  (cons (list->string (reverse acc))
+                                        chunks)
+                                  (list char)
+                                  #f)))))
+                 (_ (values balance chunks
+                            (cons char acc)
+                            maybe-variable?)))))
+           (if (zero? new-balance)
+               (let ((last-chunk (list->string (reverse acc))))
+                 `(code-snippet ',(match language
+                                    ("" 'sh)
+                                    (_ (string->symbol language)))
+                                ',(string-split arguments #\space)
+                                (begin
+                                  (use-modules (ice-9 format))
+                                  (apply string-append
+                                         (map (lambda (val)
+                                                (cond
+                                                 ((string? val) val)
+                                                 ((list? val)
+                                                  (format #f "~{~a~^ ~}" val))
+                                                 (else (format #f "~a" val))))
+                                              (list ,@(reverse (cons last-chunk chunks))))))))
+               (search-delim new-acc
+                             (read-char port)
+                             new-balance
+                             new-chunks
+                             new-maybe-variable?)))))))
   ;; Support syntactic sugar
   (read-hash-extend #\space reader-extension-inline-code)
   (read-hash-extend #\newline reader-extension-inline-code))
