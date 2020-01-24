@@ -422,40 +422,38 @@ of PROCESS."
   "Wrap EXP, an S-expression or G-expression, in a G-expression that
 causes EXP to be run in a container where the provided INPUTS and
 OUTPUTS are mapped."
-  (let* ((output-dirs
+  (let* ((output-locations
           (delete-duplicates (map dirname outputs)))
-         (input-mappings
-          (map (lambda (location)
-                 (file-system-mapping
-                  (source location)
-                  (target location)
-                  (writable? #f)))
-               (lset-difference string=?
-                                inputs
-                                output-dirs)))
-         (output-mappings
-          (map (lambda (dir)
-                 (file-system-mapping
-                  (source dir)
-                  (target dir)
-                  (writable? #t)))
-               output-dirs))
-         (specs
-          (map (compose file-system->spec
-                        file-system-mapping->bind-mount)
-               (append input-mappings
-                       output-mappings))))
+         (input-locations
+          (lset-difference string=?
+                           inputs
+                           output-locations)))
     (with-imported-modules (source-module-closure
                             '((gnu build linux-container)
                               (gnu system file-systems)))
       #~(begin
           (use-modules (gnu build linux-container)
                        (gnu system file-systems))
+          (define (location->file-system location writable?)
+            (file-system
+              (device location)
+              (mount-point location)
+              (type "none")
+              (flags (if writable?
+                         '(bind-mount)
+                         '(bind-mount read-only)))
+              (check? #f)
+              (create-mount-point? #t)))
           (let ((thunk (lambda () #$exp)))
             (if (getenv "GWL_CONTAINERIZE")
-                (call-with-container (append %container-file-systems
-                                             (map spec->file-system
-                                                  '#$specs))
+                (call-with-container
+                    (append %container-file-systems
+                            (map (lambda (location)
+                                   (location->file-system location #f))
+                                 '#$input-locations)
+                            (map (lambda (location)
+                                   (location->file-system location #t))
+                                 '#$output-locations))
                   thunk)
                 (thunk)))))))
 
