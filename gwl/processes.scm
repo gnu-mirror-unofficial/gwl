@@ -18,16 +18,18 @@
   #:use-module (oop goops)
   #:use-module (gwl oop)
   #:use-module (gwl process-engines)
+  #:use-module ((guix monads)
+                #:select (mlet* return))
   #:use-module ((guix derivations)
                 #:select (derivation->output-path
-                          build-derivations))
+                          built-derivations))
   #:use-module ((guix packages)
                 #:select (package?))
   #:use-module ((gnu packages)
                 #:select (specification->package))
   #:use-module (guix gexp)
   #:use-module ((guix store)
-                #:select (with-store))
+                #:select (with-store run-with-store %store-monad))
   #:use-module ((guix modules)
                 #:select (source-module-closure))
   #:use-module (gnu system file-systems)
@@ -491,11 +493,13 @@ OUTPUTS are mapped."
 ;;; ---------------------------------------------------------------------------
 
 (define (derivation->script drv)
-  "Write the output of a derivation DRV to a file.  When BUILD? is
-set to #f, it only returns the output path."
+  "Run the derivation DRV, which generates a script, and return the
+output path."
   (with-store store
-    (build-derivations store (list drv))
-    (derivation->output-path drv)))
+    (run-with-store store
+      (mlet* %store-monad ((drv drv)
+                           (built (built-derivations (list drv))))
+        (return (derivation->output-path drv))))))
 
 (define (process->script engine)
   "Builds a procedure that builds a derivation of the process PROCESS

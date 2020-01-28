@@ -23,8 +23,6 @@
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (guix gexp)
-  #:use-module ((guix store)
-                #:select (with-store run-with-store))
   #:use-module (gnu packages bash)
   #:use-module (ice-9 format)
   #:export (grid-engine))
@@ -95,31 +93,29 @@ modules in its load path."
          (logs-directory (string-append (getcwd) "/logs")))
     (unless (file-exists? logs-directory)
       (mkdir logs-directory))
-    (with-store store
-      (run-with-store store
-        (gexp->derivation
-         name
-         #~(call-with-output-file #$output
-             (lambda (port)
-               (use-modules (ice-9 format))
-               (format port "#!~a/bin/bash~%" #$bash)
-               ;; Write the SGE options to the header of the Bash script.
-               (format port
-                       "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
-                       #$bash
-                       #$restrictions
-                       #$space-str
-                       #$time-str
-                       #$threads-str)
-               ;; Write logs to the 'logs' subdirectory of the workflow output.
-               (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
-                       #$logs-directory
-                       #$name
-                       #$logs-directory
-                       #$name)
-               (format port "~a~%" #$simple-out)
-               (chmod port #o555)))
-         #:substitutable? #f)))))
+    (gexp->derivation
+     name
+     #~(call-with-output-file #$output
+         (lambda (port)
+           (use-modules (ice-9 format))
+           (format port "#!~a/bin/bash~%" #$bash)
+           ;; Write the SGE options to the header of the Bash script.
+           (format port
+                   "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
+                   #$bash
+                   #$restrictions
+                   #$space-str
+                   #$time-str
+                   #$threads-str)
+           ;; Write logs to the 'logs' subdirectory of the workflow output.
+           (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
+                   #$logs-directory
+                   #$name
+                   #$logs-directory
+                   #$name)
+           (format port "~a~%" #$simple-out)
+           (chmod port #o555)))
+     #:substitutable? #f)))
 
 (define grid-engine
   (process-engine
