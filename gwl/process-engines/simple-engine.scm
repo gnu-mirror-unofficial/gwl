@@ -108,7 +108,8 @@ its search path."
                           #:outputs
                           (process-outputs process))
                       port)
-                     (chmod port #o555)))))))))))
+                     (chmod port #o555))))
+             #:substitutable? #f)))))))
 
 (define simple-engine
   (process-engine

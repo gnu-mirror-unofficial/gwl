@@ -118,7 +118,8 @@ modules in its load path."
                        #$logs-directory
                        #$name)
                (format port "~a~%" #$simple-out)
-               (chmod port #o555))))))))
+               (chmod port #o555)))
+         #:substitutable? #f)))))
 
 (define grid-engine
   (process-engine
