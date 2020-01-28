@@ -74,8 +74,7 @@ its search path."
              #~(begin
                  (use-modules (ice-9 pretty-print)
                               (ice-9 format)
-                              (ice-9 match)
-                              (srfi srfi-26))
+                              (ice-9 match))
                  (call-with-output-file #$output
                    (lambda (port)
                      (format port "#!~a/bin/guile --no-auto-compile~%-s~%!#~%" #$guile)
