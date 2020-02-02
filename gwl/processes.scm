@@ -47,8 +47,6 @@
                  requisites))
   #:use-module ((guix modules)
                 #:select (source-module-closure))
-  #:use-module (gnu system file-systems)
-  #:use-module (gnu build linux-container)
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
