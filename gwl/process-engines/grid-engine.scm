@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -19,7 +19,6 @@
 
 (define-module (gwl process-engines grid-engine)
   #:use-module (gwl process-engines)
-  #:use-module (gwl process-engines simple-engine)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (guix gexp)
@@ -72,17 +71,11 @@ requirements of PROCESS."
                (format #f "-l h_vmem=~a" space)))
       ""))
 
-(define* (process->grid-engine-derivation process
-                                          #:key
-                                          workflow
-                                          (guile (default-guile)))
-  "Return a derivation for an executable script that runs the
-procedure described in the PROCESS, with the procedure's imported
-modules in its load path."
+(define* (grid-engine-wrapper process script #:key workflow)
+  "Return a G-expression for an executable wrapper script that sets up
+an environment in which to call the PROCESS SCRIPT with constraints
+provided by WORKFLOW."
   (let* ((name               (process-full-name process))
-         (derivation-builder (process-engine-derivation-builder simple-engine))
-         (simple-out         (derivation->script
-                              (derivation-builder process #:guile guile)))
          (restrictions       (process->grid-engine-restrictions-string process workflow))
          (time-str           (process->grid-engine-time-limit process))
          (space-str          (process->grid-engine-space-limit process))
@@ -90,36 +83,31 @@ modules in its load path."
                                         (lambda (threads)
                                           (format #f "-pe threaded ~a" threads)))
                                  ""))
-         (logs-directory (string-append (getcwd) "/logs")))
-    (gexp->derivation
-     name
-     #~(begin
-         (unless (file-exists? logs-directory)
-           (mkdir logs-directory))
-         (call-with-output-file #$output
-           (lambda (port)
-             (use-modules (ice-9 format))
-             (format port "#!~a/bin/bash~%" #$bash)
-             ;; Write the SGE options to the header of the Bash script.
-             (format port
-                     "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
-                     #$bash
-                     #$restrictions
-                     #$space-str
-                     #$time-str
-                     #$threads-str)
-             ;; Write logs to the 'logs' subdirectory of the workflow output.
-             (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
-                     #$logs-directory
-                     #$name
-                     #$logs-directory
-                     #$name)
-             (format port "~a~%" #$simple-out)
-             (chmod port #o555))))
-     #:substitutable? #f)))
+         (logs-directory     (string-append (getcwd) "/logs")))
+    #~(call-with-output-file #$output
+        (lambda (port)
+          (use-modules (ice-9 format))
+          (format port "#!~a/bin/bash~%" #$bash)
+          ;; Write the SGE options to the header of the Bash script.
+          (format port
+                  "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
+                  #$bash
+                  #$restrictions
+                  #$space-str
+                  #$time-str
+                  #$threads-str)
+          ;; Write logs to the 'logs' subdirectory of the workflow output.
+          (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
+                  #$logs-directory
+                  #$name
+                  #$logs-directory
+                  #$name)
+          (format port "mkdir -p ~a~%" #$logs-directory)
+          (format port "~a~%" #$script)
+          (chmod port #o555)))))
 
 (define grid-engine
   (process-engine
    (name "grid-engine")
-   (derivation-builder process->grid-engine-derivation)
+   (wrapper grid-engine-wrapper)
    (runner '("qsub"))))

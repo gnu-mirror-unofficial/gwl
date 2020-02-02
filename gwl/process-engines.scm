@@ -1,5 +1,5 @@
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
   #:export (process-engine
             process-engine?
             process-engine-name
-            process-engine-derivation-builder
+            process-engine-wrapper
             process-engine-runner
             find-engine-by-name))
 
@@ -30,22 +30,23 @@
 ;;; ---------------------------------------------------------------------------
 
 ;;
-;; A process-engine determines which 
+;; A process-engine determines how a process is executed. 
 ;;
 (define-record-type* <process-engine>
   process-engine make-process-engine
   process-engine?
 
-  (name                process-engine-name)
-  (derivation-builder  process-engine-derivation-builder)
-  (runner              process-engine-runner
-                       (default '("/bin/sh" "-c"))))
+  (name     process-engine-name)
+  (wrapper  process-engine-wrapper
+            (default #f))
+  (runner   process-engine-runner
+            (default '("/bin/sh" "-c"))))
 
 (define (print-process-engine engine port)
   "Write a concise representation of PROCESS-ENGINE to PORT."
   (match engine
-    (($ <process-engine> name derivation-builder)
-     (simple-format port "#<process-engine ~a>" (process-engine-name engine)))))
+    (($ <process-engine> name wrapper runner)
+     (simple-format port "#<process-engine ~a>" name))))
 
 (set-record-type-printer! <process-engine> print-process-engine)
 

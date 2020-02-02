@@ -61,16 +61,17 @@
                procedure->gexp
 
                ;; For the lack of a better place.
-               derivation->script
                default-guile)
   #:export (process-package-inputs
             process-data-inputs
             gigabytes
             megabytes
-            kilobytes))
+            kilobytes
+            derivation->script))
 
 (define process-package-inputs process-packages)
 (define process-data-inputs process-inputs)
 (define kilobytes kibibytes)
 (define megabytes mebibytes)
 (define gigabytes gibibytes)
+(define derivation->script identity)

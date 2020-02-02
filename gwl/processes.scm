@@ -19,17 +19,32 @@
   #:use-module (gwl oop)
   #:use-module (gwl process-engines)
   #:use-module ((guix monads)
-                #:select (mlet* return))
+                #:select (mlet* mlet mwhen return))
   #:use-module ((guix derivations)
                 #:select (derivation->output-path
-                          built-derivations))
+                          built-derivations
+                          derivation-input
+                          derivation-input-output-paths))
+  #:use-module ((guix profiles)
+                #:select
+                (manifest-search-paths
+                 packages->manifest
+                 profile-derivation))
+  #:use-module ((guix search-paths)
+                #:select
+                (search-path-specification->sexp))
   #:use-module ((guix packages)
                 #:select (package?))
   #:use-module ((gnu packages)
                 #:select (specification->package))
   #:use-module (guix gexp)
   #:use-module ((guix store)
-                #:select (with-store run-with-store %store-monad))
+                #:select
+                (%store-monad
+                 with-store
+                 run-with-store 
+                 store-lift
+                 requisites))
   #:use-module ((guix modules)
                 #:select (source-module-closure))
   #:use-module (gnu system file-systems)
@@ -94,7 +109,6 @@
             containerize
 
             ;; For the lack of a better place.
-            derivation->script
             default-guile))
 
 ;;; Commentary:
@@ -492,25 +506,75 @@ OUTPUTS are mapped."
 ;;; DERIVATIONS AND SCRIPTS FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
-(define (derivation->script drv)
-  "Run the derivation DRV, which generates a script, and return the
-output path."
-  (with-store store
-    (run-with-store store
-      (mlet* %store-monad ((drv drv)
-                           (built (built-derivations (list drv))))
-        (return (derivation->output-path drv))))))
-
 (define (process->script engine)
-  "Builds a procedure that builds a derivation of the process PROCESS
-according to ENGINE and returns the commands a user needs to run."
-  (let ((derivation-builder (process-engine-derivation-builder engine)))
-    (lambda* (process #:key workflow)
-      (unless (process? process)
-        (error (format #f "This is not a process!~%")))
-      (derivation->script
-       (derivation-builder process
-                           #:workflow workflow)))))
+  "Build a procedure that transforms the process PROCESS into a script
+and returns its location."
+  (lambda* (process #:key workflow guix)
+    (unless (process? process)
+      (error (format #f "This is not a process!~%")))
+    (let* ((name (process-full-name process))
+           (exp (procedure->gexp process))
+           (make-wrapper (process-engine-wrapper engine))
+           (packages (process-packages process))
+           (manifest (packages->manifest packages))
+           (search-paths (delete-duplicates
+                          (map search-path-specification->sexp
+                               (manifest-search-paths manifest))))
+           (out (process-output-path process))
+           (drv
+            (mlet* %store-monad
+                ((profile (profile-derivation manifest))
+                 (lowered (lower-gexp exp))
+                 (inputs -> (cons* (derivation-input profile)
+                                   (lowered-gexp-guile lowered)
+                                   (lowered-gexp-inputs lowered)))
+                 (_ (built-derivations inputs))
+                 (items -> (append (append-map derivation-input-output-paths inputs)
+                                   (lowered-gexp-sources lowered)))
+                 (closure ((store-lift requisites) items))
+                 ;; Build everything
+                 (built (built-derivations closure)))
+              (let ((script
+                     ;; TODO: with-imported-modules does not support
+                     ;; nesting!  So we need to list all the modules
+                     ;; right here, or else containerization or search
+                     ;; path magic simply won't work at runtime on all
+                     ;; targets.
+                     (with-imported-modules (source-module-closure
+                                             '((gnu build linux-container)
+                                               (gnu system file-systems)
+                                               (guix search-paths)))
+                       (containerize
+                        #~(begin
+                            #$@(if (null? packages) '()
+                                   `((use-modules (guix search-paths))
+                                     (set-search-paths (map sexp->search-path-specification
+                                                            ',search-paths)
+                                                       ',packages)))
+                            #$(if out `(setenv "out" ,out) "")
+                            (setenv "_GWL_PROFILE" #$profile)                                        
+                            #$exp)
+                        #:inputs
+                        (append closure
+                                ;; Data inputs
+                                (remove keyword? (process-inputs process)))
+                        #:outputs
+                        (process-outputs process)))))
+                (gexp->script (string-append "gwl-" name ".scm") script)))))
+      (with-store store
+        (run-with-store store
+          (mlet* %store-monad ((drv drv)
+                               (built (built-derivations (list drv))))
+            (if make-wrapper
+                (mlet* %store-monad
+                    ((wrap (gexp->derivation
+                            (string-append "gwl-launch-" name ".scm")
+                            (make-wrapper process
+                                          (derivation->output-path drv)
+                                          #:workflow workflow)))
+                     (built (built-derivations (list wrap))))
+                  (return (derivation->output-path wrap)))
+                (return (derivation->output-path drv)))))))))
 
 (define (process->script->run engine)
   "Return a procedure that builds a derivation of PROCESS according to
