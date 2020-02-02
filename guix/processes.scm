@@ -58,20 +58,23 @@
                code-snippet?
                code-snippet-language
 
-               procedure->gexp
-
-               ;; For the lack of a better place.
-               default-guile)
+               procedure->gexp)
   #:export (process-package-inputs
             process-data-inputs
             gigabytes
             megabytes
             kilobytes
-            derivation->script))
+            derivation->script
+            default-guile))
 
 (define process-package-inputs process-packages)
 (define process-data-inputs process-inputs)
 (define kilobytes kibibytes)
 (define megabytes mebibytes)
 (define gigabytes gibibytes)
+
+(define (default-guile)
+  (module-ref (resolve-interface '(gnu packages commencement))
+              'guile-final))
+
 (define derivation->script identity)

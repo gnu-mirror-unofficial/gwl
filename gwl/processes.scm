@@ -104,10 +104,7 @@
             code-snippet-code
 
             procedure->gexp
-            containerize
-
-            ;; For the lack of a better place.
-            default-guile))
+            containerize))
 
 ;;; Commentary:
 ;;;
@@ -489,16 +486,6 @@ OUTPUTS are mapped."
     ((? list? inputs)
      (every file-exists? inputs))
     (_ #t)))
-
-;;; ---------------------------------------------------------------------------
-;;; HACKS AND DUPLICATED FUNCTIONS FROM GEXP.
-;;; ---------------------------------------------------------------------------
-
-(define (default-guile)
-  ;; Lazily resolve 'guile-final'.  This module must not refer to (gnu …)
-  ;; modules directly, to avoid circular dependencies, hence this hack.
-  (module-ref (resolve-interface '(gnu packages commencement))
-              'guile-final))
 
 ;;; ---------------------------------------------------------------------------
 ;;; DERIVATIONS AND SCRIPTS FUNCTIONS
