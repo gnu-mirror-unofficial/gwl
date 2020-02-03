@@ -509,7 +509,24 @@ and returns its location."
            (drv
             (mlet* %store-monad
                 ((profile (profile-derivation manifest))
-                 (lowered (lower-gexp exp))
+                 ;; TODO: with-imported-modules does not support
+                 ;; nesting!  So we need to list all the modules right
+                 ;; here, or else containerization or search path
+                 ;; magic simply won't work at runtime on all targets.
+                 (exp* -> (with-imported-modules (source-module-closure
+                                                  '((gnu build linux-container)
+                                                    (gnu system file-systems)
+                                                    (guix search-paths)))
+                            #~(begin
+                                #$@(if (null? packages) '()
+                                       `((use-modules (guix search-paths))
+                                         (set-search-paths (map sexp->search-path-specification
+                                                                ',search-paths)
+                                                           ',packages)))
+                                #$(if out `(setenv "out" ,out) "")
+                                (setenv "_GWL_PROFILE" #$profile)                                        
+                                #$exp)))
+                 (lowered (lower-gexp exp*))
                  (inputs -> (cons* (derivation-input profile)
                                    (lowered-gexp-guile lowered)
                                    (lowered-gexp-inputs lowered)))
@@ -518,34 +535,16 @@ and returns its location."
                                    (lowered-gexp-sources lowered)))
                  (closure ((store-lift requisites) items))
                  ;; Build everything
-                 (built (built-derivations closure)))
-              (let ((script
-                     ;; TODO: with-imported-modules does not support
-                     ;; nesting!  So we need to list all the modules
-                     ;; right here, or else containerization or search
-                     ;; path magic simply won't work at runtime on all
-                     ;; targets.
-                     (with-imported-modules (source-module-closure
-                                             '((gnu build linux-container)
-                                               (gnu system file-systems)
-                                               (guix search-paths)))
-                       (containerize
-                        #~(begin
-                            #$@(if (null? packages) '()
-                                   `((use-modules (guix search-paths))
-                                     (set-search-paths (map sexp->search-path-specification
-                                                            ',search-paths)
-                                                       ',packages)))
-                            #$(if out `(setenv "out" ,out) "")
-                            (setenv "_GWL_PROFILE" #$profile)                                        
-                            #$exp)
-                        #:inputs
-                        (append closure
-                                ;; Data inputs
-                                (remove keyword? (process-inputs process)))
-                        #:outputs
-                        (process-outputs process)))))
-                (gexp->script (string-append "gwl-" name ".scm") script)))))
+                 (built (built-derivations closure))
+                 (script -> (containerize exp*
+                                          #:inputs
+                                          (append closure
+                                                  ;; Data inputs
+                                                  (remove keyword?
+                                                          (process-inputs process)))
+                                          #:outputs
+                                          (process-outputs process))))
+              (gexp->script (string-append "gwl-" name ".scm") script))))
       (with-store store
         (run-with-store store
           (mlet* %store-monad ((drv drv)
