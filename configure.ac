@@ -41,7 +41,6 @@ fi
 
 AC_CONFIG_FILES([Makefile gwl/config.scm])
 AC_CONFIG_FILES([gwl/www/config.scm])
-AC_CONFIG_FILES([env], [chmod +x env])
 AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
 
 AC_OUTPUT

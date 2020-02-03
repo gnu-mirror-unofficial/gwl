@@ -99,14 +99,14 @@ EXTRA_DIST += $(TESTS) $(test_data)
 AM_TESTS_ENVIRONMENT = abs_top_srcdir="$(abs_top_srcdir)" GUILE_AUTO_COMPILE=0
 
 SCM_LOG_DRIVER =                                          \
-  $(top_builddir)/env                                     \
+  $(top_builddir)/pre-inst-env                            \
   $(GUILE) --no-auto-compile -e main                      \
       $(top_srcdir)/build-aux/test-driver.scm
 
 AM_SCM_LOG_DRIVER_FLAGS = --brief=yes
 
 EXTRA_DIST +=      \
-  env.in           \
+  pre-inst-env.in           \
   build-aux/test-driver.scm \
   doc/fdl-1.3.texi \
   doc/examples/simple.scm
