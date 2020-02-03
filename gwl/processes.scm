@@ -37,6 +37,8 @@
                 #:select (package?))
   #:use-module ((gnu packages)
                 #:select (specification->package))
+  #:use-module ((gnu packages bash)
+                #:select (bash-minimal))
   #:use-module (guix gexp)
   #:use-module ((guix store)
                 #:select
@@ -465,7 +467,11 @@ OUTPUTS are mapped."
                             (map (lambda (location)
                                    (location->file-system location #t))
                                  '#$output-locations))
-                  thunk)
+                  (lambda ()
+                    (unless (file-exists? "/bin")
+                      (mkdir "/bin"))
+                    (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh")
+                    (thunk)))
                 (thunk)))))))
 
 ;;; ---------------------------------------------------------------------------
@@ -500,7 +506,8 @@ and returns its location."
     (let* ((name (process-full-name process))
            (exp (procedure->gexp process))
            (make-wrapper (process-engine-wrapper engine))
-           (packages (process-packages process))
+           (packages (cons bash-minimal
+                           (process-packages process)))
            (manifest (packages->manifest packages))
            (search-paths (delete-duplicates
                           (map search-path-specification->sexp
