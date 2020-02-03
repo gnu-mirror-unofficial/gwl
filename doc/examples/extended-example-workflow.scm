@@ -8,28 +8,31 @@
 (define (list-file-template filename)
   (process
    (name (string-append "list-file-" (basename filename)))
-   (packages (list bash gzip))
+   (packages (list gzip))
    (inputs (list filename))
    (outputs (list (string-append filename ".list")))
    (run-time (complexity
               (space 20 mebibytes)
-              (time 10)))
-   (procedure # bash { gzip --list {{inputs}} > {{outputs}} })))
+              (time 30 seconds)))
+   (procedure # { gzip --list {{inputs}} > {{outputs}} })))
 
-(let* (;; Get all processes of the other workflow.
-       (foreign-processes (workflow-processes dynamic-workflow))
+;; Get all processes of the other workflow.
+(define foreign-processes
+  (workflow-processes dynamic-workflow))
 
-       ;; Get the processes that we want to extend on.
-       (compress-file-processes (processes-filter-by-name
-                                 foreign-processes "compress-file"))
+;; Get the processes that we want to extend on.
+(define compress-file-processes
+  (processes-filter-by-name foreign-processes "compress-file"))
 
-       ;; Create the new processes.
-       (list-file-processes (map list-file-template
-                                 (map (compose first process-outputs)
-                                      compress-file-processes))))
-  (workflow
-   (name "extended-dynamic-workflow")
-   (processes
-    (append
-     (workflow-restrictions dynamic-workflow)
-     (zip list-file-processes compress-file-processes)))))
+;; Create the new processes.
+(define list-file-processes
+  (map list-file-template
+       (append-map process-outputs
+                   compress-file-processes)))
+
+(workflow
+ (name "extended-dynamic-workflow")
+ (processes
+  (append
+   (workflow-restrictions dynamic-workflow)
+   (zip list-file-processes compress-file-processes))))
