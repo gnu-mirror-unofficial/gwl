@@ -23,7 +23,8 @@
              (gnu packages graphviz)
              (gnu packages package-management)
              (gnu packages pkg-config)
-             (gnu packages tex))
+             (gnu packages tex)
+             (gnu packages texinfo))
 
 (define-public gwl
   (package
@@ -38,6 +39,7 @@
      `(("autoconf" ,autoconf)
        ("automake" ,automake)
        ("pkg-config" ,pkg-config)
+       ("texinfo" ,texinfo)
        ;; This is only needed for make distcheck
        ("texlive" ,texlive-tiny)
        ("graphviz" ,graphviz)))
