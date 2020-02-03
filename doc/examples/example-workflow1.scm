@@ -1,5 +1,4 @@
-(import (gnu packages bash)
-        (only (gnu packages compression) gzip))
+(import (only (gnu packages compression) gzip))
 
 (define-public create-file
   (process
@@ -16,10 +15,10 @@
 (define-public compress-file
   (process
    (name "compress-file")
-   (packages (list gzip bash))
+   (packages (list gzip))
    (inputs (list "/tmp/file.txt"))
    (outputs (list "/tmp/file.txt.gz"))
    (run-time (complexity
               (space 20 mebibytes)
               (time  10)))
-   (procedure # bash { gzip {{inputs}} -c > {{outputs}} })))
+   (procedure # { gzip {{inputs}} -c > {{outputs}} })))

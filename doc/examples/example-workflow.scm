@@ -1,5 +1,4 @@
-(import (gnu packages bash)
-        (only (gnu packages compression) gzip))
+(import (only (gnu packages compression) gzip))
 
 (define (create-file filename)
   (process
@@ -16,13 +15,13 @@
 (define (compress-file input)
   (process
    (name (string-append "compress-file-" (basename input)))
-   (packages (list gzip bash))
+   (packages (list gzip))
    (inputs (list input))
    (outputs (list (string-append input ".gz")))
    (run-time (complexity
               (space   20 mebibytes)
               (time    10)))
-   (procedure # bash { gzip {{inputs}} -c > {{outputs}} })))
+   (procedure # { gzip {{inputs}} -c > {{outputs}} })))
 
 (workflow
  (name "dynamic-workflow")
