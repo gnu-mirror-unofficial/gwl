@@ -3,7 +3,7 @@
 define dynamic-workflow
   load-workflow "example-workflow.w"
 
-process (list-file-template filename)
+process list-file-template (with filename)
   name
     string-append "list-file-"
                   basename filename

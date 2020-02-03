@@ -20,8 +20,9 @@
 ;; Shorter syntax, which is especially useful when wisp is used.
 (define-syntax process
   (lambda (x)
-    (syntax-case x ()
-      ((_ (id . args) rest ...)
+    (syntax-case x (with)
+      ;; Parameterized process
+      ((_ id (with . args) rest ...)
        (if (assoc-ref (syntax->datum #'(rest ...)) 'name)
            #`(define-public id
                (lambda* args

@@ -73,7 +73,7 @@ on " (code "input") ":")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme "\
-process (compress-file input)
+process compress-file (input)
   name
     string-append \"compress-file-\"
                   basename input

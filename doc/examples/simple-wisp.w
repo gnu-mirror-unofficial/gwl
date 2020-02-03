@@ -9,7 +9,7 @@ process sleep
     sleep 10
   }
 
-process (eat something)
+process eat (with something)
   name
     string-append "eat-" something
   # {

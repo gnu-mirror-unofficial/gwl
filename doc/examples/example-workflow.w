@@ -1,4 +1,4 @@
-process (create-file filename)
+process create-file (with filename)
   name
     string-append "create-file-"
                   basename filename
@@ -9,7 +9,7 @@ process (create-file filename)
       time  10 seconds
   # { echo "Hello, world!" > {{filename}} }
 
-process (compress-file input)
+process compress-file (with input)
   name
     string-append "compress-file-"
                   basename input
