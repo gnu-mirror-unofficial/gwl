@@ -1,4 +1,4 @@
-process: create-file
+process create-file
   outputs "/tmp/file.txt"
   run-time
     complexity
@@ -6,7 +6,7 @@ process: create-file
       time  10 seconds
   # { echo hello > {{outputs}} }
 
-process: compress-file
+process compress-file
   packages "gzip"
   inputs "/tmp/file.txt"
   outputs "/tmp/file.txt.gz"

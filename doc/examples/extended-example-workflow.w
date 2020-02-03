@@ -3,7 +3,7 @@
 define dynamic-workflow
   load-workflow "example-workflow.w"
 
-process: (list-file-template filename)
+process (list-file-template filename)
   name
     string-append "list-file-"
                   basename filename
@@ -31,7 +31,7 @@ define list-file-processes
   map list-file-template
       append-map process-outputs compress-file-processes
 
-workflow: extended-dynamic-workflow
+workflow extended-dynamic-workflow
   processes
     append
       ;; These are the process connections of the imported workflow

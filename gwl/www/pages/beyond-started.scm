@@ -53,7 +53,7 @@ defining a workflow.")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme "\
-workflow: file-workflow
+workflow file-workflow
   processes
     auto-connect create-file compress-file")))))
 
@@ -73,7 +73,7 @@ on " (code "input") ":")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme "\
-process: (compress-file input)
+process (compress-file input)
   name
     string-append \"compress-file-\"
                   basename input
@@ -116,7 +116,7 @@ convenient " (code "graph") " syntax.")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(highlights->sxml (highlight lex-scheme "\
-workflow: graph-example
+workflow graph-example
   processes
     graph
       A -> B C

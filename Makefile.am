@@ -39,6 +39,9 @@ SOURCES =                                                 \
   guix/workflows.scm                                      \
   gwl/cache.scm                                           \
   gwl/sugar.scm                                           \
+  gwl/sugar/process.scm                                   \
+  gwl/sugar/workflow.scm                                  \
+  gwl/sugar/reader.scm                                    \
   gwl/web-interface.scm                                   \
   gwl/www/config.scm                                      \
   gwl/www/pages.scm                                       \

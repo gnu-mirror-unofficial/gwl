@@ -1,4 +1,4 @@
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 
 (define-module (test-processes)
   #:use-module (gwl processes)
-  #:use-module (gwl sugar)
+  #:use-module (gwl sugar reader)
   #:use-module (guix gexp)
   #:use-module (srfi srfi-64))
 

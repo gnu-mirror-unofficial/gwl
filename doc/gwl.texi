@@ -157,7 +157,7 @@ loaded by default.  Here is an example of a process that runs an
 embedded Bash shell script:
 
 @example
-process: run-bash
+process run-bash
   packages "bash"
   # bash @{ echo "hello from bash!" @}
 @end example
@@ -174,7 +174,7 @@ specify a more complicated command line.  When no interpreter is
 provided the generic shell interpreter @code{/bin/sh} will be used:
 
 @example
-process: run-sh
+process run-sh
   # @{ echo "hello from a shell!" @}
 @end example
 
@@ -188,7 +188,7 @@ refers to the @code{name} and @code{inputs} fields of the current
 process:
 
 @example
-process: run-bash
+process run-bash
   packages "bash"
   inputs
     . "a"
@@ -206,7 +206,7 @@ example, the shell snippet refers to only selected values of the
 @code{inputs} field of the current process:
 
 @example
-process: run-bash
+process run-bash
   packages "bash"
   inputs
     . "a"

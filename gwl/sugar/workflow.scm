@@ -13,8 +13,18 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (gwl sugar)
-  #:use-module (gwl sugar process)
-  #:use-module (gwl sugar workflow)
-  #:use-module (gwl sugar reader)
-  #:re-export (process workflow reader-extension-inline-code))
+(define-module (gwl sugar workflow)
+  #:use-module ((gwl workflows) #:prefix w:)
+  #:replace (workflow))
+
+;; Shorter syntax, which is especially useful when wisp is used.
+(define-syntax workflow
+  (lambda (x)
+    (syntax-case x ()
+      ((_ id rest ...)
+       #`(begin
+           (define-public id
+             (w:workflow
+              (name #,(symbol->string (syntax->datum #'id)))
+              rest ...))
+           id)))))

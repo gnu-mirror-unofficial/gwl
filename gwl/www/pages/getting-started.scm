@@ -58,7 +58,7 @@ what a workflow might look like.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-(span (@ (class "syntax-special")) "process:") " hello-world
+(span (@ (class "syntax-special")) "process") " hello-world
   # { echo \"Hello, world!\" }
 ")))
 
@@ -78,14 +78,14 @@ the " (code "packages") " field.")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
 "
-" (span (@ (class "syntax-special")) "process:") " samtools-index
+" (span (@ (class "syntax-special")) "process") " samtools-index
   packages " (span (@ (class "syntax-string")) "\"samtools\"") "
   inputs " (span (@ (class "syntax-string")) "\"/tmp/sample.bam\"") "
   # {
     " (span (@ (class "syntax-string")) "samtools index {{") "inputs" (span (@ (class "syntax-string")) "}}") "
   }
 
-" (span (@ (class "syntax-special")) "workflow:") " do-the-thing
+" (span (@ (class "syntax-special")) "workflow") " do-the-thing
   processes samtools-index
 ")))
 

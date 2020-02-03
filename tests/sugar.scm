@@ -1,4 +1,4 @@
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (test-sugar)
-  #:use-module (gwl sugar)
+  #:use-module (gwl sugar reader)
   #:use-module (gwl processes)
   #:use-module (srfi srfi-64))
 
@@ -23,8 +23,7 @@
 (define (convert str)
   (call-with-input-string str
     (lambda (port)
-      ((@@ (gwl sugar) reader-extension-inline-code)
-       #\# port))))
+      (reader-extension-inline-code #\# port))))
 
 (test-equal "reader supports string interpolation"
   '(code-snippet (quote foo)

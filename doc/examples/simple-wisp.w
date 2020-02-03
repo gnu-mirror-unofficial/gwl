@@ -1,25 +1,25 @@
-process: greet
+process greet
   packages "hello"
   # { hello }
 
-process: sleep
+process sleep
   packages "coreutils"
   # {
     echo "Sleeping..."
     sleep 10
   }
 
-process: (eat something)
+process (eat something)
   name
     string-append "eat-" something
   # {
     echo "Eating {{something}}"
   }
 
-process: bye
+process bye
   # { echo "Farewell, world!" }
 
-workflow: simple-wisp
+workflow simple-wisp
   processes
     let
       :
