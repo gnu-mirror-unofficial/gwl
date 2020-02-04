@@ -39,23 +39,6 @@
                                (list " print(\"hello " world "\") ")))))
   (convert "foo bar baz { print(\"hello {{world}}\") }"))
 
-(test-equal "reader supports string interpolation for named references"
-  '(code-snippet (quote foo)
-                 (quote ("bar" "baz"))
-                 (begin
-                   (use-modules (ice-9 format))
-                   (apply string-append
-                          (map (lambda (val)
-                                 (cond
-                                  ((string? val) val)
-                                  ((list? val) (format #f "~{~a~^ ~}" val))
-                                  (else (format #f "~a" val))))
-                               (list " print(\"hello "
-                                     (and=> (memq #:europe world) cadr)
-                                     "\") ")))))
-  (convert "foo bar baz { print(\"hello {{world:europe}}\") }"))
-
-
 (define some-list '("Bender" "Leela" "Fry"))
 (test-equal "reader supports string interpolation of lists"
   "echo Bender Leela Fry are great"
