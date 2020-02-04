@@ -230,6 +230,14 @@ ARGS is the list of arguments received by the 'throw' handler."
            (format (current-error-port) (G_ "~amissing closing parenthesis~%")
                    location))
          (apply throw args)))
+    (('read-error "scm_read_extended_symbol" message _ ...)
+     ;; This error indicates that "#{" was used instead of "# {"
+     (if (string-suffix? "end of file while reading symbol" message)
+         (let ((location (string-drop-right message
+                                            (string-length "end of file while reading symbol"))))
+           (format (current-error-port) (G_ "~aUnterminated extended symbol. Did you mean to use \"# {\" instead of \"#{\"?~%")
+                   location))
+         (apply throw args)))
     (('syntax-error proc message properties form . rest)
      (let ((loc (source-properties->location properties)))
        (report-error loc (G_ "~a~%") message)))
