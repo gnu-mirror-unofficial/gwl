@@ -88,12 +88,9 @@ SCM_TESTS = \
   tests/workflows.scm \
   tests/sugar.scm
 
-test_data = \
-  tests/data/test.wisp
-
 TESTS = $(SCM_TESTS)
 
-EXTRA_DIST += $(TESTS) $(test_data)
+EXTRA_DIST += $(TESTS)
 
 AM_TESTS_ENVIRONMENT = abs_top_srcdir="$(abs_top_srcdir)" GUILE_AUTO_COMPILE=0
 
