@@ -55,6 +55,13 @@
                                      "\") ")))))
   (convert "foo bar baz { print(\"hello {{world:europe}}\") }"))
 
+
+(define some-list '("Bender" "Leela" "Fry"))
+(test-equal "reader supports string interpolation of lists"
+  "echo Bender Leela Fry are great"
+  (code-snippet-code
+   (test-read-eval-string "# /bin/bash -c {echo {{some-list}} are great}")))
+
 (test-equal "reader will not interpolate values with spaces"
   '(code-snippet (quote foo)
                  (quote ("bar" "baz"))
