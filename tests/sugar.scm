@@ -46,18 +46,9 @@
    (test-read-eval-string "# /bin/bash -c {echo {{some-list}} are great}")))
 
 (test-equal "reader will not interpolate values with spaces"
-  '(code-snippet (quote foo)
-                 (quote ("bar" "baz"))
-                 (begin
-                   (use-modules (ice-9 format))
-                   (apply string-append
-                          (map (lambda (val)
-                                 (cond
-                                  ((string? val) val)
-                                  ((list? val) (format #f "~{~a~^ ~}" val))
-                                  (else (format #f "~a" val))))
-                               (list " print(\"hello {{not a variable" "}" "}\") ")))))
-  (convert "foo bar baz { print(\"hello {{not a variable}}\") }"))
+  "print(\"hello {{not a variable}}\")"
+  (code-snippet-code
+   (test-read-eval-string "# foo bar baz {print(\"hello {{not a variable}}\")}")))
 
 (test-error "reader complains about unbalanced curlies"
             '(inline-code-unbalanced-braces 3)
