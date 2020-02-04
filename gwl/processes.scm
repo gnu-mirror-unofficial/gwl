@@ -1,5 +1,5 @@
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -60,6 +60,7 @@
             process-full-name
             process-version
             process-packages
+            process-raw-inputs
             process-inputs
             process-run-time
             process-procedure
@@ -215,7 +216,7 @@
              (error (format #f "must provide package value or string: ~a~%" x))))
           value)))
   (inputs
-   #:accessor process-inputs
+   #:accessor process-raw-inputs
    #:init-keyword #:inputs
    #:init-value '()
    #:implicit-list? #t)
@@ -328,11 +329,11 @@ of PROCESS."
     ;; TODO: this doesn't always make sense as data inputs could be
     ;; procedures.
     ("_GWL_PROCESS_INPUTS" .
-     ,(string-join (remove keyword? (process-inputs process))))
+     ,(string-join (process-inputs process)))
     ("_GWL_PROCESS_OUTPUT_PATH" .
      ,(or (process-output-path process) ""))
     ("_GWL_PROCESS_OUTPUTS" .
-     ,(string-join (remove keyword? (process-outputs process))))
+     ,(string-join (process-outputs process)))
     ("_GWL_PROCESS_COMPLEXITY_THREADS" .
      ,(or (and=> (process-threads process) number->string) ""))
     ("_GWL_PROCESS_COMPLEXITY_SPACE" .
@@ -478,13 +479,18 @@ OUTPUTS are mapped."
 ;;; ADDITIONAL FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
+(define (process-inputs process)
+  "Return the plain values of all inputs of PROCESS, without any
+keyword tags."
+  (remove keyword? (process-raw-inputs process)))
+
 (define (process-outputs proc)
   "Return the output location(s) of process PROC."
   (let* ((root (process-output-path proc))
          (mangle (if root
                      (cut string-append root "/" <>)
                      identity)))
-    (map mangle (process-outputs* proc))))
+    (map mangle (remove keyword? (process-outputs* proc)))))
 
 (define (process-takes-available process)
   "Returns #T when the data inputs of the PROCESS exist."
@@ -547,8 +553,7 @@ and returns its location."
                                           #:inputs
                                           (append closure
                                                   ;; Data inputs
-                                                  (remove keyword?
-                                                          (process-inputs process)))
+                                                  (process-inputs process))
                                           #:outputs
                                           (process-outputs process))))
               (gexp->script (string-append "gwl-" name ".scm") script))))
