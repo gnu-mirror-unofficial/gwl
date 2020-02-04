@@ -58,19 +58,10 @@
             '(inline-code-unbalanced-braces 1)
             (convert "foo { this { is { still garbage }}"))
 
-(test-equal "reader defaults to /bin/sh"
-  '(code-snippet (quote sh)
-                 (quote (""))
-                 (begin
-                   (use-modules (ice-9 format))
-                   (apply string-append
-                          (map (lambda (val)
-                                 (cond
-                                  ((string? val) val)
-                                  ((list? val) (format #f "~{~a~^ ~}" val))
-                                  (else (format #f "~a" val))))
-                               (list " just the default ")))))
-  (convert " { just the default }"))
+(test-assert "reader defaults to /bin/sh"
+  (let ((snippet (test-read-eval-string "# { just the default }")))
+    (and (eq? 'sh (code-snippet-language snippet))
+         (equal? '("") (code-snippet-arguments snippet)))))
 
 (define name "Bender")
 (test-equal "string interpolation works"
