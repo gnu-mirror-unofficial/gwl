@@ -105,7 +105,7 @@ EXTRA_DIST +=      \
   pre-inst-env.in           \
   build-aux/test-driver.scm \
   doc/fdl-1.3.texi \
-  doc/examples/simple.scm
+  $(dist_examples_DATA)
 
 dist-hook: $(distdir)/ChangeLog
 gen-ChangeLog $(distdir)/ChangeLog:
