@@ -15,9 +15,8 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl process-engines)
-  #:use-module (guix records)
-  #:use-module (ice-9 match)
-  #:use-module (srfi srfi-9 gnu)
+  #:use-module (oop goops)
+  #:use-module (srfi srfi-1)
   #:export (process-engine
             process-engine?
             process-engine-name
@@ -32,23 +31,48 @@
 ;;
 ;; A process-engine determines how a process is executed. 
 ;;
-(define-record-type* <process-engine>
-  process-engine make-process-engine
-  process-engine?
+(define-class <process-engine> ()
+  (name
+   #:init-keyword #:name
+   #:accessor process-engine-name)
+  (wrapper
+   #:init-value #f
+   #:init-keyword #:wrapper
+   #:accessor process-engine-wrapper)
+  (runner
+   #:init-value '("/bin/sh" "-c")
+   #:init-keyword #:runner
+   #:accessor process-engine-runner))
 
-  (name     process-engine-name)
-  (wrapper  process-engine-wrapper
-            (default #f))
-  (runner   process-engine-runner
-            (default '("/bin/sh" "-c"))))
+;; Convenient DSL-like constructor.
+(define-syntax process-engine
+  (lambda (x)
+    (syntax-case x ()
+      ((_ fields ...)
+       #`(let* (#,@(map (lambda (field)
+                          (syntax-case field ()
+                            ((empty-field)
+                             (syntax-violation #f "process-engine: Empty field" #'empty-field))
+                            ((field single-value)
+                             #'(field single-value))))
+                        #'(fields ...)))
+           (make <process-engine>
+             #,@(append-map (lambda (field)
+                              (syntax-case field ()
+                                ((name . rest)
+                                 #`((symbol->keyword 'name) name))))
+                            #'(fields ...))))))))
+
+(define (process-engine? thing)
+  (is-a? thing <process-engine>))
 
 (define (print-process-engine engine port)
   "Write a concise representation of PROCESS-ENGINE to PORT."
-  (match engine
-    (($ <process-engine> name wrapper runner)
-     (simple-format port "#<process-engine ~a>" name))))
+  (simple-format port "#<process-engine ~a>"
+                 (process-engine-name engine)))
 
-(set-record-type-printer! <process-engine> print-process-engine)
+(define-method (write (engine <process-engine>) port)
+  (print-process-engine engine port))
 
 (define (find-engine-by-name name)
   "Find the process engine corresponding to NAME."
