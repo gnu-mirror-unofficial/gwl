@@ -39,6 +39,11 @@
                                (list " print(\"hello " world "\") ")))))
   (convert "foo bar baz { print(\"hello {{world}}\") }"))
 
+(test-assert "reader ignores leading spaces"
+  (let ((snippet (test-read-eval-string "# \n    \n /bin/bash -c {}")))
+    (and (equal? (code-snippet-arguments snippet) '("-c"))
+         (equal? (code-snippet-language snippet) '/bin/bash))))
+
 (define some-list '("Bender" "Leela" "Fry"))
 (test-equal "reader supports string interpolation of lists"
   "echo Bender Leela Fry are great"
