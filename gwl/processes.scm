@@ -390,11 +390,6 @@ of PROCESS."
         language-python
         language-r))
 
-
-;;; ---------------------------------------------------------------------------
-;;; Syntactic sugar
-;;; ---------------------------------------------------------------------------
-
 (define-record-type <code-snippet>
   (code-snippet language arguments code)
   code-snippet?
@@ -441,6 +436,7 @@ of PROCESS."
        (call process code)))
     (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
+
 (define* (containerize exp #:key inputs outputs)
   "Wrap EXP, an S-expression or G-expression, in a G-expression that
 causes EXP to be run in a container where the provided INPUTS and
