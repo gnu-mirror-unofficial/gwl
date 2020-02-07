@@ -326,14 +326,12 @@ of PROCESS."
      ,(or (process-synopsis process) ""))
     ("_GWL_PROCESS_DESCRIPTION" .
      ,(or (process-description process) ""))
-    ;; TODO: this doesn't always make sense as data inputs could be
-    ;; procedures.
     ("_GWL_PROCESS_INPUTS" .
-     ,(string-join (process-inputs process)))
+     ,(format #f "~{~a~^ ~}" (process-inputs process)))
     ("_GWL_PROCESS_OUTPUT_PATH" .
      ,(or (process-output-path process) ""))
     ("_GWL_PROCESS_OUTPUTS" .
-     ,(string-join (process-outputs process)))
+     ,(format #f "~{~a~^ ~}" (process-outputs process)))
     ("_GWL_PROCESS_COMPLEXITY_THREADS" .
      ,(or (and=> (process-threads process) number->string) ""))
     ("_GWL_PROCESS_COMPLEXITY_SPACE" .
