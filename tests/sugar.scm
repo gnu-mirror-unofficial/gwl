@@ -58,7 +58,7 @@
 (test-assert "reader defaults to /bin/sh"
   (let ((snippet (test-read-eval-string "# { just the default }")))
     (and (eq? 'sh (code-snippet-language snippet))
-         (equal? '("") (code-snippet-arguments snippet)))))
+         (null? (code-snippet-arguments snippet)))))
 
 (define name "Bender")
 (test-equal "string interpolation works"
