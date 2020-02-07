@@ -65,24 +65,26 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 @chapter Introduction
 
 This package provides the @dfn{Guix Workflow Language} (GWL), a
-scientific computing extension to the Guix package manager.  It combines
-the specification of work units and their relationship to one another
-with the reproducible software deployment facilities of the functional
-package manager GNU Guix.
+scientific computing extension to the Guix package manager.  It
+combines the specification of work units and their relationship to one
+another with the reproducible software deployment facilities of the
+functional package manager GNU Guix.  A GWL workflow will always run
+in a reproducible environment that GNU Guix automatically prepares.
+The GWL extends your Guix installation with a single new sub-command:
+@code{guix workflow}.
 
 In the GWL there are two concepts we need to know about: processes and
-workflows.  We describe a computation (running a program, or evaluating
-a Scheme expression) using a process.  A workflow describes how multiple
-processes relate to each other (e.g. ``process B must run after process
-A, and process C must run before process A'').
+workflows.  We describe a computation (running a program, or
+evaluating a Scheme expression) using a process.  A workflow describes
+how individual processes relate to each other (e.g. ``process B must
+run after process A, and process C must run before process A'').
 
-To make processes and workflows available to the GWL via Scheme or the
-command line, we write them as @ref{Creating Guile Modules,,,guile,
-Guile Scheme modules}.  Processes or workflows can be run
-programmatically using the @code{process->script->run} and
-@code{workflow-run} procedures, or on the command line by using the
-@code{guix workflow} command.
-
+GWL workflows are executable code.  The workflow language is embedded
+in the powerful general purpose language
+@url{https://gnu.org/software/guile/, Guile Scheme}, so you can
+compute arbitrarily complex process and workflow definitions.  The GWL
+supports a classic Lisp syntax as well as a Python-like syntax called
+@url{https://www.draketo.de/light/english/wisp-lisp-indentation-preprocessor,Wisp}.
 
 @c *********************************************************************
 @node Installation
