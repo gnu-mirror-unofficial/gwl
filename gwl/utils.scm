@@ -246,11 +246,12 @@ information, or #f if it could not be found."
               frame
               (loop (frame-previous frame) frame)))))
 
-  (let* ((depth (stack-length stack))
-         (last  (and (> depth 0) (stack-ref stack 0))))
-    (frame-with-source (if (> depth 1)
-                           (stack-ref stack 1)    ;skip the 'throw' frame
-                           last))))
+  (and stack
+       (let* ((depth (stack-length stack))
+              (last  (and (> depth 0) (stack-ref stack 0))))
+         (frame-with-source (if (> depth 1)
+                                (stack-ref stack 1)    ;skip the 'throw' frame
+                                last)))))
 
 
 (define (read-one-wisp-sexp port)
@@ -296,21 +297,11 @@ information, or #f if it could not be found."
                      (and (wisp-suffix file)
                           read-one-wisp-sexp)))
              (const #f))))))
-    (lambda args
-      ;; TODO: error handling should happen in the unwind handler, but
-      ;; not all errors end up there, so for now we just print
-      ;; everything here :-/
-      (format (current-error-port) "Error: ~a~%" args)
-      ;; Keep going...
-      #f)
+    (lambda _
+      (exit 1))
     (rec (handle-error . args)
          ;; Capture the stack up to this procedure call, excluded, and pass
          ;; the faulty stack frame to 'report-load-error'.
-
-         ;; TODO: (make-stack #t tag handle-error) returns #F, so the
-         ;; stack trace is now longer than it should be.
-         (let* ((stack (make-stack #t tag))
+         (let* ((stack (make-stack #t handle-error tag))
                 (frame (last-frame-with-source stack)))
-           (report-load-error file args frame)
-           (newline (current-error-port))
-           (display-backtrace stack (current-error-port))))))
+           (report-load-error file args frame)))))
