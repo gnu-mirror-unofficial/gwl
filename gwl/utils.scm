@@ -65,7 +65,7 @@ where all the basic GWL modules are available."
           (srfi srfi-88))
         '((gwl processes)
           (gwl workflows)
-          (gwl sugar reader)
+          (gwl sugar)
           (gwl utils)
           (srfi srfi-1))))
   (let ((result (load* file (make-user-module modules))))
