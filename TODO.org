@@ -1,0 +1,69 @@
+#+TYP_TODO: MAYBE DONE TODO
+
+* load-path magic…
+The GWL uses Guix as a library and as a way to build environments.
+When starting the GWL, however, it will use the Guix modules (and the
+dependencies of Guix) and *not* the libraries that the GWL was built
+with.  This can result in run-time conflicts and unexpected behaviour
+as Guix is upgraded and diverges from the version of Guix used to
+build the GWL.
+
+We should aim to insulate the GWL from the version of Guix used to
+start it.  One idea is to set the load-path in (guix scripts workflow)
+to what it was at build time.  Then we build packages in an inferior
+Guix — which is the Guix used to run “guix workflow”, i.e. the user’s
+current version of Guix.
+
+An obstacle here is in the definition of processes.  Processes can
+access package variables directly or via specification->package.
+load-workflow is evaluated with the launching Guix, not with an
+inferior as this all happens before a Gexp is compiled.
+
+We’d also have to replace “specification->package” with a variant that
+queries the user’s current Guix (or an inferior) instead of the Guix
+used at GWL build time.
+
+* add support for guile-ssh to submit jobs via SSH
+or can we just use “guix deploy” directly?
+
+* add support for external execution engines?  (DRMAA, AWS, Azure)
+- write [[https://git.elephly.net/?p=software/guile-aws.git;a=summary][guile-aws library]]
+
+* GWL cache
+
+** [kyle] Make data caching git-annex aware
+ When deciding to recompute data files, GWL avoids computing the hash
+ of data files, using scripts as the cheaper proxy, as you described in
+ 87womnnjg0.fsf@elephly.net.  But if the user is tracking data files
+ with git-annex, getting the hash of data files becomes less expensive
+ because we can ask git-annex for the hash it has already computed.
+
+** Get annex data files on demand if needed as inputs
+i.e. fetch them with =git annex get=
+
+** Make cache IPFS aware
+This is similar to the git-annex work
+
+* MAYBE change =run-time= field
+it only accepts a “complexity” value, so remove that and assume that all arguments do in fact constitute a complexity.  It would turn this:
+
+#+BEGIN_SRC wisp
+process foo
+  run-time
+    complexity
+      space 20 MiB
+      time 10 seconds
+#+END_SRC
+
+…to this:
+
+#+BEGIN_SRC wisp
+process foo
+  resources
+    space 20 MiB
+    time 10 seconds
+#+END_SRC
+
+Or rather: let the “resources” field accept an arbitrary list of resource values.
+
+
