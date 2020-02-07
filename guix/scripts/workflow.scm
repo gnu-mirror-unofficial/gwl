@@ -28,6 +28,8 @@
   #:use-module (srfi srfi-1)
   #:export (guix-workflow))
 
+(define *current-filename* (make-parameter #f))
+
 (define (show-help)
   (for-each
    (lambda (line) (display line) (newline))
@@ -133,8 +135,10 @@ There is NO WARRANTY, to the extent permitted by law.
     (match (assoc-ref opts 'query)
       ;; Handle running or preparing workflows.
       ((and (or 'prepare 'run) action)
-       (let ((wf (load-workflow (assoc-ref opts 'value)))
-             (engine-name (assoc-ref opts 'engine)))
+       (let* ((file-name (assoc-ref opts 'value))
+              (wf (parameterize ((*current-filename* file-name))
+                    (load-workflow file-name)))
+              (engine-name (assoc-ref opts 'engine)))
          (unless engine-name
            (leave (G_ "Please provide --engine argument.~%")))
          (let ((engine (find-engine-by-name engine-name)))
@@ -152,10 +156,12 @@ There is NO WARRANTY, to the extent permitted by law.
        #t)
       ;; Handle workflow visualization
       ('graph
-       (match (load-workflow (assoc-ref opts 'value))
-         ((? workflow? wf)
-          (format #t "~a\n" (workflow->dot wf)))
-         (_ (leave (G_ "Failed to process the workflow.~%"))))
+       (let* ((file-name (assoc-ref opts 'value)))
+         (parameterize ((*current-filename* file-name))
+           (match (load-workflow file-name)
+             ((? workflow? wf)
+              (format #t "~a\n" (workflow->dot wf)))
+             (_ (leave (G_ "Failed to process the workflow.~%"))))))
        #t)
       ;; Ignore everything else
       (_ #t))))

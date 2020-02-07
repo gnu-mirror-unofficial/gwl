@@ -26,11 +26,7 @@
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-31)
   #:use-module (srfi srfi-34)
-  ;; For wisp support
-  #:use-module (system base compile)
-  #:use-module (language scheme spec)
   #:use-module (language wisp)
-  #:use-module (language wisp spec)
   #:export (load-workflow
             wisp-suffix
             on))
@@ -45,24 +41,6 @@
         ((string-suffix? ".wisp" file) ".wisp")
         ((string-suffix? ".gwl" file) ".gwl")
         (else #f)))
-
-(define* (compile-wisp file #:key env)
-  "Convert the Wisp file FILE to Scheme and return the name of the
-output file."
-  (let ((exps (call-with-input-file file wisp-scheme-read-all))
-        ;; TODO: use the standard cache locations
-        (output-file (string-append
-                      (dirname file) "/."
-                      (basename file (wisp-suffix file))
-                      "-from-wisp.scm")))
-    (when (or (not (file-exists? output-file))
-              (let ((sc (stat output-file))
-                    (ss (stat file)))
-                (> (stat:mtime ss)
-                   (stat:mtime sc))))
-      (with-output-to-file output-file
-        (lambda () (for-each pretty-print exps))))
-    output-file))
 
 ;; Taken from (guix ui).
 (define (make-user-module modules)
@@ -100,7 +78,8 @@ where all the basic GWL modules are available."
 
 ;; Helper to handle relative file names.
 (define-syntax-rule (load-workflow file)
-  (let ((target (string-append (dirname (or (current-filename) ""))
+  (let ((target (string-append (dirname (or (current-filename)
+                                            (*current-filename*) ""))
                                "/" file)))
     (load-workflow*
      (if (or (absolute-file-name? file)
@@ -274,6 +253,18 @@ information, or #f if it could not be found."
                            last))))
 
 
+(define (read-one-wisp-sexp port)
+  "Read a Wisp expression from PORT."
+  ;; allow using "# foo" as #(foo).
+  (read-hash-extend #\# (λ (chr port) #\#))
+  (cond
+   ((eof-object? (peek-char port))
+    (read-char port)) ; return eof: we’re done
+   (else
+    (match (wisp-scheme-read-chunk port)
+      (() #f)
+      ((chunk . _) chunk)))))
+
 ;; Adapted from (guix ui).
 (define* (load* file user-module)
   "Load the user provided Scheme or Wisp source code FILE."
@@ -295,12 +286,15 @@ information, or #f if it could not be found."
          (parameterize ((current-warning-port (%make-void-port "w")))
            (call-with-prompt tag
              (lambda ()
-               (let ((file* (if (wisp-suffix file)
-                                (compile-wisp file #:env user-module)
-                                file)))
-                 ;; Give 'load' an absolute file name so that it doesn't
-                 ;; try to search for FILE in %LOAD-COMPILED-PATH.
-                 (load (canonicalize-path file*))))
+               ;; XXX: The Wisp reader fails to set source properties in all
+               ;; cases, so (current-filename) always returns #F.
+               (module-define! user-module '*current-filename*
+                               (make-parameter file))
+               ;; Give 'load' an absolute file name so that it doesn't
+               ;; try to search for FILE in %LOAD-COMPILED-PATH.
+               (load (canonicalize-path file)
+                     (and (wisp-suffix file)
+                          read-one-wisp-sexp)))
              (const #f))))))
     (lambda args
       ;; TODO: error handling should happen in the unwind handler, but

@@ -29,6 +29,8 @@
   #:use-module ((web uri) #:select (uri-decode))
   #:export (page-workflow-viewer))
 
+(define *current-filename* (make-parameter #f))
+
 (define %all-workflows
   (let* ((dir (or (web-config 'workflows-directory)
                   (web-config 'examples-root)))
@@ -37,7 +39,8 @@
                               (string-suffix? ".scm" file)))
                         (scandir dir))))
     (filter workflow? (map (lambda (file)
-                             (load-workflow (string-append dir "/" file)))
+                             (parameterize ((*current-filename* file))
+                               (load-workflow (string-append dir "/" file))))
                            files))))
 
 (define (find-workflow-by-name name version)
