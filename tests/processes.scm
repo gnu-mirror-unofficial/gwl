@@ -55,6 +55,11 @@
              (procedure '(const #t))
              (garbage 'this-is)))
 
+(test-error "complexity rejects invalid field names" #t
+            (complexity
+             (time 10 seconds)
+             (hot-dogs 20)))
+
 (test-assert "procedure->gexp supports Python code"
   (let* ((proc (process
                 (name "python")

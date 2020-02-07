@@ -120,7 +120,7 @@
 
 ;; A `complexity' is a way of describing the run-time complexity of a
 ;; `process'.
-(define-class <complexity> ()
+(define-class <complexity> (<gwl-class>)
   (threads
    #:init-value 1
    #:init-keyword #:threads
