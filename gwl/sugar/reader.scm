@@ -60,10 +60,9 @@ When no interpreter is provided it uses /bin/sh:
 "
     ;; Throw away any number of blank characters
     (let loop ((next (lookahead-char port)))
-      (if (char-set-contains? char-set:blank next)
-          (begin (read-char port)
-                 (loop (lookahead-char port)))
-          #t))
+      (and (char-set-contains? char-set:blank next)
+           (read-char port)
+           (loop (lookahead-char port))))
 
     ;; This first line must be the language identifier or executable
     ;; path with arguments.
