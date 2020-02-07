@@ -30,7 +30,7 @@
            "execution of programs.  Additionally, GWL can use "
            (a (@ (href ,(string-append %gwl-repository "gwl/process-engines")))
               "process engines") " to integrate with various computing "
-              "environments.  As of February 11, 2018, GWL has become part of "
+              "environments.  As of February 11, 2018, GWL is a part of "
               (a (@ (href "https://www.gnu.org")) "GNU") ".")
 
      (div (@ (style "text-align: center;"))
