@@ -6,7 +6,7 @@
   (load-workflow "example-workflow.scm"))
 
 (define (list-file-template filename)
-  (process
+  (make-process
    (name (string-append "list-file-" (basename filename)))
    (packages (list gzip))
    (inputs (list filename))
@@ -30,7 +30,7 @@
        (append-map process-outputs
                    compress-file-processes)))
 
-(workflow
+(make-workflow
  (name "extended-dynamic-workflow")
  (processes
   (append

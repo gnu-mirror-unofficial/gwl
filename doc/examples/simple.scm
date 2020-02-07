@@ -1,13 +1,13 @@
 (import (gnu packages base))
 
 (define-public greet
-  (process
+  (make-process
    (name "greet")
    (packages (list hello))
    (procedure '(system "hello"))))
 
 (define-public sleep
-  (process
+  (make-process
    (name "sleep")
    (packages (list coreutils))
     (procedure
@@ -16,18 +16,18 @@
         (system "sleep 10")))))
 
 (define-public (eat something)
-  (process
+  (make-process
    (name (string-append "eat-" something))
    (procedure
     `(format #t "Eating ~a\n" ,something))))
 
 (define-public bye
-  (process
+  (make-process
    (name "bye")
    (procedure
     '(display "Farewell, world!\n"))))
 
-(workflow
+(make-workflow
  (name "simple")
  (processes
   (let ((eat-fruit (eat "fruit"))

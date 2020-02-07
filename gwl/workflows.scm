@@ -28,7 +28,7 @@
   #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-26)
   #:use-module (oop goops)
-  #:export (workflow
+  #:export (make-workflow
             workflow?
             workflow-name
             workflow-full-name
@@ -122,7 +122,7 @@ Use \"processes\" to specify process dependencies.~%"))
 ;; values.
 ;; TODO: support "inherit" syntax.
 ;; TODO: merge with "process" macro
-(define-syntax workflow
+(define-syntax make-workflow
   (lambda (x)
     (syntax-case x ()
       ((_ fields ...)

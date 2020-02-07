@@ -14,8 +14,8 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl sugar workflow)
-  #:use-module ((gwl workflows) #:prefix w:)
-  #:replace (workflow))
+  #:use-module ((gwl workflows) #:select (make-workflow))
+  #:export (workflow))
 
 ;; Shorter syntax, which is especially useful when wisp is used.
 (define-syntax workflow
@@ -24,7 +24,7 @@
       ((_ id rest ...)
        #`(begin
            (define-public id
-             (w:workflow
+             (make-workflow
               (name #,(symbol->string (syntax->datum #'id)))
               rest ...))
            id)))))

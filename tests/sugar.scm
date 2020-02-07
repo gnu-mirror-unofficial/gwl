@@ -77,22 +77,22 @@
   (code-snippet-code
    (test-read-eval-string "# /bin/bash -c {echo my number is {{numbers:my-number}}, not {{numbers:boring}}}")))
 
-(test-assert "process macro allows key-less procedure"
-  (let ((proc (process
+(test-assert "make-process macro allows key-less procedure"
+  (let ((proc (make-process
                (name "anything")
                (inputs 'this 'that 'whatever)
                # bash { echo "hello" })))
     (code-snippet? (process-procedure proc))))
 
-(test-assert "process macro allows nested key-less procedure"
-  (let ((proc (process
+(test-assert "make-process macro allows nested key-less procedure"
+  (let ((proc (make-process
                (name "anything")
                (inputs 'this 'that 'whatever)
                (# bash { echo "hello" }))))
     (code-snippet? (process-procedure proc))))
 
 (test-assert "code snippet has access to process fields"
-  (let ((proc (process
+  (let ((proc (make-process
                (name "anything")
                (inputs 'this 'that 'whatever)
                # bash { echo {{inputs}} })))

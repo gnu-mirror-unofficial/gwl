@@ -21,36 +21,36 @@
 
 (test-begin "processes")
 
-(test-assert "process macro supports implicit lists"
-  (let ((proc (process
+(test-assert "make-process macro supports implicit lists"
+  (let ((proc (make-process
                (name "anything")
                (procedure '(const #t))
                (inputs 'this 'that 'whatever))))
     (equal? '(this that whatever)
             (process-inputs proc))))
 
-(test-assert "process macro supports implicit lists that are already lists"
-  (let ((proc (process
+(test-assert "make-process macro supports implicit lists that are already lists"
+  (let ((proc (make-process
                (name "anything")
                (procedure '(const #t))
                (inputs (list 'this 'that 'whatever)))))
     (equal? '(this that whatever)
             (process-inputs proc))))
 
-(test-error "process validates complexity type 1/2" #t
-            (process
+(test-error "make-process validates complexity type 1/2" #t
+            (make-process
              (name "anything")
              (procedure '(const #t))
              (run-time 'invalid)))
 
-(test-assert "process validates complexity type 2/2"
-  (process? (process
+(test-assert "make-process validates complexity type 2/2"
+  (process? (make-process
              (name "anything")
              (procedure '(const #t))
              (run-time (complexity (threads 2))))))
 
-(test-error "process rejects invalid field names" #t
-            (process
+(test-error "make-process rejects invalid field names" #t
+            (make-process
              (name "anything")
              (procedure '(const #t))
              (garbage 'this-is)))
@@ -61,7 +61,7 @@
              (hot-dogs 20)))
 
 (test-assert "procedure->gexp supports Python code"
-  (let* ((proc (process
+  (let* ((proc (make-process
                 (name "python")
                 (procedure
 # python {
@@ -73,7 +73,7 @@ print "hello from python 2"
          (gexp? (procedure->gexp proc)))))
 
 (test-assert "procedure->gexp supports R code"
-  (let* ((proc (process
+  (let* ((proc (make-process
                 (name "r")
                 (procedure
 # R {
@@ -86,7 +86,7 @@ cat("hello from R")
          (gexp? (procedure->gexp proc)))))
 
 (test-assert "procedure->gexp supports any kind of code"
-  (let* ((proc (process
+  (let* ((proc (make-process
                 (name "bash")
                 (procedure # /bin/bash -c { echo "hello from bash" })))
          (snippet (process-procedure proc)))

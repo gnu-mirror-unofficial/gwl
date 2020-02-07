@@ -14,8 +14,8 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl sugar process)
-  #:use-module ((gwl processes) #:prefix p:)
-  #:replace (process))
+  #:use-module ((gwl processes) #:select (make-process))
+  #:export (process))
 
 ;; Shorter syntax, which is especially useful when wisp is used.
 (define-syntax process
@@ -26,18 +26,18 @@
        (if (assoc-ref (syntax->datum #'(rest ...)) 'name)
            #`(define-public id
                (lambda* args
-                 (p:process rest ...)))
+                 (make-process rest ...)))
            (with-syntax ((the-name (datum->syntax x 'name)))
              #`(define-public id
                  (let ((the-name #,(symbol->string (syntax->datum #'id))))
                    (lambda* args
-                     (p:process
+                     (make-process
                       (name the-name)
                       rest ...)))))))
       ((_ id rest ...)
        (with-syntax ((the-name (datum->syntax x 'name)))
          #`(define-public id
              (let ((the-name #,(symbol->string (syntax->datum #'id))))
-               (p:process
+               (make-process
                 (name the-name)
                 rest ...))))))))

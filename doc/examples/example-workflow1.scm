@@ -1,7 +1,7 @@
 (import (only (gnu packages compression) gzip))
 
 (define-public create-file
-  (process
+  (make-process
    (name "create-file")
    (outputs (list "/tmp/file.txt"))
    (run-time (complexity
@@ -13,7 +13,7 @@
          (format port "~%"))))))
 
 (define-public compress-file
-  (process
+  (make-process
    (name "compress-file")
    (packages (list gzip))
    (inputs (list "/tmp/file.txt"))

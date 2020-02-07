@@ -28,15 +28,15 @@
 ;;   -> 3 -> 5 --> 6
 ;; 4 ------/
 
-(define p1 (process (name "p1") (procedure '())))
-(define p2 (process (name "p2") (procedure '())))
-(define p3 (process (name "p3") (procedure '())))
-(define p4 (process (name "p4") (procedure '())))
-(define p5 (process (name "p5") (procedure '())))
-(define p6 (process (name "p6") (procedure '())))
+(define p1 (make-process (name "p1") (procedure '())))
+(define p2 (make-process (name "p2") (procedure '())))
+(define p3 (make-process (name "p3") (procedure '())))
+(define p4 (make-process (name "p4") (procedure '())))
+(define p5 (make-process (name "p5") (procedure '())))
+(define p6 (make-process (name "p6") (procedure '())))
 
 (define wf
-  (workflow
+  (make-workflow
    (name "test-workflow")
    (processes
     (list p1 p2 p3 p4 p5 p6))
@@ -47,7 +47,7 @@
           (list p6 p5)))))
 
 (define wf2
-  (workflow
+  (make-workflow
    (name "test-workflow")
    (processes
     (graph (p2 -> p1)
@@ -92,7 +92,7 @@
 
 (test-equal "wisp syntax produces the expected S-expression"
   (with-input-from-string "\
-workflow
+make-workflow
   name \"test-workflow\"
   processes
     graph
@@ -105,7 +105,7 @@ workflow
       ((@@ (language wisp spec) read-one-wisp-sexp)
        (current-input-port)
        (current-module))))
-  '(workflow
+  '(make-workflow
     (name "test-workflow")
     (processes
      (graph (p2 -> p1)

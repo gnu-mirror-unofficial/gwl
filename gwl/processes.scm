@@ -54,7 +54,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
-  #:export (process
+  #:export (make-process
             process?
             process-name
             process-full-name
@@ -250,7 +250,7 @@
 ;; references.  It does not, however, validate any fields or their
 ;; values.
 ;; TODO: support "inherit" syntax.
-(define-syntax process
+(define-syntax make-process
   (lambda (x)
     (syntax-case x ()
       ((_ fields ...)

@@ -1,7 +1,7 @@
 (import (only (gnu packages compression) gzip))
 
 (define (create-file filename)
-  (process
+  (make-process
    (name (string-append "create-file-" (basename filename)))
    (outputs (list filename))
    (run-time (complexity
@@ -13,7 +13,7 @@
          (format port "Hello, world!~%"))))))
 
 (define (compress-file input)
-  (process
+  (make-process
    (name (string-append "compress-file-" (basename input)))
    (packages (list gzip))
    (inputs (list input))
@@ -23,7 +23,7 @@
               (time    10)))
    (procedure # { gzip {{inputs}} -c > {{outputs}} })))
 
-(workflow
+(make-workflow
  (name "dynamic-workflow")
  (processes
   (let* ((files '("/tmp/one.txt"
