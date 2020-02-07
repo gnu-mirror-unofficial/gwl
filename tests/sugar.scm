@@ -28,15 +28,7 @@
 (test-equal "reader supports string interpolation"
   '(code-snippet (quote foo)
                  (quote ("bar" "baz"))
-                 (begin
-                   (use-modules (ice-9 format))
-                   (apply string-append
-                          (map (lambda (val)
-                                 (cond
-                                  ((string? val) val)
-                                  ((list? val) (format #f "~{~a~^ ~}" val))
-                                  (else (format #f "~a" val))))
-                               (list " print(\"hello " world "\") ")))))
+                 (list " print(\"hello " world "\") "))
   (convert "foo bar baz { print(\"hello {{world}}\") }"))
 
 (test-assert "reader ignores leading spaces"

@@ -33,29 +33,29 @@ Here is an example:
     # python {
     print(\"hello\")
     }
-    => (code-snippet 'python '(\"\")
-         (apply string-append (list \"print(\\\"hello\\\"))))
+    => (code-snippet 'python '()
+         (list \"\nprint(\\\"hello\\\")\n\"))
 
 If there is no matching language definition, the first line is
 considered as the invocation of an interpreter.
 
     # /bin/bash -c { echo hello world }
     => (code-snippet '/bin/bash '(\"-c\")
-         (apply string-append (list \" echo hello world \"))))
+         (list \" echo hello world \"))
 
 This reader macro also supports string interpolation.  Any
 uninterrupted string between double curly braces will be turned into a
 variable reference.
 
     # /bin/bash -c {echo {{name}} is great}
-    => (code-snippet '/bin/bash \"-c\"
-         (apply string-append (list \"echo \" name \" is great\")))
+    => (code-snippet '/bin/bash '(\"-c\")
+         (list \"echo \" name \" is great\"))
 
 When no interpreter is provided it uses /bin/sh:
 
     # { echo \"hello world\" }
-    => (code-snippet 'sh \"-c\"
-         (apply string-append (list \" echo hello world \")))
+    => (code-snippet 'sh '(\"-c\")
+         (list \" echo hello world \"))
 
 "
     ;; Throw away any number of blank characters
@@ -144,17 +144,8 @@ When no interpreter is provided it uses /bin/sh:
                  `(code-snippet ',(match language
                                     ("" 'sh)
                                     (_ (string->symbol language)))
-                                ',(string-split arguments #\space)
-                                (begin
-                                  (use-modules (ice-9 format))
-                                  (apply string-append
-                                         (map (lambda (val)
-                                                (cond
-                                                 ((string? val) val)
-                                                 ((list? val)
-                                                  (format #f "~{~a~^ ~}" val))
-                                                 (else (format #f "~a" val))))
-                                              (list ,@(reverse (cons last-chunk chunks))))))))
+                                ',arguments
+                                (list ,@(reverse (cons last-chunk chunks)))))
                (search-delim new-acc
                              (read-char port)
                              new-balance

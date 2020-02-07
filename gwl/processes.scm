@@ -400,7 +400,16 @@ of PROCESS."
   code-snippet?
   (language  code-snippet-language)
   (arguments code-snippet-arguments)
-  (code      code-snippet-code))
+  (code      code-snippet-code-listing))
+
+(define (code-snippet-code code-snippet)
+  "Return the code listing as a string."
+  (string-join (map (lambda (val)
+                      (if (list? val)
+                          (format #f "~{~a~^ ~}" val)
+                          (format #f "~a" val)))
+                    (code-snippet-code-listing code-snippet))
+               ""))
 
 (define (procedure->gexp process)
   "Transform the procedure of PROCESS to a G-expression."
@@ -410,23 +419,25 @@ of PROCESS."
   (match (process-procedure process)
     ((? gexp? g) g)
     ((? list? s) s)
-    (($ <code-snippet> name arguments code)
-     (let ((call (or (and=> (find (lambda (lang)
-                                    (eq? name (language-name lang)))
-                                  languages)
-                            language-call)
-                     ;; There is no pre-defined way to execute the
-                     ;; snippet.  Use generic approach.
-                     (lambda (process code)
-                       #~(begin
-                           (for-each (lambda (pair)
-                                       (setenv (car pair) (cdr pair)))
-                                     '#$(process->env process))
-                           (apply system*
-                                  (string-append (getenv "_GWL_PROFILE")
-                                                 #$(sanitize-path (symbol->string name)))
-                                  '#$(append arguments
-                                             (list code))))))))
+    ((? code-snippet? snippet)
+     (let* ((name (code-snippet-language snippet))
+            (arguments (code-snippet-arguments snippet))
+            (code (code-snippet-code snippet))
+            (call (or (and=> (find (lambda (lang)
+                                     (eq? name (language-name lang)))
+                                   languages)
+                             language-call)
+                      ;; There is no pre-defined way to execute the
+                      ;; snippet.  Use generic approach.
+                      (lambda (process code)
+                        #~(begin
+                            (for-each (lambda (pair)
+                                        (setenv (car pair) (cdr pair)))
+                                      '#$(process->env process))
+                            (apply system*
+                                   (string-append (getenv "_GWL_PROFILE")
+                                                  #$(sanitize-path (symbol->string name)))
+                                   '#$(append arguments (list code))))))))
        (call process code)))
     (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
