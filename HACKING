@@ -13,10 +13,7 @@ Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 You can use Guix to set up a development environment:
 
 #+BEGIN_SRC shell
-guix environment --ad-hoc \
-  autoconf automake pkg-config \
-  texinfo \
-  guile@2.2 guile-commonmark guile-wisp guile-syntax-highlight
+guix environment --load=.guix.scm
 #+END_SRC
 
 * Commit access
