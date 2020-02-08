@@ -93,7 +93,7 @@ supports a classic Lisp syntax as well as a Python-like syntax called
 @chapter Installation
 
 There really is no point in using the GWL without Guix.  If you
-already have a Guix installation you can install the GWL with
+already have a Guix installation, you can install the GWL with
 @code{guix install gwl}.
 
 The Guix Workflow Language uses the GNU build system.  To install it
@@ -112,7 +112,7 @@ bootstrap the build system first.  Run @code{autoreconf -vif} first and
 then perform the above steps.
 
 Note that in order for Guix to learn about the ``workflow''
-sub-command provided by the GWL the Guile module @code{(guix scripts
+sub-command provided by the GWL, the Guile module @code{(guix scripts
 workflow)} must be found in a directory on the @code{GUILE_LOAD_PATH}.
 
 @c *********************************************************************
@@ -167,7 +167,7 @@ make-process
      ' display "hello"
 @end example
 
-This creates a process with name ``hello'', which will print the
+This creates a process with the name ``hello'', which will print the
 string @code{"hello"} once the process is executed.  The
 @code{procedure} field holds the Scheme code that does all the work of
 saying ``hello''.  We will talk about the @code{procedure} field a
@@ -211,7 +211,7 @@ which we describe below.
 @item name
 The readable name of the process as a string.  This is used for
 display purposes and to select processes by name.  When the
-@code{process} constructor is used the @code{name} field need not be
+@code{process} constructor is used, the @code{name} field need not be
 provided explicitly.
 
 @cindex version, process field
@@ -234,7 +234,7 @@ This field is used to specify what software packages need to be
 available when executing the process.  Packages can either be Guix
 package specifications --- such as the string @code{"guile@@3.0"} for
 Guile version 3.0 --- or package variable names.  When using package
-variable names you need to make sure to import the appropriate Guix
+variable names, you need to make sure to import the appropriate Guix
 module at the top of your workflow file, e.g. @code{(import (gnu
 packages guile))} for the variable @code{guile}.
 
@@ -343,7 +343,7 @@ This is a directory prefix for all outputs.
 @item run-time
 This field is used to specify run-time resource estimates, such as the
 memory requirement of the process or the maximum time it should run.
-This is especially useful when submitting jobs to a HPC cluster
+This is especially useful when submitting jobs to an HPC cluster
 scheduler such as Grid Engine, as these schedulers may give higher
 priority to jobs that declare a short run time.
 
@@ -365,7 +365,7 @@ process haiku
   outputs "haiku.txt"
   synopsis "Write a haiku to a file"
   description
-    . "This process writes a haiku by Gary Hotham\
+    . "This process writes a haiku by Gary Hotham \
 to the file \"haiku.txt\"."
   procedure
     ` with-output-to-file ,outputs
@@ -573,14 +573,14 @@ workflow do-stuff
     . something-else
 @end example
 
-This defines a workflow with name ``do-stuff'', binds it to a variable
+This defines a workflow with the name ``do-stuff'', binds it to a variable
 @code{do-stuff}, and declares that it consists of the three processes
 @code{this}, @code{that}, and @code{something-else}.  All of these
 processes will be run at the same time.  This may not be what you want
 when the processes depend on each other.
 
 @cindex auto-connect, workflow order
-If the processes all declare inputs and outputs the GWL can connect
+If the processes all declare inputs and outputs, the GWL can connect
 the processes and ensure that only independent processes are run
 simultaneously.  Use the @code{auto-connect} procedure on your
 processes:
