@@ -469,6 +469,9 @@ process run-bash
   # bash @{ echo "hello from bash!" @}
 @end example
 
+Notice how the ``procedure'' field name was not used here, because the
+code snippet came last.  This cuts down on boilerplate.
+
 Code snippets are introduced with @code{# interpreter @{}, where
 @code{interpreter} is the command line for running an interpreter, such
 as @code{/bin/bash -c}.  Code snippets must end with a closing brace,
