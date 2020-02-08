@@ -23,6 +23,11 @@ We’d also have to replace “specification->package” with a variant that
 queries the user’s current Guix (or an inferior) instead of the Guix
 used at GWL build time.
 
+* documentation
+- document the cache
+- document containerization with GWL_CONTAINERIZE
+- add a procedure reference
+
 * add support for guile-ssh to submit jobs via SSH
 or can we just use “guix deploy” directly?
 
