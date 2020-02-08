@@ -51,7 +51,8 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 * Introduction::                What is this all about?
 * Installation::                Installing the GWL.
 * A Simple Workflow::           Show me what this looks like!
-* Code Snippets::               Embedding scripts
+* Code Snippets::               Embedding scripts.
+* Defining a Workflow::         Combine processes to build a workflow.
 * Process Engines::             Generating executable pipeline scripts.
 
 * Acknowledgments::             Thanks!
@@ -249,6 +250,66 @@ The following variables may be set:
 @item @code{_GWL_PROCESS_COMPLEXITY_SPACE}
 @item @code{_GWL_PROCESS_COMPLEXITY_THREADS}
 @end itemize
+
+@c *********************************************************************
+@node Defining a Workflow
+@chapter Defining a Workflow
+
+@cindex defining a workflow
+@cindex combining processes in a workflow
+
+A workflow is a combination of processes that run in a certain order
+or simultaneously.  You can specify the dependencies of processes
+manually or let the GWL figure it out by matching up the declared
+inputs and outputs of all processes.
+
+A workflow definition will look something like this:
+
+@example
+workflow do-stuff
+  processes
+    . this
+    . that
+    . something-else
+@end example
+
+This defines a workflow with name ``do-stuff'', binds it to a variable
+@code{do-stuff}, and declares that it consists of the three processes
+@code{this}, @code{that}, and @code{something-else}.  All of these
+processes will be run at the same time.  This may not be what you want
+when the processes depend on each other.
+
+@cindex auto-connect, workflow order
+If the processes all declare inputs and outputs the GWL can connect
+the processes and ensure that only independent processes are run
+simultaneously.  Use the @code{auto-connect} procedure on your
+processes:
+
+@example
+workflow do-stuff
+  processes
+    auto-connect
+      . this
+      . that
+      . something-else
+@end example
+
+@cindex graph, workflow order
+You can also explicitly construct a graph of processes with the aptly
+named @code{graph} macro.  The following workflow definition lets the
+process @code{combine} run after @code{generate-A} and
+@code{generate-B}, which will both run in parallel.  The process
+@code{compress} will run after @code{combine}, and thus at the very
+end.
+
+@example
+workflow frobnicate
+  processes
+    graph
+      combine -> generate-A generate-B
+      compress -> combine
+@end example
+
 
 @c *********************************************************************
 @node Process Engines
