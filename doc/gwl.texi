@@ -51,6 +51,7 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 * Introduction::                What is this all about?
 * Installation::                Installing the GWL.
 * A Simple Workflow::           Show me what this looks like!
+* Defining a Process::          What's in a process?
 * Code Snippets::               Embedding scripts.
 * Defining a Workflow::         Combine processes to build a workflow.
 * Process Engines::             Generating executable pipeline scripts.
@@ -144,6 +145,302 @@ glow:
 Everything you can express in Scheme can also be expressed with the Wisp
 syntax, so the choice is down to personal preference.
 
+@c *********************************************************************
+@node Defining a Process
+@chapter Defining a Process
+
+@cindex defining processes
+In the GWL a ``process'' is a combination of some kind of command or
+script to be executed, the software packages that need to be available
+when executing the commands, and declarations of inputs and generated
+outputs.  A process has a name, and optionally a synopsis and a
+description, for display purposes.
+
+@cindex make-process, constructor
+We create a process with the @code{make-process} constructor like
+this:
+
+@example
+make-process
+  name "hello"
+  procedure
+     ' display "hello"
+@end example
+
+This creates a process with name ``hello'', which will print the
+string @code{"hello"} once the process is executed.  The
+@code{procedure} field holds the Scheme code that does all the work of
+saying ``hello''.  We will talk about the @code{procedure} field a
+little later and show how to write code snippets in languages other
+than Scheme.
+
+Often we will want to refer to previously created processes later, for
+example to combine them in a workflow definition.  To do that we need
+to bind the created processes to variable names.  Here we bind the
+above process to a variable named @code{hello}:
+
+@example
+define hello
+  make-process
+    name "hello"
+    procedure
+       ' display "hello"
+@end example
+
+@cindex process, constructor
+@cindex process, definition macro
+This is a very common thing to do, so the GWL offers a shorter syntax
+for not only creating a process but also binding it to a variable.
+The following example is equivalent to the above definition:
+
+@example
+process hello
+  procedure
+     ' display "hello"
+@end example
+
+
+@node @code{process} Fields
+@section @code{process} Fields
+@cindex process, valid fields
+Both @code{make-process} and @code{process} accept the same fields,
+which we describe below.
+
+@table @code
+@cindex name, process field
+@item name
+The readable name of the process as a string.  This is used for
+display purposes and to select processes by name.  When the
+@code{process} constructor is used the @code{name} field need not be
+provided explicitly.
+
+@cindex version, process field
+@item version
+This field holds an arbitrary version string.  This can be used to
+disambiguate between different implementations of a process when
+searching by name.
+
+@cindex synopsis, process field
+@item synopsis
+A short summary of what this process intends to accomplish.
+
+@cindex description, process field
+@item description
+A longer description about the purpose of this process.
+
+@cindex packages, process field
+@item packages
+This field is used to specify what software packages need to be
+available when executing the process.  Packages can either be Guix
+package specifications --- such as the string @code{"guile@@3.0"} for
+Guile version 3.0 --- or package variable names.  When using package
+variable names you need to make sure to import the appropriate Guix
+module at the top of your workflow file, e.g. @code{(import (gnu
+packages guile))} for the variable @code{guile}.
+
+@cindex implicit list, process.packages
+The @code{packages} field accepts a list of packages as well as
+multiple values (an ``implicit list'').  All of the following
+specifications are valid.  A single package:
+
+@example
+process
+  packages "guile"
+  @dots{}
+@end example
+
+More than one package:
+
+@example
+process
+  packages "guile" "python"
+  @dots{}
+@end example
+
+A single list of packages:
+
+@example
+process
+  packages
+    list "guile" "python"
+  @dots{}
+@end example
+
+@cindex inputs, process field
+@item inputs
+This field holds inputs to the process.  Commonly, this will be a list
+of file names that the process requires to be present.  The GWL can
+automatically connect processes by matching up their declared inputs
+and outputs, so that processes generating certain outputs are executed
+before those that declare the same item as an input.
+
+As with the @code{packages} field, the @code{inputs} field accepts an
+``implicit list'' of multiple values as well as an explicit list.
+@cindex tagged lists
+@cindex named items, lists
+@cindex tagged items, lists
+Additionally, individual inputs can be ``tagged'' or named by
+prefixing it with a keyword (@pxref{Keywords,,,guile,GNU Guile
+Reference Manual}).  Here's an example of an implicit list of inputs
+spread across multiple lines where two inputs have been tagged:
+
+@example
+process
+  inputs
+    . genome: "hg19.fa"
+    . "cookie-recipes.txt"
+    . samples: "foo.fq"
+  @dots{}
+@end example
+
+The leading period is Wisp syntax to continue the previous line.  You
+can, of course, do without the periods, but this may look a little
+more cluttered:
+
+@example
+process
+  inputs genome: "hg19.fa" "cookie-recipes.txt" samples: "foo.fq"
+  @dots{}
+@end example
+
+Why tag inputs at all?  Because you can reference them in other parts
+of your process definition without having to awkwardly traverse the
+whole list of inputs.  Here is one way to select the input that was
+tagged with the @code{samples:} keyword in Scheme code:
+
+@lisp
+(and=> (memq genome: inputs) second)
+@end lisp
+
+Or in Wisp:
+
+@example
+and=>
+  memq genome: inputs
+  . second
+@end example
+
+@ref{Code Snippets} for a more convenient way to access named items in
+code snippets.
+
+@cindex outputs, process field
+@item outputs
+This field holds a list of outputs that are expected to appear after
+executing the process.  Usually this will be a list of file names.
+Just like the @code{inputs} field, this field accepts a plain list, an
+implicit list of one or more values, and lists with named items.
+
+The GWL can automatically connect processes by matching up their
+declared inputs and outputs, so that processes generating certain
+outputs are executed before those that declare the same item as an
+input.
+
+@cindex output-path, process field
+@item output-path
+This is a directory prefix for all outputs.
+
+@cindex run-time, process field
+@item run-time
+This field is used to specify run-time resource estimates, such as the
+memory requirement of the process or the maximum time it should run.
+This is especially useful when submitting jobs to a HPC cluster
+scheduler such as Grid Engine, as these schedulers may give higher
+priority to jobs that declare a short run time.
+
+@c TODO: describe the complexity object
+
+@cindex procedure, process field
+@item procedure
+This field holds an expression of code that should be run when the
+process is executed.  This is the ``work'' that a process should
+perform.  By default that's a quoted Scheme expression, but code
+snippets in other languages are also supported (@pxref{Code
+Snippets}).
+
+Here's an example of a process with a procedure that writes a haiku to
+a file:
+
+@example
+process haiku
+  outputs "haiku.txt"
+  synopsis "Write a haiku to a file"
+  description
+    . "This process writes a haiku by Gary Hotham\
+to the file \"haiku.txt\"."
+  procedure
+    ` with-output-to-file ,outputs
+        lambda ()
+          display "\
+the library book
+overdue?
+slow falling snow"
+@end example
+
+The Scheme expression here is quasiquoted (with a leading @code{`}) to
+allow for unquoting (with @code{,}) of variables, such as
+@code{outputs}.
+
+Not always will Scheme be the best choice for a process procedure.
+Sometimes all you want to do is fire off a few shell commands.  While
+this is, of course, possible to express in Scheme, it is admittedly
+somewhat verbose.  For convenience we offer a simple and surprisingly
+short syntax for this common use case.  As a bonus you can even leave
+off the field name ``procedure'' and write your code snippet right
+there.  How?  @ref{Code Snippets}.
+@end table
+
+@c TODO: document the accessor procedures
+
+@node Process templates
+@section Process templates
+@cindex process templates
+@cindex generating processes
+
+When defining many similar processes, it can be useful to parameterize
+a single process template.  This can be accomplished by defining a
+procedure that takes any number of arguments and returns a
+parameterized process.  Here's how to do this somewhat verbosely in
+plain Scheme:
+
+@lisp
+(define (build-me-a-process thing)
+  "Return a process that displays THING."
+  (make-process
+    (name (string-append "show-" thing))
+    (procedure `(display ,thing))))
+
+;; Now use this procedure to build concrete processes.
+(define show-fruit
+  (build-me-a-process "fruit"))
+(define show-kitchen
+  (build-me-a-process "kitchen"))
+(define show-table
+  (build-me-a-process "table"))
+@end lisp
+
+As this is a somewhat common thing to do in real workflows, the GWL
+provides simplified syntax to express the same concepts with a little
+less effort:
+
+@example
+process build-me-a-process (with thing)
+  name
+    string-append "show-" thing
+  procedure
+    ` display ,thing
+
+define show-fruit
+  build-me-a-process "fruit"
+define show-kitchen
+  build-me-a-process "kitchen"
+define show-table
+  build-me-a-process "table"
+@end example
+
+The result is the same: you get a procedure @code{build-me-a-process}
+that you can use to define a number of similar processes.  In the end
+you have the three processes @code{show-fruit}, @code{show-kitchen},
+and @code{show-table}.
 
 @c *********************************************************************
 @node Code Snippets
