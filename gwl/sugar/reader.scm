@@ -121,10 +121,19 @@ When no interpreter is provided it uses /bin/sh:
                                                  (() (string->symbol (list->string pre:)))
                                                  ;; Complex identifier.
                                                  ((_ . kw)
-                                                  `(and=> (memq ,(symbol->keyword
-                                                                  (string->symbol (list->string kw)))
-                                                                ,(string->symbol (list->string pre:)))
-                                                          cadr)))))))
+                                                  (if (eq? #\: (car kw))
+                                                      ;; multiple items
+                                                      `(and=> (memq ,(symbol->keyword
+                                                                      (string->symbol
+                                                                       (list->string (cdr kw))))
+                                                                    ,(string->symbol (list->string pre:)))
+                                                              (lambda (sublist)
+                                                                (break keyword? (cdr sublist))))
+                                                      ;; single item
+                                                      `(and=> (memq ,(symbol->keyword
+                                                                      (string->symbol (list->string kw)))
+                                                                    ,(string->symbol (list->string pre:)))
+                                                              cadr))))))))
                                       (cons* reference
                                              ;; Drop the opening "{{"
                                              (list->string (reverse (drop post 2)))

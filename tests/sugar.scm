@@ -16,6 +16,7 @@
 (define-module (test-sugar)
   #:use-module (gwl sugar reader)
   #:use-module (gwl processes)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-64))
 
 (test-begin "sugar")
@@ -76,6 +77,11 @@
   "echo my number is 300, not 1000"
   (code-snippet-code
    (test-read-eval-string "# /bin/bash -c {echo my number is {{numbers:my-number}}, not {{numbers:boring}}}")))
+
+(test-equal "string interpolation can access tagged consecutive items in lists"
+  "echo my numbers are 300 400 500, not 1000"
+  (code-snippet-code
+   (test-read-eval-string "# /bin/bash -c {echo my numbers are {{numbers::my-number}}, not {{numbers:boring}}}")))
 
 (test-assert "make-process macro allows key-less procedure"
   (let ((proc (make-process

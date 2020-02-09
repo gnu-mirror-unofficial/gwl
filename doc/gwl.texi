@@ -534,6 +534,28 @@ As expected, this will output the following text when run:
 This is mine: b, and this is yours: d.
 @end example
 
+@cindex accessing multiple named values, code snippets
+You can also access tagged sub-lists with the @{::} accessor:
+
+@example
+process frobnicate
+  packages "frobnicator"
+  inputs
+    . genome: "hg19.fa"
+    . samples: "a" "b" "c"
+  outputs
+    . "result"
+  # @{
+    frobnicate -g @{@{inputs:genome@}@} --files {{inputs::samples}} > {{outputs}}
+  @}
+@end example
+
+This process will cause the following command to be executed:
+
+@example
+frobnicate -g hg19.fa --files a b c > result
+@end example
+
 @cindex environment variables, code snippets
 @cindex process meta data, code snippets
 You can also access process meta data through environment variables.
