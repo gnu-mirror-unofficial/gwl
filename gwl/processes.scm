@@ -347,7 +347,7 @@ of PROCESS."
                  (for-each (lambda (pair)
                              (setenv (car pair) (cdr pair)))
                            '#$(process->env process))
-                 (exit (zero? (system* "python" "-c" #$code)))))))
+                 (exit (zero? (system* "python3" "-c" #$code)))))))
 
 (define language-r
   (make <language>
