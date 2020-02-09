@@ -535,7 +535,7 @@ This is mine: b, and this is yours: d.
 @end example
 
 @cindex accessing multiple named values, code snippets
-You can also access tagged sub-lists with the @{::} accessor:
+You can also access tagged sub-lists with the @code{::} accessor:
 
 @example
 process frobnicate
@@ -546,7 +546,7 @@ process frobnicate
   outputs
     . "result"
   # @{
-    frobnicate -g @{@{inputs:genome@}@} --files {{inputs::samples}} > {{outputs}}
+    frobnicate -g @{@{inputs:genome@}@} --files @{@{inputs::samples@}@} > @{@{outputs@}@}
   @}
 @end example
 
