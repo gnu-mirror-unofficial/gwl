@@ -540,7 +540,8 @@ and returns its location."
                                        `((use-modules (guix search-paths))
                                          (set-search-paths (map sexp->search-path-specification
                                                                 ',search-paths)
-                                                           ',packages)))
+                                                           (cons ,profile
+                                                                 ',packages))))
                                 #$(if out `(setenv "out" ,out) "")
                                 (setenv "_GWL_PROFILE" #$profile)                                        
                                 #$exp)))
