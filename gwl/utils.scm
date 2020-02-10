@@ -139,6 +139,10 @@ a location object."
      (format (current-error-port)
              "~a: ~a" (location->string loc)
              (apply format #f rest)))
+    (((? string? file) . rest)
+     (format (current-error-port)
+             "~a: ~a" file
+             (apply format #f rest)))
     (_
      (apply format (current-error-port) args))))
 (define (display-hint . args)
@@ -218,8 +222,9 @@ ARGS is the list of arguments received by the 'throw' handler."
                    location))
          (apply throw args)))
     (('syntax-error proc message properties form . rest)
-     (let ((loc (source-properties->location properties)))
-       (report-error loc (G_ "~a~%") message)))
+     (let ((loc (or (source-properties->location properties)
+                    file)))
+       (report-error loc (G_ "~a~%  ~y~%") message form)))
     (('unbound-variable _ ...)
      (report-unbound-variable-error args #:frame frame))
     ((key args ...)
