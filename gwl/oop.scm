@@ -1,4 +1,4 @@
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@
                 (and (memq #:implicit-list? options)
                      (match tail
                        ((_ (? (negate list?) value) . rest)
-                        (list-cdr-set! (find-tail (cut eq? <> keyword) initargs)
+                        (list-cdr-set! (memq keyword initargs)
                                        0 (cons (list value) rest)))
                        (_ #t))) ; it's a list, let it be
                 ;; Run transformers on slot values
@@ -64,7 +64,7 @@
                    (match tail
                      ((_ value . rest)
                       (let ((new-value (transform instance value)))
-                        (list-cdr-set! (find-tail (cut eq? <> keyword) initargs)
+                        (list-cdr-set! (memq keyword initargs)
                                        0 (cons new-value rest))))))
                   (_ #t))
 
