@@ -1,4 +1,4 @@
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -112,5 +112,20 @@ make-workflow
             (p3 -> p1)
             (p5 -> p2 p3 p4)
             (p6 -> p5)))))
+
+(test-assert "make-workflow permits definitions in field values"
+  (let* ((eat (lambda (what)
+                (make-process
+                 (name (string-append "eat-" what))
+                 (procedure '()))))
+         (wf (make-workflow
+                (name "test-workflow")
+                (processes
+                 (define eat-corn (eat "corn"))
+                 (define eat-salad (eat "salad"))
+                 (graph
+                  (p1 -> eat-corn eat-salad)
+                  (eat-salad -> p2))))))
+    (workflow? wf)))
 
 (test-end "workflows")

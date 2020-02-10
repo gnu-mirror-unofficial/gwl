@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -133,7 +133,18 @@ Use \"processes\" to specify process dependencies.~%"))
                             ((key value)
                              #'(key value))
                             ((key values ...)
-                             #'(key (list values ...)))))
+                             ;; XXX: This is a crude way to allow
+                             ;; for definitions inside of field
+                             ;; values.
+                             (let ((definition?
+                                     (lambda (token)
+                                       (string-prefix? "define"
+                                                       (symbol->string token)))))
+                               (match (syntax->datum #'(values ...))
+                                 ((((? definition? token) . _) . _)
+                                  ;; Start a definition context
+                                  #'(key (let context () (begin values ...))))
+                                 (_ #'(key (list values ...))))))))
                         #'(fields ...)))
            (make <workflow>
              #,@(append-map (lambda (field)
