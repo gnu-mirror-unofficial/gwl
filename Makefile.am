@@ -84,7 +84,8 @@ TEST_EXTENSIONS = .scm
 SCM_TESTS = \
   tests/processes.scm \
   tests/workflows.scm \
-  tests/sugar.scm
+  tests/sugar.scm \
+  tests/utils.scm
 
 TESTS = $(SCM_TESTS)
 

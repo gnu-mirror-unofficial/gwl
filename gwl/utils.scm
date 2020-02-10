@@ -28,13 +28,40 @@
   #:use-module (srfi srfi-34)
   #:use-module (language wisp)
   #:export (load-workflow
-            wisp-suffix
-            on))
+            on
+            pick
+
+            wisp-suffix))
 
 ;; Convenience procedure to simplify Wisp syntax of higher-order
 ;; procedures such as "map" by having the collection first.
 (define (on collection higher-proc item-proc)
   (higher-proc item-proc collection))
+
+;; Simplify access to tagged items in lists.
+(define pick
+  (case-lambda
+    ;; First item.
+    ((key collection)
+     (and=> (memq key collection) cadr))
+    ;; Nth item
+    ((n key collection)
+     (let ((sub
+            (and=> (memq key collection)
+                   (lambda (sublist)
+                     (break keyword? (cdr sublist))))))
+       (cond
+        ((number? n)
+         (and (> (length sub) n)
+              (list-ref sub n)))
+        ;; All items
+        ((and (procedure? n)
+              (eq? (procedure-name n) '*))
+         sub)
+        ;; SRFI-1 accessors like "first"
+        ((procedure? n)
+         (n sub))
+        (else (error "pick: Selector not supported.")))))))
 
 (define (wisp-suffix file)
   (cond ((string-suffix? ".w" file) ".w")

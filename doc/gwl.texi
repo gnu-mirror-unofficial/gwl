@@ -303,25 +303,31 @@ process
   @dots{}
 @end example
 
+@cindex pick, items from a tagged list
+@cindex select, tagged items in a list
 Why tag inputs at all?  Because you can reference them in other parts
 of your process definition without having to awkwardly traverse the
-whole list of inputs.  Here is one way to select the input that was
-tagged with the @code{samples:} keyword in Scheme code:
-
-@lisp
-(and=> (memq genome: inputs) second)
-@end lisp
-
-Or in Wisp:
+whole list of inputs.  Here is one way to select the first input that
+was tagged with the @code{samples:} keyword:
 
 @example
-and=>
-  memq genome: inputs
-  . second
+pick genome: inputs
 @end example
 
-@ref{Code Snippets} for a more convenient way to access named items in
-code snippets.
+To select the second item after the tag @code{genome:} do this:
+
+@example
+pick second genome: inputs
+@end example
+
+or using a numerical zero-based index:
+
+@example
+pick 1 genome: inputs
+@end example
+
+@ref{Code Snippets} for a convenient way to access named items in code
+snippets without having to define your picks beforehand.
 
 @cindex outputs, process field
 @item outputs
