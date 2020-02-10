@@ -474,9 +474,10 @@ OUTPUTS are mapped."
                                    (location->file-system location #t))
                                  '#$output-locations))
                   (lambda ()
-                    (unless (file-exists? "/bin")
-                      (mkdir "/bin"))
-                    (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh")
+                    (unless (file-exists? "/bin/sh")
+                      (unless (file-exists? "/bin")
+                        (mkdir "/bin"))
+                      (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh"))
                     (thunk)))
                 (thunk)))))))
 
