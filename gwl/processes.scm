@@ -276,7 +276,18 @@
                               ((key value)
                                #'(key value))
                               ((key values ...)
-                               #'(key (list values ...)))))
+                               ;; XXX: This is a crude way to allow
+                               ;; for definitions inside of field
+                               ;; values.
+                               (let ((definition?
+                                       (lambda (token)
+                                         (string-prefix? "define"
+                                                         (symbol->string token)))))
+                                 (match (syntax->datum #'(values ...))
+                                   ((((? definition? token) . _) . _)
+                                    ;; Start a definition context
+                                    #'(key (let context () (begin values ...))))
+                                   (_ #'(key (list values ...))))))))
                           fields*))
              (make <process>
                #,@(append-map (lambda (field)

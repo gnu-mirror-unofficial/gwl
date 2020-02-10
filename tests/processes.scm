@@ -55,6 +55,16 @@
              (procedure '(const #t))
              (garbage 'this-is)))
 
+(test-assert "make-process permits definitions in field values"
+  (let* ((proc (make-process
+                (name "bash")
+                (procedure
+                 (define who "world")
+                 (define why "I love you")
+                 # {echo "hello {{who}}.  {{why}}."})))
+         (snippet (process-procedure proc)))
+    (code-snippet? snippet)))
+
 (test-error "complexity rejects invalid field names" #t
             (complexity
              (time 10 seconds)
