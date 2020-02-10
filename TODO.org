@@ -27,6 +27,7 @@ used at GWL build time.
 - document the cache
 - document containerization with GWL_CONTAINERIZE
 - add a procedure reference
+- document (gwl utils): “on”, “expand”, “load-workflow”, etc
 
 * add support for guile-ssh to submit jobs via SSH
 or can we just use “guix deploy” directly?

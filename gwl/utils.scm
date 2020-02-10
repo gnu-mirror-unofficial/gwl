@@ -30,6 +30,7 @@
   #:export (load-workflow
             on
             pick
+            expand
 
             wisp-suffix))
 
@@ -62,6 +63,21 @@
         ((procedure? n)
          (n sub))
         (else (error "pick: Selector not supported.")))))))
+
+(define (expand . file-parts)
+  "Expand the file name template consisting of strings interspersed
+with lists of strings to a list of concrete file names of all
+combinations."
+  (define (inner prefix parts)
+    (match parts
+      (((? string? part) . rest)
+       (inner (string-append prefix part) rest))
+      (((? list? ls) . rest)
+       (append-map (lambda (part)
+                     (inner (string-append prefix part) rest))
+                   ls))
+      (_ (list prefix))))
+  (inner "" file-parts))
 
 (define (wisp-suffix file)
   (cond ((string-suffix? ".w" file) ".w")

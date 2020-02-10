@@ -43,4 +43,20 @@
 (test-equal "pick accepts SRFI-1 accessor procedures"
   8 (pick third #:yours l))
 
+(test-equal "expand returns list of strings"
+  '("/tmp/foo/1/bar/baz"
+    "/tmp/foo/2/bar/baz"
+    "/home/foo/1/bar/baz"
+    "/home/foo/2/bar/baz")
+  (expand "/" (list "tmp" "home") "/foo/"
+          (list "1" "2") "/bar/baz"))
+
+(test-equal "expand is the list procedure when there are no options"
+  '("/hello/world")
+  (expand "/hello/world"))
+
+(test-equal "expand appends parts when there are no options"
+  '("/hello/world")
+  (expand "/hello/" "wor" "ld"))
+
 (test-end "utils")
