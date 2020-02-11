@@ -77,7 +77,6 @@
             complexity-threads
 
             process->script
-            process->script->run
 
             ;; Convenience functions
             kibibytes
@@ -618,15 +617,6 @@ and returns its location."
                      (built (built-derivations (list wrap))))
                   (return (derivation->output-path wrap)))
                 (return (derivation->output-path drv)))))))))
-
-(define (process->script->run engine)
-  "Return a procedure that builds a derivation of PROCESS according to
-ENGINE and runs the resulting script."
-  (let ((make-script (process->script engine))
-        (runner (process-engine-runner engine)))
-    (lambda* (process #:key workflow)
-      (apply system* (append runner
-                             (list (make-script process #:workflow workflow)))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS
