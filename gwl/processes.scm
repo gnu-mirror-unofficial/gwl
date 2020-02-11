@@ -550,7 +550,7 @@ keyword tags."
 (define (process->script engine)
   "Build a procedure that transforms the process PROCESS into a script
 and returns its location."
-  (lambda* (process #:key workflow guix)
+  (lambda* (process #:key workflow (input-files '()))
     (unless (process? process)
       (error (format #f "This is not a process!~%")))
     (let* ((name (process-full-name process))
@@ -598,7 +598,9 @@ and returns its location."
                                           #:inputs
                                           (append closure
                                                   ;; Data inputs
-                                                  (process-inputs process))
+                                                  (process-inputs process)
+                                                  ;; Files mapped to free inputs
+                                                  input-files)
                                           #:outputs
                                           (process-outputs process))))
               (gexp->script (string-append "gwl-" name ".scm") script))))

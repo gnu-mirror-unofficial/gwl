@@ -324,14 +324,15 @@ to existing files."
        ;; container.
        (let* ((found (filter file-exists? missing))
               (really-missing (lset-difference equal? missing found)))
-         (or (null? really-missing)
+         (if (null? really-missing)
+             found
              (begin (format (current-error-port)
                             "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
                             really-missing)
                     #f))))))
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
-  (define (run)
+  (define (run input-files)
     (let ((make-script (process->script engine))
           (runner (process-engine-runner engine)))
       (define process->cache-prefix
@@ -377,7 +378,15 @@ to existing files."
 
               ;; Not cached: execute the process!
               (let ((command (append runner
-                                     (list (make-script process #:workflow workflow)))))
+                                     (list
+                                      (make-script
+                                       process
+                                       #:workflow workflow
+                                       #:input-files
+                                       (lset-intersection
+                                        string=?
+                                        input-files
+                                        (process-inputs process)))))))
                 (if dry-run?
                     (format (current-error-port)
                             "Would execute: ~{~a ~}~%" command)
@@ -399,6 +408,7 @@ to existing files."
                       ;; Link files to the cache.
                       (for-each (cut cache! <> cache-prefix)
                                 (process-outputs process))))))))))
-  (when (inputs-valid?)
-    (fold (workflow-kons workflow (run))
-          '() ordered-processes)))
+  (and=> (inputs-valid?)
+         (lambda (input-files)
+           (fold (workflow-kons workflow (run input-files))
+                 '() ordered-processes))))
