@@ -244,6 +244,14 @@
 (define (process? thing)
   (is-a? thing <process>))
 
+(define (flat-list . items)
+  (fold (lambda (item acc)
+          (match item
+            ((? list? ls)
+             (append acc ls))
+            (_ (append acc (list item)))))
+        '() items))
+
 ;; This is a constructor for <process> instances.  It permits the use
 ;; of multiple field values (implicit lists) and cross-field
 ;; references.  It does not, however, validate any fields or their
@@ -286,7 +294,7 @@
                                    ((((? definition? token) . _) . _)
                                     ;; Start a definition context
                                     #'(key (let context () (begin values ...))))
-                                   (_ #'(key (list values ...))))))))
+                                   (_ #'(key (flat-list values ...))))))))
                           fields*))
              (make <process>
                #,@(append-map (lambda (field)
