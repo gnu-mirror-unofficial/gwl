@@ -65,6 +65,13 @@
          (snippet (process-procedure proc)))
     (code-snippet? snippet)))
 
+(test-assert "code-snippet is applicable and returns itself"
+  (let ((snippet (code-snippet 'sh '() (list))))
+    (and (code-snippet? snippet)
+         (eq? snippet (snippet))
+         (eq? snippet ((snippet)))
+         (eq? snippet (((snippet)))))))
+
 (test-error "complexity rejects invalid field names" #t
             (complexity
              (time 10 seconds)

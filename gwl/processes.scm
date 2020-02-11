@@ -52,7 +52,6 @@
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-26)
   #:export (make-process
             process?
@@ -401,12 +400,26 @@ of PROCESS."
         language-python
         language-r))
 
-(define-record-type <code-snippet>
-  (code-snippet language arguments code)
-  code-snippet?
-  (language  code-snippet-language)
-  (arguments code-snippet-arguments)
-  (code      code-snippet-code-listing))
+(define-class <code-snippet> (<applicable-struct>)
+  (language
+   #:init-keyword #:language
+   #:accessor code-snippet-language)
+  (arguments
+   #:init-keyword #:arguments
+   #:accessor code-snippet-arguments)
+  (code
+   #:init-keyword #:code
+   #:accessor code-snippet-code-listing))
+
+;; Code snippets should be evaluating to themselves for more
+;; convenient Wisp use.
+(define-method (initialize (self <code-snippet>) initargs)
+  (next-method self
+               (append (list #:procedure (lambda args self))
+                       initargs)))
+
+(define (code-snippet? thing)
+  (is-a? thing <code-snippet>))
 
 (define (code-snippet-code code-snippet)
   "Return the code listing as a string."
@@ -416,6 +429,12 @@ of PROCESS."
                           (format #f "~a" val)))
                     (code-snippet-code-listing code-snippet))
                ""))
+
+(define (code-snippet language arguments code)
+  (make <code-snippet>
+    #:language language
+    #:arguments arguments
+    #:code code))
 
 (define (procedure->gexp process)
   "Transform the procedure of PROCESS to a G-expression."
