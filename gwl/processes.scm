@@ -480,26 +480,23 @@ of PROCESS."
 
 (define* (containerize exp #:key inputs outputs)
   "Wrap EXP, an S-expression or G-expression, in a G-expression that
-causes EXP to be run in a container where the provided INPUTS and
-OUTPUTS are mapped."
-  (let* ((output-locations
-          (delete-duplicates (map dirname outputs)))
-         (input-locations
-          (lset-difference string=?
-                           inputs
-                           output-locations)))
+causes EXP to be run in a container where the provided INPUTS are
+available.  OUTPUTS are copied outside of the container."
+  (let ()
     (with-imported-modules (source-module-closure
                             '((gnu build accounts)
                               (gnu build linux-container)
-                              (gnu system file-systems)))
+                              (gnu system file-systems)
+                              (guix build utils)))
       #~(begin
           (use-modules (gnu build accounts)
                        (gnu build linux-container)
-                       (gnu system file-systems))
-          (define (location->file-system location writable?)
+                       (gnu system file-systems)
+                       (guix build utils))
+          (define (location->file-system source target writable?)
             (file-system
-              (device location)
-              (mount-point location)
+              (device source)
+              (mount-point target)
               (type "none")
               (flags (if writable?
                          '(bind-mount)
@@ -522,12 +519,12 @@ OUTPUTS are mapped."
             (if (getenv "GWL_CONTAINERIZE")
                 (call-with-container
                     (append %container-file-systems
+                            ;; Current directory for final outputs
+                            (list (location->file-system
+                                   (canonicalize-path ".") "/gwl" #t))
                             (map (lambda (location)
-                                   (location->file-system location #f))
-                                 '#$input-locations)
-                            (map (lambda (location)
-                                   (location->file-system location #t))
-                                 '#$output-locations))
+                                   (location->file-system location location #f))
+                                 '#$inputs))
                   (lambda ()
                     (unless (file-exists? "/bin/sh")
                       (unless (file-exists? "/bin")
@@ -541,7 +538,14 @@ OUTPUTS are mapped."
                     (write-passwd (list passwd))
                     (write-group groups)
 
-                    (thunk))
+                    (thunk)
+
+                    ;; Copy generated files to final directory.
+                    (for-each (lambda (output)
+                                (let ((target (string-append "/gwl/" output)))
+                                  (mkdir-p (dirname target))
+                                  (copy-file output target)))
+                              (filter file-exists? '#$outputs)))
                   #:guest-uid uid
                   #:guest-gid gid)
                 (thunk)))))))
@@ -601,6 +605,7 @@ and returns its location."
                                                   '((gnu build accounts)
                                                     (gnu build linux-container)
                                                     (gnu system file-systems)
+                                                    (guix build utils)
                                                     (guix search-paths)))
                             #~(begin
                                 #$@(if (null? packages) '()
