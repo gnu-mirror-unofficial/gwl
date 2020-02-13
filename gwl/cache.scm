@@ -1,4 +1,4 @@
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -120,21 +120,27 @@ prefix for its outputs."
       (and=> (assoc-ref hashes process)
              (cut string-append (%cache-root) "/" <> "/")))))
 
+(define (directory? file)
+  (and=> (stat file #f)
+         (lambda (st) (eq? 'directory (stat:type st)))))
+
 (define (cache! file cache-prefix)
   "Cache FILE by linking it to the directory CACHE-PREFIX."
-  (mkdir-p (string-append cache-prefix (dirname file)))
-  ;; TODO: cross-device links don't work, of course.  Copy?  Symlink?
-  ;; Make this configurable?
-  (let ((cached-file (string-append cache-prefix file)))
-    (when (file-exists? cached-file)
-      (delete-file cached-file))
-    (link file cached-file)))
+  (unless directory?
+    (mkdir-p (string-append cache-prefix (dirname file)))
+    ;; TODO: cross-device links don't work, of course.  Copy?  Symlink?
+    ;; Make this configurable?
+    (let ((cached-file (string-append cache-prefix file)))
+      (when (file-exists? cached-file)
+        (delete-file cached-file))
+      (link file cached-file))))
 
 (define (restore! file cache-prefix)
   "Restore FILE from the cache at CACHE-PREFIX."
-  (mkdir-p (dirname file))
-  (when (file-exists? file)
-    (delete-file file))
-  ;; TODO: cross-device links don't work, of course.  Copy?  Symlink?
-  ;; Make this configurable?
-  (link (string-append cache-prefix file) file))
+  (unless directory?
+    (mkdir-p (dirname file))
+    (when (file-exists? file)
+      (delete-file file))
+    ;; TODO: cross-device links don't work, of course.  Copy?  Symlink?
+    ;; Make this configurable?
+    (link (string-append cache-prefix file) file)))
