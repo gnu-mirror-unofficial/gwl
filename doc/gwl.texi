@@ -55,6 +55,7 @@ This document describes the Guix Workflow Language version @value{VERSION}.
 * Code Snippets::               Embedding scripts.
 * Defining a Workflow::         Combine processes to build a workflow.
 * Process Engines::             Generating executable pipeline scripts.
+* Invoking guix workflow::      Running workflows.
 
 * Acknowledgments::             Thanks!
 * GNU Free Documentation License::  The license of this manual.
@@ -657,6 +658,69 @@ it generates a shell script, with the difference that it also includes
 resource variable definitions for submission to a Grid Engine
 scheduling system.  The resource variables are derived from the
 process @code{run-time} field.
+
+@c *********************************************************************
+@node Invoking guix workflow
+@chapter Invoking @command{guix workflow}
+
+The Guix Workflow Language extends your Guix installation with a new
+sub-command: @command{guix workflow}.  Here are some of the options
+the command accepts:
+
+@table @code
+@item --input=@var{name}[=@var{file}]
+@itemx -i @var{name}[=@var{file}]
+A workflow may have so-called free inputs, inputs that are not
+provided by any of the workflow's processes.  By default, the GWL will
+pick files from the current working directory that match the names of
+free inputs.  This option can be used to map a @var{file} with an
+arbitrary name to a free input in the workflow with the given
+@var{name}.  This option can be provided more than once.
+
+In the following example, the free input called @code{genome} is
+mapped to the file @file{/data/hg19.fa} before running the workflow
+defined in @file{analysis.w}:
+
+@example
+guix workflow --input=genome=/data/hg19.fa --run=analysis.w
+@end example
+
+@item --output=@var{location}
+@itemx -o @var{location}
+This option currently has no effect.
+
+@item --engine=@var{engine}
+@itemx -e @var{engine}
+Select the process engine @var{engine} as the target of the generated
+process scripts. See @ref{Process Engines}.
+
+@c TODO: how does this differ from ``--dry-run''?
+@item --prepare=@var{file}
+@itemx -p @var{file}
+Generate the process scripts and build or download all dependencies,
+but do not run the workflow process scripts corresponding to the
+workflow defined in @var{file}.
+
+@item --run=@var{file}
+@itemx -r @var{file}
+Generate the process scripts, build or download all dependencies, and
+then run the workflow process scripts corresponding to the workflow
+defined in @var{file}.
+
+@item --force
+@itemx -f
+Execute all processes, even if their outputs may have been cached from
+previous runs.
+
+@item --graph=@var{file}
+@itemx -g @var{file}
+Load the workflow @var{file} and generate a graph in Dot-format.
+
+@item --web-interface
+@itemx -w
+The GWL includes a web interface.  This option starts it.
+@end table
+
 
 @c *********************************************************************
 @node Acknowledgments
