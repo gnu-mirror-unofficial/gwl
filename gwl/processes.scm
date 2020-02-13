@@ -485,10 +485,12 @@ OUTPUTS are mapped."
                            inputs
                            output-locations)))
     (with-imported-modules (source-module-closure
-                            '((gnu build linux-container)
+                            '((gnu build accounts)
+                              (gnu build linux-container)
                               (gnu system file-systems)))
       #~(begin
-          (use-modules (gnu build linux-container)
+          (use-modules (gnu build accounts)
+                       (gnu build linux-container)
                        (gnu system file-systems))
           (define (location->file-system location writable?)
             (file-system
@@ -500,7 +502,19 @@ OUTPUTS are mapped."
                          '(bind-mount read-only)))
               (check? #f)
               (create-mount-point? #t)))
-          (let ((thunk (lambda () #$exp)))
+          (let* ((thunk (lambda () #$exp))
+                 (pwd (getpw))
+                 (uid (getuid))
+                 (gid (getgid))
+                 (passwd (let ((pwd (getpwuid (getuid))))
+                           (password-entry
+                            (name (passwd:name pwd))
+                            (real-name (passwd:gecos pwd))
+                            (uid uid) (gid gid) (shell "/bin/sh")
+                            (directory (passwd:dir pwd)))))
+                 (groups (list (group-entry (name "users") (gid gid))
+                               (group-entry (gid 65534) ;the overflow GID
+                                            (name "overflow")))))
             (if (getenv "GWL_CONTAINERIZE")
                 (call-with-container
                     (append %container-file-systems
@@ -515,7 +529,17 @@ OUTPUTS are mapped."
                       (unless (file-exists? "/bin")
                         (mkdir "/bin"))
                       (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh"))
-                    (thunk)))
+
+                    ;; Create a dummy /etc/passwd to satisfy applications that demand
+                    ;; to read it.
+                    (unless (file-exists? "/etc")
+                      (mkdir "/etc"))
+                    (write-passwd (list passwd))
+                    (write-group groups)
+
+                    (thunk))
+                  #:guest-uid uid
+                  #:guest-gid gid)
                 (thunk)))))))
 
 ;;; ---------------------------------------------------------------------------
@@ -570,7 +594,8 @@ and returns its location."
                  ;; here, or else containerization or search path
                  ;; magic simply won't work at runtime on all targets.
                  (exp* -> (with-imported-modules (source-module-closure
-                                                  '((gnu build linux-container)
+                                                  '((gnu build accounts)
+                                                    (gnu build linux-container)
                                                     (gnu system file-systems)
                                                     (guix search-paths)))
                             #~(begin
