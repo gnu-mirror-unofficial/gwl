@@ -579,8 +579,6 @@ keyword tags."
   "Build a procedure that transforms the process PROCESS into a script
 and returns its location."
   (lambda* (process #:key workflow (input-files '()))
-    (unless (process? process)
-      (error (format #f "This is not a process!~%")))
     (let* ((name (process-full-name process))
            (exp (procedure->gexp process))
            (make-wrapper (process-engine-wrapper engine))
