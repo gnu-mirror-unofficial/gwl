@@ -28,6 +28,19 @@ used at GWL build time.
 - add a procedure reference
 - document (gwl utils): “on”, “expand”, “load-workflow”, etc
 
+* containerization
+- mount the GWL cache directories for inputs and outputs (not the full cache)
+
+* catch Ctrl-C and abort execution of all processes, not just the current one
+
+* --output option has no effect!
+This should serve as a prefix for all output files.  But how would this affect processes that use output files as inputs?
+
+* add gettext support for all output
+
+* add verbosity control
+All the GWL output (such as “Executing” or “Skipping”) should respond to verbosity settings.
+
 * add support for guile-ssh to submit jobs via SSH
 or can we just use “guix deploy” directly?
 
@@ -71,4 +84,7 @@ process foo
 
 Or rather: let the “resources” field accept an arbitrary list of resource values.
 
+* use guile-config for CLI argument handling and help output?
+https://gitlab.com/a-sassmannshausen/guile-config
+“Guile Config is a library providing a declarative approach to application configuration specification.”
 
