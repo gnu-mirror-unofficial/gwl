@@ -482,73 +482,72 @@ of PROCESS."
   "Wrap EXP, an S-expression or G-expression, in a G-expression that
 causes EXP to be run in a container where the provided INPUTS are
 available.  OUTPUTS are copied outside of the container."
-  (let ()
-    (with-imported-modules (source-module-closure
-                            '((gnu build accounts)
-                              (gnu build linux-container)
-                              (gnu system file-systems)
-                              (guix build utils)))
-      #~(begin
-          (use-modules (gnu build accounts)
-                       (gnu build linux-container)
-                       (gnu system file-systems)
-                       (guix build utils))
-          (define (location->file-system source target writable?)
-            (file-system
-              (device source)
-              (mount-point target)
-              (type "none")
-              (flags (if writable?
-                         '(bind-mount)
-                         '(bind-mount read-only)))
-              (check? #f)
-              (create-mount-point? #t)))
-          (let* ((thunk (lambda () #$exp))
-                 (pwd (getpw))
-                 (uid (getuid))
-                 (gid (getgid))
-                 (passwd (let ((pwd (getpwuid (getuid))))
-                           (password-entry
-                            (name (passwd:name pwd))
-                            (real-name (passwd:gecos pwd))
-                            (uid uid) (gid gid) (shell "/bin/sh")
-                            (directory (passwd:dir pwd)))))
-                 (groups (list (group-entry (name "users") (gid gid))
-                               (group-entry (gid 65534) ;the overflow GID
-                                            (name "overflow")))))
-            (if (getenv "GWL_CONTAINERIZE")
-                (call-with-container
-                    (append %container-file-systems
-                            ;; Current directory for final outputs
-                            (list (location->file-system
-                                   (canonicalize-path ".") "/gwl" #t))
-                            (map (lambda (location)
-                                   (location->file-system location location #f))
-                                 '#$inputs))
-                  (lambda ()
-                    (unless (file-exists? "/bin/sh")
-                      (unless (file-exists? "/bin")
-                        (mkdir "/bin"))
-                      (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh"))
+  (with-imported-modules (source-module-closure
+                          '((gnu build accounts)
+                            (gnu build linux-container)
+                            (gnu system file-systems)
+                            (guix build utils)))
+    #~(begin
+        (use-modules (gnu build accounts)
+                     (gnu build linux-container)
+                     (gnu system file-systems)
+                     (guix build utils))
+        (define (location->file-system source target writable?)
+          (file-system
+            (device source)
+            (mount-point target)
+            (type "none")
+            (flags (if writable?
+                       '(bind-mount)
+                       '(bind-mount read-only)))
+            (check? #f)
+            (create-mount-point? #t)))
+        (let* ((thunk (lambda () #$exp))
+               (pwd (getpw))
+               (uid (getuid))
+               (gid (getgid))
+               (passwd (let ((pwd (getpwuid (getuid))))
+                         (password-entry
+                          (name (passwd:name pwd))
+                          (real-name (passwd:gecos pwd))
+                          (uid uid) (gid gid) (shell "/bin/sh")
+                          (directory (passwd:dir pwd)))))
+               (groups (list (group-entry (name "users") (gid gid))
+                             (group-entry (gid 65534) ;the overflow GID
+                                          (name "overflow")))))
+          (if (getenv "GWL_CONTAINERIZE")
+              (call-with-container
+                  (append %container-file-systems
+                          ;; Current directory for final outputs
+                          (list (location->file-system
+                                 (canonicalize-path ".") "/gwl" #t))
+                          (map (lambda (location)
+                                 (location->file-system location location #f))
+                               '#$inputs))
+                (lambda ()
+                  (unless (file-exists? "/bin/sh")
+                    (unless (file-exists? "/bin")
+                      (mkdir "/bin"))
+                    (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh"))
 
-                    ;; Create a dummy /etc/passwd to satisfy applications that demand
-                    ;; to read it.
-                    (unless (file-exists? "/etc")
-                      (mkdir "/etc"))
-                    (write-passwd (list passwd))
-                    (write-group groups)
+                  ;; Create a dummy /etc/passwd to satisfy applications that demand
+                  ;; to read it.
+                  (unless (file-exists? "/etc")
+                    (mkdir "/etc"))
+                  (write-passwd (list passwd))
+                  (write-group groups)
 
-                    (thunk)
+                  (thunk)
 
-                    ;; Copy generated files to final directory.
-                    (for-each (lambda (output)
-                                (let ((target (string-append "/gwl/" output)))
-                                  (mkdir-p (dirname target))
-                                  (copy-file output target)))
-                              (filter file-exists? '#$outputs)))
-                  #:guest-uid uid
-                  #:guest-gid gid)
-                (thunk)))))))
+                  ;; Copy generated files to final directory.
+                  (for-each (lambda (output)
+                              (let ((target (string-append "/gwl/" output)))
+                                (mkdir-p (dirname target))
+                                (copy-file output target)))
+                            (filter file-exists? '#$outputs)))
+                #:guest-uid uid
+                #:guest-gid gid)
+              (thunk))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; ADDITIONAL FUNCTIONS
