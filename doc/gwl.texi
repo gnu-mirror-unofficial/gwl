@@ -707,6 +707,11 @@ Generate the process scripts, build or download all dependencies, and
 then run the workflow process scripts corresponding to the workflow
 defined in @var{file}.
 
+@item --dry-run
+@itemx -n
+Prepare the scripts and the environments but don't actually run the
+processes.  Only show what commands would be run.
+
 @item --force
 @itemx -f
 Execute all processes, even if their outputs may have been cached from
