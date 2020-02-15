@@ -238,7 +238,7 @@ contains lists of processes that can be executed in parallel."
     (or (order-function (workflow-processes workflow)
                         (workflow-restrictions workflow))
         (error (format (current-error-port)
-                       "Error: Cannot determine process execution order.~%")))))
+                       "error: Cannot determine process execution order.~%")))))
 
 (define (workflow-kons workflow proc)
   "Construct a procedure from the single-argument procedure PROC that
@@ -405,7 +405,7 @@ container."
                       (let ((retval (apply system* command)))
                         (unless (zero? retval)
                           (format (current-error-port)
-                                  "Error: process `~a' failed with return value ~a.~%"
+                                  "error: process `~a' failed with return value ~a.~%"
                                   (process-name process)
                                   retval)
                           (exit retval)))
@@ -418,7 +418,7 @@ container."
                       (for-each (lambda (output)
                                   (unless (file-exists? (string-append (getcwd) "/" output))
                                     (format (current-error-port)
-                                            "Error: process `~a' failed to produce output ~a.~%"
+                                            "error: process `~a' failed to produce output ~a.~%"
                                             (process-name process)
                                             output)
                                     (exit 1)))
