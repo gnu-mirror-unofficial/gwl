@@ -364,7 +364,8 @@ of PROCESS."
                  (for-each (lambda (pair)
                              (setenv (car pair) (cdr pair)))
                            '#$(process->env process))
-                 (exit (zero? (system* "python3" "-c" #$code)))))))
+                 (let ((retval (system* "python3" "-c" #$code)))
+                   (or (zero? retval) (exit retval)))))))
 
 (define language-r
   (make <language>
@@ -378,7 +379,8 @@ of PROCESS."
                    (for-each (lambda (pair)
                                (setenv (car pair) (cdr pair)))
                              '#$(process->env process))
-                   (exit (zero? (apply system* "Rscript" '#$args))))))))
+                   (let ((retval (apply system* "Rscript" '#$args)))
+                     (or (zero? retval) (exit retval))))))))
 
 (define language-bash
   (make <language>
@@ -388,7 +390,8 @@ of PROCESS."
                  (for-each (lambda (pair)
                              (setenv (car pair) (cdr pair)))
                            '#$(process->env process))
-                 (exit (zero? (system* "bash" "-c" #$code)))))))
+                 (let ((retval (system* "bash" "-c" #$code)))
+                   (or (zero? retval) (exit retval)))))))
 
 (define language-sh
   (make <language>
@@ -398,8 +401,9 @@ of PROCESS."
                  (for-each (lambda (pair)
                              (setenv (car pair) (cdr pair)))
                            '#$(process->env process))
-                 (exit (zero? (system* "/bin/sh"
-                                       "-c" #$code)))))))
+                 (let ((retval (system* "/bin/sh"
+                                        "-c" #$code)))
+                   (or (zero? retval) (exit retval)))))))
 
 (define languages
   (list language-sh
