@@ -44,7 +44,7 @@
                 #:select
                 (%store-monad
                  with-store
-                 run-with-store 
+                 run-with-store
                  store-lift
                  requisites))
   #:use-module ((guix modules)
@@ -612,7 +612,7 @@ and returns its location."
                                                            (cons ,profile
                                                                  ',packages))))
                                 #$(if out `(setenv "out" ,out) "")
-                                (setenv "_GWL_PROFILE" #$profile)                                        
+                                (setenv "_GWL_PROFILE" #$profile)
                                 #$exp)))
                  (lowered (lower-gexp exp*))
                  (inputs -> (cons* (derivation-input profile)

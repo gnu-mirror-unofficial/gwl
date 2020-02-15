@@ -29,7 +29,7 @@
 ;;; ---------------------------------------------------------------------------
 
 ;;
-;; A process-engine determines how a process is executed. 
+;; A process-engine determines how a process is executed.
 ;;
 (define-class <process-engine> ()
   (name

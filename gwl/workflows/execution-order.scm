@@ -61,7 +61,5 @@ and adhere to the dependencies provided in DEPENDENCIES."
 (define* (graph-execution-order processes dependencies #:optional (order '()))
   "Returns the list of PROCESSES, ordered such that each list contains a
 sequential output of a branch in the dependency graph defined by
-DEPENDENCIES."
-  
-  )
+DEPENDENCIES.")
 
