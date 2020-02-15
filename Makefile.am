@@ -18,8 +18,8 @@
 
 include guile.am
 
-moddir=$(prefix)/share/guile/site/@GUILE_EFFECTIVE_VERSION@
-godir=$(libdir)/guile/@GUILE_EFFECTIVE_VERSION@/site-ccache
+moddir=$(prefix)/share/guile/site/$(GUILE_EFFECTIVE_VERSION)
+godir=$(libdir)/guile/$(GUILE_EFFECTIVE_VERSION)/site-ccache
 
 SOURCES =                                                 \
   gwl/config.scm                                          \
@@ -54,7 +54,7 @@ SOURCES =                                                 \
   gwl/www/util.scm                                        \
   guix/scripts/workflow.scm
 
-assetsdir = $(prefix)/share/@PACKAGE@
+assetsdir = $(prefix)/share/$(PACKAGE)
 nobase_dist_assets_DATA =                                 \
   gwl/static/css/main.css                                 \
   gwl/static/fonts/FiraMono-Regular.ttf                   \
@@ -66,7 +66,7 @@ nobase_dist_assets_DATA =                                 \
   gwl/static/images/grid.png                              \
   gwl/static/images/logo.png
 
-examplesdir = $(prefix)/share/@PACKAGE@/doc/examples
+examplesdir = $(prefix)/share/$(PACKAGE)/doc/examples
 dist_examples_DATA =                                      \
   doc/examples/simple.scm                                 \
   doc/examples/simple-wisp.w                              \
