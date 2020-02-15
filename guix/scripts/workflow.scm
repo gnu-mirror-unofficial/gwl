@@ -101,6 +101,9 @@ There is NO WARRANTY, to the extent permitted by law.
         (option '(#\f "force") #f #f
                 (lambda (opt name arg result)
                   (alist-cons 'force #t result)))
+        (option '(#\c "container") #f #f
+                (lambda (opt name arg result)
+                  (alist-cons 'container #t result)))
         (option '(#\g "graph") #t #f
                 (lambda (opt name arg result)
                   (alist-cons 'query 'graph
@@ -145,14 +148,19 @@ There is NO WARRANTY, to the extent permitted by law.
            (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
            (case action
-             ((prepare) (workflow-prepare wf engine))
+             ((prepare) (workflow-prepare
+                         wf engine
+                         #:containerize?
+                         (assoc-ref opts 'container)))
              ((run)     (workflow-run wf engine
                                       #:inputs (filter-map (lambda (val)
                                                              (and (eq? (car val) 'input)
                                                                   (cdr val)))
                                                            opts)
                                       #:dry-run? (assoc-ref opts 'dry-run)
-                                      #:force? (assoc-ref opts 'force))))))
+                                      #:force? (assoc-ref opts 'force)
+                                      #:containerize?
+                                      (assoc-ref opts 'container))))))
        #t)
       ;; Handle workflow visualization
       ('graph

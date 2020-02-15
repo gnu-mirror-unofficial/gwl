@@ -15,7 +15,7 @@
 
 (define-module (gwl cache)
   #:use-module ((gwl processes)
-                #:select (process->script process-inputs))
+                #:select (process-inputs))
   #:use-module ((gwl workflows)
                 #:select (workflow-restrictions))
   #:use-module ((gwl workflows utils)
@@ -47,12 +47,11 @@
 (define %cache-root (make-parameter "/tmp/gwl"))
 (define %cache-delay (make-parameter 0))
 
-(define (workflow->data-hashes workflow processes free-inputs-map engine)
+(define (workflow->data-hashes workflow processes free-inputs-map make-script)
   "Return an alist associating each of the WORKFLOW's PROCESSES with
 the hash of all the process scripts used to generate their outputs.
 FREE-INPUTS-MAP is an alist of input names to file names that must be
 considered when computing the hash."
-  (define make-script (process->script engine))
   (define graph (workflow-restrictions workflow))
 
   ;; Compute hashes for chains of scripts.
@@ -105,7 +104,8 @@ considered when computing the hash."
                     (u8-list->bytevector hashes))))))
          (fold kons input-hashes processes))))
 
-(define (make-process->cache-prefix workflow free-inputs-map ordered-processes engine)
+(define (make-process->cache-prefix workflow free-inputs-map ordered-processes
+                                    make-script)
   "Return a procedure that takes a process and returns the cache
 prefix for its outputs."
   (let ((hashes (workflow->data-hashes workflow
@@ -115,7 +115,7 @@ prefix for its outputs."
                                                      (l (list l)))
                                                    ordered-processes)
                                        free-inputs-map
-                                       engine)))
+                                       make-script)))
     (lambda (process)
       (and=> (assoc-ref hashes process)
              (cut string-append (%cache-root) "/" <> "/")))))

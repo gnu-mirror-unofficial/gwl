@@ -255,26 +255,35 @@ can be used in a fold over the WORKFLOW's processes."
              (reverse item)))
       (_ (cons (proc item) acc)))))
 
-(define* (workflow-prepare workflow engine #:key (parallel? #t))
+(define* (workflow-prepare workflow engine
+                           #:key
+                           (parallel? #t)
+                           containerize?)
   "Print scripts to be run for WORKFLOW given ENGINE."
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
   (for-each (lambda (command)
               (display command) (newline))
-            (reverse (fold (workflow-kons workflow (process->script engine))
+            (reverse (fold (workflow-kons
+                            workflow
+                            (process->script engine #:containerize? containerize?))
                            '() ordered-processes))))
 
 (define* (workflow-run workflow engine
                        #:key
                        (inputs '())
                        (parallel? #t)
+                       containerize?
                        dry-run?
                        force?)
   "Run the WORKFLOW with the given process ENGINE.  When PARALLEL? is
 #T try to run independent processes in parallel.  When DRY-RUN? is #T
 only display what would be done.  When FORCE? is #T ignore the cache.
 INPUTS is a list of strings mapping the names of free workflow inputs
-to existing files."
+to existing files.
+
+When CONTAINERIZE? is #T build a process script that spawns a
+container."
   (define inputs-map
     (match (map (lambda (value)
                   ;; A mapping is optional, so normalize it.
@@ -333,7 +342,7 @@ to existing files."
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
   (define (run input-files)
-    (let ((make-script (process->script engine))
+    (let ((make-script (process->script engine #:containerize? containerize?))
           (runner (process-engine-runner engine)))
       (define process->cache-prefix
         (make-process->cache-prefix workflow
@@ -346,7 +355,7 @@ to existing files."
                                             (map (lambda (x) (list x x))
                                                  unspecified-inputs))
                                     ordered-processes
-                                    engine))
+                                    make-script))
       (define cached?
         (if force?
             (const #f)

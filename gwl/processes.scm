@@ -515,39 +515,37 @@ available.  OUTPUTS are copied outside of the container."
                (groups (list (group-entry (name "users") (gid gid))
                              (group-entry (gid 65534) ;the overflow GID
                                           (name "overflow")))))
-          (if (getenv "GWL_CONTAINERIZE")
-              (call-with-container
-                  (append %container-file-systems
-                          ;; Current directory for final outputs
-                          (list (location->file-system
-                                 (canonicalize-path ".") "/gwl" #t))
-                          (map (lambda (location)
-                                 (location->file-system location location #f))
-                               '#$inputs))
-                (lambda ()
-                  (unless (file-exists? "/bin/sh")
-                    (unless (file-exists? "/bin")
-                      (mkdir "/bin"))
-                    (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh"))
+          (call-with-container
+              (append %container-file-systems
+                      ;; Current directory for final outputs
+                      (list (location->file-system
+                             (canonicalize-path ".") "/gwl" #t))
+                      (map (lambda (location)
+                             (location->file-system location location #f))
+                           '#$inputs))
+            (lambda ()
+              (unless (file-exists? "/bin/sh")
+                (unless (file-exists? "/bin")
+                  (mkdir "/bin"))
+                (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh"))
 
-                  ;; Create a dummy /etc/passwd to satisfy applications that demand
-                  ;; to read it.
-                  (unless (file-exists? "/etc")
-                    (mkdir "/etc"))
-                  (write-passwd (list passwd))
-                  (write-group groups)
+              ;; Create a dummy /etc/passwd to satisfy applications that demand
+              ;; to read it.
+              (unless (file-exists? "/etc")
+                (mkdir "/etc"))
+              (write-passwd (list passwd))
+              (write-group groups)
 
-                  (thunk)
+              (thunk)
 
-                  ;; Copy generated files to final directory.
-                  (for-each (lambda (output)
-                              (let ((target (string-append "/gwl/" output)))
-                                (mkdir-p (dirname target))
-                                (copy-file output target)))
-                            (filter file-exists? '#$outputs)))
-                #:guest-uid uid
-                #:guest-gid gid)
-              (thunk))))))
+              ;; Copy generated files to final directory.
+              (for-each (lambda (output)
+                          (let ((target (string-append "/gwl/" output)))
+                            (mkdir-p (dirname target))
+                            (copy-file output target)))
+                        (filter file-exists? '#$outputs)))
+            #:guest-uid uid
+            #:guest-gid gid)))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; ADDITIONAL FUNCTIONS
@@ -577,7 +575,7 @@ keyword tags."
 ;;; DERIVATIONS AND SCRIPTS FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
-(define (process->script engine)
+(define* (process->script engine #:key containerize?)
   "Build a procedure that transforms the process PROCESS into a script
 and returns its location."
   (lambda* (process #:key workflow (input-files '()))
@@ -593,19 +591,21 @@ and returns its location."
                           (map search-path-specification->sexp
                                (manifest-search-paths manifest))))
            (out (process-output-path process))
+           ;; TODO: with-imported-modules does not support nesting!
+           ;; So we need to list all the modules right here, or else
+           ;; containerization or search path magic simply won't work
+           ;; at runtime on all targets.
+           (modules (if containerize?
+                        '((gnu build accounts)
+                          (gnu build linux-container)
+                          (gnu system file-systems)
+                          (guix build utils)
+                          (guix search-paths))
+                        '((guix search-paths))))
            (drv
             (mlet* %store-monad
                 ((profile (profile-derivation manifest))
-                 ;; TODO: with-imported-modules does not support
-                 ;; nesting!  So we need to list all the modules right
-                 ;; here, or else containerization or search path
-                 ;; magic simply won't work at runtime on all targets.
-                 (exp* -> (with-imported-modules (source-module-closure
-                                                  '((gnu build accounts)
-                                                    (gnu build linux-container)
-                                                    (gnu system file-systems)
-                                                    (guix build utils)
-                                                    (guix search-paths)))
+                 (exp* -> (with-imported-modules (source-module-closure modules)
                             #~(begin
                                 #$@(if (null? packages) '()
                                        `((use-modules (guix search-paths))
@@ -626,15 +626,17 @@ and returns its location."
                  (closure ((store-lift requisites) items))
                  ;; Build everything
                  (built (built-derivations closure))
-                 (script -> (containerize exp*
-                                          #:inputs
-                                          (append closure
-                                                  ;; Data inputs
-                                                  (process-inputs process)
-                                                  ;; Files mapped to free inputs
-                                                  input-files)
-                                          #:outputs
-                                          (process-outputs process))))
+                 (script -> (if containerize?
+                                (containerize exp*
+                                              #:inputs
+                                              (append closure
+                                                      ;; Data inputs
+                                                      (process-inputs process)
+                                                      ;; Files mapped to free inputs
+                                                      input-files)
+                                              #:outputs
+                                              (process-outputs process))
+                                exp*)))
               (gexp->script (string-append "gwl-" name ".scm") script))))
       (with-store store
         (run-with-store store

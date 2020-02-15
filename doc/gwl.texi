@@ -712,6 +712,20 @@ defined in @var{file}.
 Execute all processes, even if their outputs may have been cached from
 previous runs.
 
+@cindex container
+@cindex user namespaces
+@cindex isolate processes
+@item --container
+@itemx -c
+Run each process inside of an isolated environment with file system
+virtualization and user namespaces.  Only declared input files will be
+available at execution time, and only declared output files will be
+stored.  This is a great option to use when you want to make sure that
+your processes only depend on state that you have declared.  A
+downside is that generated output files cannot be written to the
+target directories directly but are copied from the container to the
+file system.
+
 @item --graph=@var{file}
 @itemx -g @var{file}
 Load the workflow @var{file} and generate a graph in Dot-format.
