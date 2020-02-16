@@ -13,53 +13,19 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (guix build-system gnu)
-             (guix packages)
-             ((guix licenses) #:prefix license:)
-             (gnu packages autotools)
-             (gnu packages gnupg)
-             (gnu packages guile)
-             (gnu packages guile-xyz)
-             (gnu packages graphviz)
+(use-modules (guix packages)
              (gnu packages package-management)
-             (gnu packages pkg-config)
-             (gnu packages tex)
-             (gnu packages texinfo))
+             (gnu packages tex))
 
-(define-public gwl
+(define-public gwl/devel
   (package
-    (name "gwl")
-    (version "0.1.1")
+    (inherit gwl)
     (source #f)
-    (build-system gnu-build-system)
     (arguments
      '(#:make-flags
        '("GUILE_AUTO_COMPILE=0")))
     (native-inputs
-     `(("autoconf" ,autoconf)
-       ("automake" ,automake)
-       ("pkg-config" ,pkg-config)
-       ("texinfo" ,texinfo)
-       ;; This is only needed for make distcheck
-       ("texlive" ,texlive-tiny)
-       ("graphviz" ,graphviz)))
-    (inputs
-     `(("guile" ,guile-2.2)))
-    (propagated-inputs
-     `(("guix" ,guix)
-       ("guile-commonmark" ,guile-commonmark)
-       ("guile-gcrypt" ,guile-gcrypt)
-       ("guile-pfds" ,guile-pfds)
-       ("guile-syntax-highlight" ,guile-syntax-highlight)
-       ("guile-wisp" ,guile-wisp)))
-    (home-page "https://www.guixwl.org")
-    (synopsis "Workflow management extension for GNU Guix")
-    (description "This project provides two subcommands to GNU Guix and
-introduces two record types that provide a workflow management extension built
-on top of GNU Guix.")
-    ;; The Scheme modules in guix/ and gnu/ are licensed GPL3+,
-    ;; the web interface modules in gwl/ are licensed AGPL3+,
-    ;; and the fonts included in this package are licensed OFL1.1.
-    (license (list license:gpl3+ license:agpl3+ license:silofl1.1))))
+     `(("texlive" ,texlive-tiny) ; for make distcheck
+       ,@(package-native-inputs gwl)))))
 
-gwl
+gwl/devel
