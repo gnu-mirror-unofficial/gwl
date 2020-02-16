@@ -24,12 +24,10 @@
 (define page-title-prefix "Guix Workflow Language | ")
 
 (define pages
-  '(("/"                "Home")
-    ("/getting-started" "Getting started")
-    ("/beyond-started"  "Beyond started")
-    ("/extended-start"  "Extended start")
-    ;("/workflow-viewer" "Workflow viewer")
-    ("/community"       "Community")))
+  '(("/"           "Home")
+    ("/tutorial"   "Tutorial")
+    ("/manual"     "Manual")
+    ("/community"  "Community")))
 
 (define (page-partial-main-menu request-path)
   `(ul ,(map (match-lambda

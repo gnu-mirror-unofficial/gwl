@@ -43,11 +43,9 @@ SOURCES =                                                 \
   gwl/web-interface.scm                                   \
   gwl/www/config.scm                                      \
   gwl/www/pages.scm                                       \
-  gwl/www/pages/beyond-started.scm                        \
+  gwl/www/pages/tutorial.scm                              \
   gwl/www/pages/community.scm                             \
   gwl/www/pages/error.scm                                 \
-  gwl/www/pages/extended-start.scm                        \
-  gwl/www/pages/getting-started.scm                       \
   gwl/www/pages/welcome.scm                               \
   gwl/www/pages/workflow-viewer.scm                       \
   gwl/www/render.scm                                      \

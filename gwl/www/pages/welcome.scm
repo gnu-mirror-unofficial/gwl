@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
+;;; Copyright © 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -35,5 +36,5 @@
 
      (div (@ (style "text-align: center;"))
           (div (@ (class "action-button"))
-               (a (@ (href "/getting-started"))
-                  "Get started"))))))
+               (a (@ (href "/tutorial"))
+                  "Get started with a tutorial"))))))
