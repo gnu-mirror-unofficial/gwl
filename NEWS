@@ -1,4 +1,4 @@
-                                                              -*- org -*-
+-*- org -*-
 #+TITLE: GWL NEWS – history of user-visible changes
 #+STARTUP: content hidestars
 
@@ -10,22 +10,27 @@ Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
   notice and this notice are preserved.
 
 * Changes in 0.2.0 (since 0.1.1)
+** Command line interface
+  * Remove the “guix process” command.
+  * Remove GUIX_WORKFLOW_PATH; load workflows from files instead.
+  * Add --container flag to enable process isolation
+** Workflow syntax
+  * Support Wisp syntax in workflow files.
   * Add syntactic sugar for defining workflows and processes.
   * Support syntax for procedures written in languages other than Guile.
   * Add graph syntax to specify process dependencies.
   * Add “auto-connect” helper to automatically link up process inputs and outputs.
-  * Add simple execution engine and use it by default instead of the bash-engine.
-  * Support Wisp syntax
-  * Remove modules “(guix processes)” and “(guix workflows)”.  Use “(gwl processes)” and “(gwl workflows)” instead.
-  * Deprecate the “restrictions” field in workflow records.
-  * Remove the “guix process” command.
-  * Remove GUIX_WORKFLOW_PATH; load workflows from files instead.
+  * Deprecate the “restrictions” field in workflow records in favor of “auto-connect” and “graph” syntax in the “processes” field.
   * Fields of the “process” form that expect lists now also accept multiple values.
-  * Remove “define-dynamically” macro
   * Add “on” procedure for application of higher-order functions to collections
   * Add “expand” procedure to expand variables in file name templates
+** Execution engines
+  * Add simple execution engine and use it by default instead of the bash-engine.
+** Programming interface
+  * Remove modules “(guix processes)” and “(guix workflows)”.  Use “(gwl processes)” and “(gwl workflows)” instead.
+  * Remove “define-dynamically” macro
   * Use GOOPS instead of “(guix records)”
-  * Add --container flag to enable process isolation
+** Documentation
   * Add manual in Texinfo format
 * Changes in 0.1.1 (since 0.1.0)
   * Disable interpreting shell escape characters.
