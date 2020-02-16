@@ -449,6 +449,115 @@ that you can use to define a number of similar processes.  In the end
 you have the three processes @code{show-fruit}, @code{show-kitchen},
 and @code{show-table}.
 
+@node Useful procedures
+@section Useful procedures
+@cindex (gwl utils)
+@cindex Helper procedures
+@cindex Utilities
+
+The @code{(gwl utils)} module provides a number of useful helpers that
+are intended to simplify common tasks when defining processes.  The
+helpers defined by this module are all available by default.
+
+@cindex on, helper procedure
+@cindex reorder higher order function application
+@deffn {Scheme Procedure} on @var{collection} @var{higher} @var{proc}
+The @code{on} procedure is an alternative way to express the
+application of a higher order function to some collection.  The only
+purpose of this procedure is to improve legibility when using Wisp
+syntax, as it allows one to avoid leading dots.  The following two
+expressions are equivalent:
+
+@example
+;; With "on"
+on numbers map
+   lambda (number)
+     + number 10
+
+;; Without "on"
+map
+  lambda (number)
+    + number 10
+  . samples
+@end example
+@end deffn
+
+@cindex expand, helper procedure
+@cindex expand file name templates
+@cindex file name expansion
+@deffn {Scheme Procedure} expand @var{file-name-part}@dots{}
+This procedure returns a list of file names by combining any number of
+file name parts given as arguments.  A file name part can either be a
+string or a list of strings.  This is very useful when you need to
+generate a list of input or output file names.
+
+@example
+(expand "/home/"
+        '("me" "you" "them")
+        "/data/"
+        '("old" "new"))
+
+=> '("/home/me/data/old"
+     "/home/me/data/new"
+     "/home/you/data/old"
+     "/home/you/data/new"
+     "/home/them/data/old"
+     "/home/them/data/new")
+@end example
+@end deffn
+
+@cindex pick, helper procedure
+@cindex pick elements from a list
+@cindex select tagged items
+@deffn {Scheme Procedure} pick [@var{n}] @var{key} @var{collection}
+This procedure allows you to pick a named item from a @var{collection}
+by looking for the specified keyword @var{key}.  Optionally, you can
+provide a selector procedure or index @var{n} as the first argument.
+Without a selector the first item matching the given @var{key} will be
+returned.  When the selector is @code{*} all items following the
+@var{key} (up to the next tag) will be returned.  If the selector is a
+number it is used as a zero-based index into the list of items
+following the @var{key}.  If the selector is a procedure it is applied
+to the list of items following the @var{key}.
+
+@example
+define collection
+  list
+    . "one"
+    . "two"
+    . "three"
+    . mine: "four"
+    . "five"
+    . yours: "six"
+
+pick mine: collection
+
+; => "four"
+
+pick * mine: collection
+
+; => '("four" "five")
+
+pick second mine: collection
+
+; => "five"
+
+pick 0 yours: collection
+
+; => "six"
+@end example
+@end deffn
+
+@cindex load-workflow
+@cindex load a workflow
+@deffn {Scheme Syntax} load-workflow @var{file}
+This macro lets you load a workflow from the given @var{file}.  The
+file must evaluate to a workflow value.  This macro is useful for when
+you want to extend previously defined workflows.  The argument
+@var{file} is expected to be a file name relative to the file invoking
+@code{load-workflow}.
+@end deffn
+
 @c *********************************************************************
 @node Code Snippets
 @chapter Code Snippets

@@ -26,7 +26,6 @@ used at GWL build time.
 * documentation
 - document the cache
 - add a procedure reference
-- document (gwl utils): “on”, “expand”, “load-workflow”, etc
 
 * containerization
 - mount the GWL cache directories for inputs and outputs (not the full cache)
