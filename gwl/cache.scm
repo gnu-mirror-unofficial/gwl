@@ -57,6 +57,26 @@ considered when computing the hash."
     (filter-map (lambda (input)
                   (and=> (assoc-ref free-inputs-map input) first))
                 (process-inputs process)))
+  ;; XXX: We don't hash all of the inputs, because that might be very
+  ;; expensive --- especially when done *every* time a workflow is
+  ;; supposed to be run.  We just hash the file name, the mtime and
+  ;; the file size and hope that's enough.
+
+  ;; XXX: We should probably have a cache for file hashes, so that
+  ;; hashing even large files can be acceptable as it only has to be
+  ;; done once.
+  (define input-hashes
+    (map (match-lambda
+           ((name file-name)
+            (let ((st (stat file-name)))
+              (cons file-name
+                    (bytevector->u8-list
+                     (sha256 (string->bytevector (format #f "~a~a~a"
+                                                         file-name
+                                                         (stat:mtime st)
+                                                         (stat:size st))
+                                                 "ISO-8859-1")))))))
+         free-inputs-map))
   ;; Compute hashes for chains of scripts.
   (define (kons process acc)
     (let* ((script (make-script process #:workflow workflow))
@@ -72,34 +92,13 @@ considered when computing the hash."
                      (append-map (cut assoc-ref acc <>)
                                  (or (assoc-ref graph process) '()))))
        acc)))
-
-  ;; XXX: We don't hash all of the inputs, because that might be very
-  ;; expensive --- especially when done *every* time a workflow is
-  ;; supposed to be run.  We just hash the file name, the mtime and
-  ;; the file size and hope that's enough.
-
-  ;; XXX: We should probably have a cache for file hashes, so that
-  ;; hashing even large files can be acceptable as it only has to be
-  ;; done once.
-  (let ((input-hashes
-         (map (match-lambda
-                ((name file-name)
-                 (let ((st (stat file-name)))
-                   (cons file-name
-                         (bytevector->u8-list
-                          (sha256 (string->bytevector (format #f "~a~a~a"
-                                                              file-name
-                                                              (stat:mtime st)
-                                                              (stat:size st))
-                                                      "ISO-8859-1")))))))
-              free-inputs-map)))
-    (map (match-lambda
-           ((process . hashes)
-            (cons process
-                  (bytevector->base32-string
-                   (sha256
-                    (u8-list->bytevector hashes))))))
-         (fold kons input-hashes processes))))
+  (map (match-lambda
+         ((process . hashes)
+          (cons process
+                (bytevector->base32-string
+                 (sha256
+                  (u8-list->bytevector hashes))))))
+       (fold kons input-hashes processes)))
 
 (define (make-process->cache-prefix workflow free-inputs-map ordered-processes
                                     make-script)
