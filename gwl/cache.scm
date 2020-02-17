@@ -122,7 +122,7 @@ prefix for its outputs."
 
 (define (cache! file cache-prefix)
   "Cache FILE by linking it to the directory CACHE-PREFIX."
-  (unless directory?
+  (unless (directory? file)
     (mkdir-p (string-append cache-prefix (dirname file)))
     ;; TODO: cross-device links don't work, of course.  Copy?  Symlink?
     ;; Make this configurable?
@@ -133,7 +133,7 @@ prefix for its outputs."
 
 (define (restore! file cache-prefix)
   "Restore FILE from the cache at CACHE-PREFIX."
-  (unless directory?
+  (unless (directory? file)
     (mkdir-p (dirname file))
     (when (file-exists? file)
       (delete-file file))
