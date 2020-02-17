@@ -417,12 +417,15 @@ container."
 
                       ;; Abort if declared outputs are missing.
                       (for-each (lambda (output)
-                                  (unless (file-exists? (string-append (getcwd) "/" output))
-                                    (format (current-error-port)
-                                            "error: process `~a' failed to produce output ~a.~%"
-                                            (process-name process)
-                                            output)
-                                    (exit 1)))
+                                  (let ((canonical-name (if (absolute-file-name? output)
+                                                            output
+                                                            (string-append (getcwd) "/" output))))
+                                    (unless (file-exists? canonical-name)
+                                      (format (current-error-port)
+                                              "error: process `~a' failed to produce output ~a.~%"
+                                              (process-name process)
+                                              output)
+                                      (exit 1))))
                                 (process-outputs process))
 
                       ;; Link files to the cache.
