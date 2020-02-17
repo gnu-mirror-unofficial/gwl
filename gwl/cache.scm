@@ -53,7 +53,10 @@ the hash of all the process scripts used to generate their outputs.
 FREE-INPUTS-MAP is an alist of input names to file names that must be
 considered when computing the hash."
   (define graph (workflow-restrictions workflow))
-
+  (define (process-free-inputs process)
+    (filter-map (lambda (input)
+                  (and=> (assoc-ref free-inputs-map input) first))
+                (process-inputs process)))
   ;; Compute hashes for chains of scripts.
   (define (kons process acc)
     (let* ((script (make-script process #:workflow workflow))
@@ -63,14 +66,8 @@ considered when computing the hash."
        (cons process
              (append hash
                      ;; Hash of mapped free inputs.
-                     (match (filter-map (lambda (input)
-                                          (and=> (assoc-ref free-inputs-map input) first))
-                                        (process-inputs process))
-                       (() (list))
-                       (file-names
-                        (append-map (lambda (file-name)
-                                      (assoc-ref acc file-name))
-                                    file-names)))
+                     (append-map (cut assoc-ref acc <>)
+                                 (process-free-inputs process))
                      ;; All outputs of processes this one depends on.
                      (append-map (cut assoc-ref acc <>)
                                  (or (assoc-ref graph process) '()))))
