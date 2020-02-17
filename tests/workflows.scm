@@ -128,4 +128,22 @@ make-workflow
                   (eat-salad -> p2))))))
     (workflow? wf)))
 
+(define inputs->map (@@ (gwl workflows) inputs->map))
+(test-equal "inputs->map returns the empty list for an empty list of inputs"
+  '()
+  (inputs->map '()))
+(test-equal "inputs->map returns a normalized list for plain input file names"
+  '(("this" "this")
+    ("that" "that"))
+  (inputs->map '("this" "that")))
+(test-equal "inputs->map returns a normalized list for mapped input file names"
+  '(("this" "THIS")
+    ("that" "THAT"))
+  (inputs->map '("this=THIS" "that=THAT")))
+(test-equal "inputs->map returns a normalized list for all file names"
+  '(("this" "THIS")
+    ("that" "that")
+    ("anything" "anything"))
+  (inputs->map '("this=THIS" "that" "anything")))
+
 (test-end "workflows")

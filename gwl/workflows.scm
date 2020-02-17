@@ -269,6 +269,17 @@ can be used in a fold over the WORKFLOW's processes."
                             (process->script engine #:containerize? containerize?))
                            '() ordered-processes))))
 
+(define (inputs->map inputs)
+  "Given a list of strings INPUTS of the format \"a=b\" or just \"a\",
+return a normalized mapping as a list of two element lists containing
+\"a\" and \"b\" or just \"a\" and \"a\"."
+  (map (lambda (value)
+         ;; A mapping is optional, so normalize it.
+         (if (string-contains value "=")
+             (string-split value #\=)
+             (list value value)))
+       inputs))
+
 (define* (workflow-run workflow engine
                        #:key
                        (inputs '())
@@ -284,16 +295,7 @@ to existing files.
 
 When CONTAINERIZE? is #T build a process script that spawns a
 container."
-  (define inputs-map
-    (match (map (lambda (value)
-                  ;; A mapping is optional, so normalize it.
-                  (if (string-contains value "=")
-                      (string-split value #\=)
-                      (list value value)))
-                inputs)
-      (() '())
-      (mapping mapping)))
-
+  (define inputs-map (inputs->map inputs))
   (define-values (input-names input-files)
     (match inputs-map
       (() (values '() '()))
