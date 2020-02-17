@@ -48,10 +48,10 @@
 (define %cache-delay (make-parameter 0))
 
 (define (workflow->data-hashes workflow processes free-inputs-map make-script)
-  "Return an alist associating each of the WORKFLOW's PROCESSES with
-the hash of all the process scripts used to generate their outputs.
-FREE-INPUTS-MAP is an alist of input names to file names that must be
-considered when computing the hash."
+  "Return an alist associating each of the WORKFLOW's ordered list of
+PROCESSES with the hash of all the process scripts used to generate
+their outputs.  FREE-INPUTS-MAP is an alist of input names to file
+names that must be considered when computing the hash."
   (define graph (workflow-restrictions workflow))
   (define (process-free-inputs process)
     (filter-map (lambda (input)
