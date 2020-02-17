@@ -315,12 +315,11 @@ container."
          (()
           ;; Link all mapped input files to their target locations
           ;; TODO: ensure that target directories exist.
-          (unless (null? inputs-map)
-            (for-each (match-lambda
-                        ((target source)
-                         (unless (file-exists? target)
-                           (link source target))))
-                      inputs-map))
+          (for-each (match-lambda
+                      ((target source)
+                       (unless (file-exists? target)
+                         (link source target))))
+                    inputs-map)
           #t)
          (missing
           (format (current-error-port)
