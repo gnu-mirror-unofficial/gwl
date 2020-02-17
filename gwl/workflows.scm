@@ -342,31 +342,32 @@ container."
                     #f))))))
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
+  (define make-script
+    (process->script engine #:containerize? containerize?))
+  (define runner (process-engine-runner engine))
+  (define process->cache-prefix
+    (make-process->cache-prefix workflow
+                                (append inputs-map
+                                        ;; Consider changes to
+                                        ;; unspecified inputs that are
+                                        ;; picked up from the current
+                                        ;; working directory.
+                                        (map (lambda (x) (list x x))
+                                             unspecified-inputs))
+                                ordered-processes
+                                make-script))
+  (define cached?
+    (if force?
+        (const #f)
+        (lambda (process)
+          (and (not (null? (process-outputs process)))
+               (let ((cache-prefix (process->cache-prefix process)))
+                 (every (lambda (out)
+                          (file-exists?
+                           (string-append cache-prefix out)))
+                        (process-outputs process)))))))
   (define (run input-files)
-    (let ((make-script (process->script engine #:containerize? containerize?))
-          (runner (process-engine-runner engine)))
-      (define process->cache-prefix
-        (make-process->cache-prefix workflow
-                                    (append inputs-map
-                                            ;; Consider changes to
-                                            ;; unspecified inputs that
-                                            ;; are picked up from the
-                                            ;; current working
-                                            ;; directory.
-                                            (map (lambda (x) (list x x))
-                                                 unspecified-inputs))
-                                    ordered-processes
-                                    make-script))
-      (define cached?
-        (if force?
-            (const #f)
-            (lambda (process)
-              (and (not (null? (process-outputs process)))
-                   (let ((cache-prefix (process->cache-prefix process)))
-                     (every (lambda (out)
-                              (file-exists?
-                               (string-append cache-prefix out)))
-                            (process-outputs process)))))))
+    (let ()
       (lambda* (process #:key workflow)
         (let ((cache-prefix (process->cache-prefix process)))
           (if (cached? process)
