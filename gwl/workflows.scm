@@ -320,7 +320,7 @@ container."
                        (unless (file-exists? target)
                          (link source target))))
                     inputs-map)
-          #t)
+          input-files)
          (missing
           (format (current-error-port)
                   "Missing files: ~{~%  * ~a~}.~%"
