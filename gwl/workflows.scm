@@ -367,71 +367,70 @@ container."
                            (string-append cache-prefix out)))
                         (process-outputs process)))))))
   (define (run input-files)
-    (let ()
-      (lambda* (process #:key workflow)
-        (let ((cache-prefix (process->cache-prefix process)))
-          (if (cached? process)
-              (if dry-run?
+    (lambda* (process #:key workflow)
+      (let ((cache-prefix (process->cache-prefix process)))
+        (if (cached? process)
+            (if dry-run?
+                (format (current-error-port)
+                        "Would skip process \"~a\" (cached at ~a).~%"
+                        (process-name process)
+                        cache-prefix)
+                (begin
                   (format (current-error-port)
-                          "Would skip process \"~a\" (cached at ~a).~%"
+                          "Skipping process \"~a\" (cached at ~a).~%"
                           (process-name process)
                           cache-prefix)
+                  ;; TODO: mount the cache directory in the container
+                  ;; if containerized.  Otherwise link files from
+                  ;; cache to expected location.
+                  (for-each (cut restore! <> cache-prefix)
+                            (process-outputs process))))
+
+            ;; Not cached: execute the process!
+            (let ((command (append runner
+                                   (list
+                                    (make-script
+                                     process
+                                     #:workflow workflow
+                                     #:input-files
+                                     (lset-intersection
+                                      string=?
+                                      input-files
+                                      (process-inputs process)))))))
+              (if dry-run?
+                  (format (current-error-port)
+                          "Would execute: ~{~a ~}~%" command)
                   (begin
                     (format (current-error-port)
-                            "Skipping process \"~a\" (cached at ~a).~%"
-                            (process-name process)
-                            cache-prefix)
-                    ;; TODO: mount the cache directory in the container
-                    ;; if containerized.  Otherwise link files from
-                    ;; cache to expected location.
-                    (for-each (cut restore! <> cache-prefix)
-                              (process-outputs process))))
+                            "Executing: ~{~a ~}~%" command)
+                    (let ((retval (apply system* command)))
+                      (unless (zero? retval)
+                        (format (current-error-port)
+                                "error: process `~a' failed with return value ~a.~%"
+                                (process-name process)
+                                retval)
+                        (exit retval)))
+                    ;; Wait before generated files are accessed.
+                    ;; This may be needed for distributed file
+                    ;; systems.
+                    (usleep (%cache-delay))
 
-              ;; Not cached: execute the process!
-              (let ((command (append runner
-                                     (list
-                                      (make-script
-                                       process
-                                       #:workflow workflow
-                                       #:input-files
-                                       (lset-intersection
-                                        string=?
-                                        input-files
-                                        (process-inputs process)))))))
-                (if dry-run?
-                    (format (current-error-port)
-                            "Would execute: ~{~a ~}~%" command)
-                    (begin
-                      (format (current-error-port)
-                              "Executing: ~{~a ~}~%" command)
-                      (let ((retval (apply system* command)))
-                        (unless (zero? retval)
-                          (format (current-error-port)
-                                  "error: process `~a' failed with return value ~a.~%"
-                                  (process-name process)
-                                  retval)
-                          (exit retval)))
-                      ;; Wait before generated files are accessed.
-                      ;; This may be needed for distributed file
-                      ;; systems.
-                      (usleep (%cache-delay))
+                    ;; Abort if declared outputs are missing.
+                    (for-each (lambda (output)
+                                (let ((canonical-name (if (absolute-file-name? output)
+                                                          output
+                                                          (string-append (getcwd) "/" output))))
+                                  (unless (file-exists? canonical-name)
+                                    (format (current-error-port)
+                                            "error: process `~a' failed to produce output ~a.~%"
+                                            (process-name process)
+                                            output)
+                                    (exit 1))))
+                              (process-outputs process))
 
-                      ;; Abort if declared outputs are missing.
-                      (for-each (lambda (output)
-                                  (let ((canonical-name (if (absolute-file-name? output)
-                                                            output
-                                                            (string-append (getcwd) "/" output))))
-                                    (unless (file-exists? canonical-name)
-                                      (format (current-error-port)
-                                              "error: process `~a' failed to produce output ~a.~%"
-                                              (process-name process)
-                                              output)
-                                      (exit 1))))
-                                (process-outputs process))
-
-                      ;; Link files to the cache.
-                      (for-each (cut cache! <> cache-prefix)
-                                (process-outputs process))))))))))
+                    ;; Link files to the cache.
+                    (for-each (cut cache! <> cache-prefix)
+                              (process-outputs process)))))))))
   (and=> (inputs-valid?)
          (lambda (input-files)
            (fold (workflow-kons workflow (run input-files))
