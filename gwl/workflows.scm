@@ -286,6 +286,50 @@ return a normalized mapping as a list of two element lists containing
   missing-inputs-condition?
   (files missing-inputs-files))
 
+(define (prepare-inputs workflow inputs-map)
+  "Ensure that all files in the INPUTS-MAP alist exist and are linked
+to the expected locations.  Pick unspecified inputs from the
+environment.  Return either the INPUTS-MAP alist with any additionally
+used input file names added, or raise a condition containing the list
+of missing files."
+  (define-values (input-names input-files)
+    (match inputs-map
+      (() (values '() '()))
+      (_ (apply values
+                (apply zip inputs-map)))))
+  (define unspecified-inputs
+    (lset-difference equal?
+                     (workflow-free-inputs workflow)
+                     input-names))
+
+  ;; TODO: can these two cases be merged?
+  (match unspecified-inputs
+    (()
+     ;; verify input files
+     (match (filter (negate file-exists?) input-files)
+       (()
+        ;; Link all mapped input files to their target locations
+        ;; TODO: ensure that target directories exist.
+        (for-each (match-lambda
+                    ((target source)
+                     (unless (file-exists? target)
+                       (link source target))))
+                  inputs-map)
+        inputs-map)
+       (missing
+        (raise (condition
+                (&missing-inputs (files missing)))))))
+    (missing
+     ;; Try to find the files in the environment.
+     (let* ((found (filter file-exists? missing))
+            (really-missing (lset-difference equal? missing found)))
+       (if (null? really-missing)
+           (append inputs-map
+                   (map (lambda (file) (list file file))
+                        found))
+           (raise (condition
+                   (&missing-inputs (files really-missing)))))))))
+
 (define* (workflow-run workflow engine
                        #:key
                        (inputs '())
@@ -302,50 +346,14 @@ to existing files.
 When CONTAINERIZE? is #T build a process script that spawns a
 container."
   (define inputs-map (inputs->map inputs))
-  (define-values (input-names input-files)
-    (match inputs-map
-      (() (values '() '()))
-      (_ (apply values
-                (apply zip inputs-map)))))
-
-  (define unspecified-inputs
-    (lset-difference equal?
-                     (workflow-free-inputs workflow)
-                     input-names))
-
-  (define (inputs-valid?)
-    (match unspecified-inputs
-      (()
-       ;; verify input files
-       (match (filter (negate file-exists?) input-files)
-         (()
-          ;; Link all mapped input files to their target locations
-          ;; TODO: ensure that target directories exist.
-          (for-each (match-lambda
-                      ((target source)
-                       (unless (file-exists? target)
-                         (link source target))))
-                    inputs-map)
-          input-files)
-         (missing
-          (format (current-error-port)
-                  "Missing files: ~{~%  * ~a~}.~%"
-                  missing)
-          #f)))
-      (missing
-       ;; Try to find the files in the environment.
-       ;; XXX Tell user that we pick the files from the current
-       ;; working directory.
-       ;; XXX These files would need to be mapped into the
-       ;; container.
-       (let* ((found (filter file-exists? missing))
-              (really-missing (lset-difference equal? missing found)))
-         (if (null? really-missing)
-             found
-             (begin (format (current-error-port)
-                            "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
-                            really-missing)
-                    #f))))))
+  (define inputs-map-with-extra-files
+    (guard (condition
+            ((missing-inputs-condition? condition)
+             (format (current-error-port)
+                     "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
+                     (missing-inputs-files condition))
+             (exit 1)))
+      (prepare-inputs workflow inputs-map)))
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
   (define make-script
@@ -353,13 +361,7 @@ container."
   (define runner (process-engine-runner engine))
   (define process->cache-prefix
     (make-process->cache-prefix workflow
-                                (append inputs-map
-                                        ;; Consider changes to
-                                        ;; unspecified inputs that are
-                                        ;; picked up from the current
-                                        ;; working directory.
-                                        (map (lambda (x) (list x x))
-                                             unspecified-inputs))
+                                inputs-map-with-extra-files
                                 ordered-processes
                                 make-script))
   (define cached?
@@ -372,7 +374,7 @@ container."
                           (file-exists?
                            (string-append cache-prefix out)))
                         (process-outputs process)))))))
-  (define (run input-files)
+  (define (run)
     (lambda* (process #:key workflow)
       (let ((cache-prefix (process->cache-prefix process)))
         (if (cached? process)
@@ -401,7 +403,7 @@ container."
                                      #:input-files
                                      (lset-intersection
                                       string=?
-                                      input-files
+                                      (map second inputs-map-with-extra-files)
                                       (process-inputs process)))))))
               (if dry-run?
                   (format (current-error-port)
@@ -437,7 +439,5 @@ container."
                     ;; Link files to the cache.
                     (for-each (cut cache! <> cache-prefix)
                               (process-outputs process)))))))))
-  (and=> (inputs-valid?)
-         (lambda (input-files)
-           (fold (workflow-kons workflow (run input-files))
-                 '() ordered-processes))))
+  (fold (workflow-kons workflow (run))
+        '() ordered-processes))
