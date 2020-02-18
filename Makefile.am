@@ -80,6 +80,7 @@ info_TEXINFOS = doc/gwl.texi
 TEST_EXTENSIONS = .scm
 
 SCM_TESTS = \
+  tests/cache.scm \
   tests/processes.scm \
   tests/workflows.scm \
   tests/sugar.scm \
