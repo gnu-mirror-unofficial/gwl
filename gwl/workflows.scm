@@ -27,6 +27,8 @@
   #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:use-module (oop goops)
   #:export (make-workflow
             workflow?
@@ -279,6 +281,10 @@ return a normalized mapping as a list of two element lists containing
              (string-split value #\=)
              (list value value)))
        inputs))
+
+(define-condition-type &missing-inputs &condition
+  missing-inputs-condition?
+  (files missing-inputs-files))
 
 (define* (workflow-run workflow engine
                        #:key
