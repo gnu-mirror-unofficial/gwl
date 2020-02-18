@@ -16,10 +16,12 @@
 (define-module (test-workflows)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
+  #:use-module (gwl workflows utils)
   #:use-module (gwl workflows execution-order)
   #:use-module (language wisp spec)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-64))
 
 (test-begin "workflows")
@@ -145,5 +147,104 @@ make-workflow
     ("that" "that")
     ("anything" "anything"))
   (inputs->map '("this=THIS" "that" "anything")))
+
+(define (wf3 prefix)
+  (define p1
+    (make-process
+     (name "p1")
+     (inputs (map (cut string-append prefix <>)
+                  (list "first" "second")))
+     (outputs (string-append prefix "third"))
+     (procedure '())))
+  (define p2
+    (make-process
+     (name "p2")
+     (inputs (map (cut string-append prefix <>)
+                  (list "third" "fourth")))
+     (outputs (string-append prefix "fifth"))
+     (procedure '())))
+  (define p3
+    (make-process
+     (name "p3")
+     (inputs (list (string-append prefix "fifth")))
+     (procedure '())))
+  (make-workflow
+   (name "test-workflow")
+   (processes
+    (auto-connect p1 p2 p3))))
+
+(define (make-prefix)
+  (let ((prefix (string-append (tmpnam) "/")))
+    (mkdir-p prefix)
+    prefix))
+
+(let ((prefix (make-prefix)))
+  (test-equal "workflow-free-inputs returns all free inputs"
+    (map (cut string-append prefix <>)
+         (list "first" "second" "fourth"))
+    (workflow-free-inputs (wf3 prefix))))
+
+(define input-file
+  (let* ((port (mkstemp! "/tmp/gwl-test-input-XXXXXX"))
+         (name (port-filename port)))
+    (display "this is a test input" port)
+    (close port)
+    name))
+(define (inputs-map-full prefix)
+  (list
+   (list (string-append prefix "first") input-file)
+   (list (string-append prefix "second") input-file)
+   (list (string-append prefix "fourth") input-file)))
+
+
+(define prepare-inputs (@@ (gwl workflows) prepare-inputs))
+(let* ((prefix (make-prefix))
+       (inputs-map (inputs-map-full prefix)))
+  (test-equal "prepare-inputs returns the unmodified inputs-map when all files exist"
+    inputs-map
+    (prepare-inputs (wf3 prefix) inputs-map)))
+
+(let ((prefix (make-prefix)))
+  (test-error "prepare-inputs throws a missing-inputs condition"
+              (@@ (gwl workflows) &missing-inputs)
+              (prepare-inputs (wf3 prefix) '()))
+  (test-equal "prepare-inputs throws a condition listing the missing input files"
+    (map (cut string-append prefix <>)
+         (list "first" "second" "fourth"))
+    (guard (condition
+            (((@@ (gwl workflows) missing-inputs-condition?) condition)
+             ((@@ (gwl workflows) missing-inputs-files) condition)))
+      (prepare-inputs (wf3 prefix) '()))))
+
+(let ((prefix (make-prefix)))
+  ;; Create all undeclared files
+  (for-each (lambda (name)
+              (with-output-to-file (string-append prefix name)
+                (lambda () (display name))))
+            (list "first" "second" "fourth"))
+  (test-equal "prepare-inputs adds found files to an empty inputs-map"
+    (map (lambda (name)
+           (let ((file-name (string-append prefix name)))
+             (list file-name file-name)))
+         (list "first" "second" "fourth"))
+    (prepare-inputs (wf3 prefix) '())))
+
+(let* ((prefix (make-prefix))
+       (incomplete-inputs-map
+        (list
+         (list (string-append prefix "first") input-file))))
+  ;; Create undeclared files
+  (for-each (lambda (name)
+              (with-output-to-file (string-append prefix name)
+                (lambda () (display name))))
+            (list "second" "fourth"))
+  (test-equal "prepare-inputs adds found files to the incomplete inputs-map"
+    (append incomplete-inputs-map
+            (map (lambda (name)
+                   (let ((file-name (string-append prefix name)))
+                     (list file-name file-name)))
+                 (list "second" "fourth")))
+    (prepare-inputs (wf3 prefix)
+                    incomplete-inputs-map)))
 
 (test-end "workflows")
