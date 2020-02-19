@@ -394,16 +394,15 @@ container."
                           (process-outputs process))))
 
           ;; Not cached: execute the process!
-          (let ((command (append runner
-                                 (list
-                                  (make-script
-                                   process
-                                   #:workflow workflow
-                                   #:input-files
-                                   (lset-intersection
-                                    string=?
-                                    (map second inputs-map-with-extra-files)
-                                    (process-inputs process)))))))
+          (let* ((script
+                  (make-script process
+                               #:workflow workflow
+                               #:input-files
+                               (lset-intersection
+                                string=?
+                                (map second inputs-map-with-extra-files)
+                                (process-inputs process))))
+                 (command (append runner (list script))))
             (if dry-run?
                 (format (current-error-port)
                         "Would execute: ~{~a ~}~%" command)
