@@ -9,6 +9,13 @@ Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
+* Changes in 0.2.1 (since 0.2.0)
+** Bug fixes
+- due to a faulty condition (a test whether a file is a directory),
+  process outputs were never cached.  The condition has been
+  corrected.
+- outputs with absolute file names are no longer considered missing
+- workflows without inputs no longer trigger an error
 * Changes in 0.2.0 (since 0.1.1)
 ** Command line interface
   * Remove the “guix process” command.
