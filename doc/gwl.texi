@@ -354,7 +354,45 @@ This is especially useful when submitting jobs to an HPC cluster
 scheduler such as Grid Engine, as these schedulers may give higher
 priority to jobs that declare a short run time.
 
-@c TODO: describe the complexity object
+@cindex time, complexity
+@cindex space, complexity
+@cindex threads, complexity
+@cindex seconds, run-time specification
+@cindex minutes, run-time specification
+@cindex hours, run-time specification
+@cindex kibibytes, memory specification
+@cindex kilobytes, memory specification
+@cindex mebibytes, memory specification
+@cindex megabytes, memory specification
+@cindex gibibytes, memory specification
+@cindex gigabytes, memory specification
+Resources are specified as a complexity value with the fields
+@code{space} (for memory requirements), @code{time} (for the expected
+duration of the computation), and @code{threads} (to control the
+number of CPU threads).  For convenience, memory requirements can be
+specified with the units @code{kibibytes} (or @code{KiB}),
+@code{mebibytes} (or @code{MiB}), or @code{gibibytes} (or @code{GiB}).
+Supported time units are @code{seconds}, @code{minutes}, and
+@code{hours}.
+
+Here is an example of a single-threaded process that is granted 20 MiB
+of run-time memory for a duration of 10 seconds:
+
+@example
+process stamp-inputs
+  inputs "first" "second" "third"
+  outputs "inputs.txt"
+  run-time
+    complexity
+      space 20 mebibytes
+      time  10 seconds
+      threads 1
+  # @{ echo @{@{inputs@}@} > @{@{outputs@}@} @}
+@end example
+
+When this process is executed by a scheduler that honors resource
+limits, the process will be granted at most 20 MiB of memory and will
+be killed if it has not concluded after 10 seconds.
 
 @cindex procedure, process field
 @item procedure
