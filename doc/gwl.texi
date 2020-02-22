@@ -672,6 +672,25 @@ This process will cause the following command to be executed:
 frobnicate -g hg19.fa --files a b c > result
 @end example
 
+If these two ways to access elements of a list are not enough, we
+recommend defining a variable using @code{pick} (@ref{Useful
+procedures}).  In the following example we define a variable
+@var{second-sample} inside of the @code{procedure} field to hold the
+second of the inputs after the keyword @code{samples:}, i.e. the
+string @code{the}.  We can then refer to that variable by name in the
+code snippet.
+
+@example
+process foo
+  inputs
+    . "something"
+    . samples: "in" "the" "way"
+  procedure
+    define second-sample
+      pick second samples: inputs
+    # @{ echo @{@{second-sample@}@} @}
+@end example
+
 @cindex environment variables, code snippets
 @cindex process meta data, code snippets
 You can also access process meta data through environment variables.
