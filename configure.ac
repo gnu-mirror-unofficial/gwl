@@ -17,7 +17,7 @@ dnl along with this program. If not, see <http://www.gnu.org/licenses/>.
 dnl -*- Autoconf -*-
 
 AC_INIT([GNU GWL],
-  [0.2.0],
+  [0.2.1],
   [gwl-devel@gnu.org], [gwl],
   [https://www.gnu.org/software/gwl/])
 AC_CONFIG_AUX_DIR([build-aux])
