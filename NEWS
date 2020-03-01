@@ -10,6 +10,9 @@ Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
   notice and this notice are preserved.
 
 * Changes in 0.2.1 (since 0.2.0)
+** Documentation
+- additional documentation of the “run-time” field and the “complexity” type
+- added example of how to use =pick= with local variable definitions
 ** Bug fixes
 - due to a faulty condition (a test whether a file is a directory),
   process outputs were never cached.  The condition has been
