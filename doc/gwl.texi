@@ -129,7 +129,7 @@ Here is a simple workflow example:
 @verbatiminclude examples/simple-wisp.w
 @end example
 
-This white-space sensitive syntax is called Wisp and if your familiar
+This white-space sensitive syntax is called Wisp and if you're familiar
 with Python or YAML you should feel right at home.  To use this syntax
 simply save your workflow to a file ending on @file{.w}, @file{.wisp},
 or @file{.gwl}.
