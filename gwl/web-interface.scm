@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018  Roel Janssen <roel@gnu.org>
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -56,7 +56,9 @@
             (render-scheme-page
              (uri-path (request-uri request))
              (map string->symbol path)
-             (utf8->string request-body))))))
+             (utf8->string request-body)))
+           (oops
+            (not-found (page-error-404 oops))))))
 
 (define (run-web-interface)
   (format (current-error-port)
