@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -30,12 +30,16 @@
     ("/community"  "Community")))
 
 (define (page-partial-main-menu request-path)
-  `(ul ,(map (match-lambda
-               (((? (cut string=? request-path <>)) label)
-                `(li (@ (class "active")) ,label))
-               ((url label)
-                `(li (a (@ (href ,url)) ,label))))
-             pages)))
+  `(ul ,@(map (match-lambda
+                (((? (lambda (i)
+                       (and (string? i)
+                            (string? request-path)
+                            (string=? request-path i)))) label)
+                 `((li (@ (class "active")) ,label)))
+                ((url label)
+                 `((li (a (@ (href ,url)) ,label))))
+                (_ '()))
+              pages)))
 
 (define* (page-root-template title request-path content-tree #:key (dependencies '()))
   `((html (@ (lang "en"))
