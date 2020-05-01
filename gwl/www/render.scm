@@ -60,9 +60,7 @@
     (if (or (any (cut string-contains <> "..") path)
             (not (file-exists? file-name))
             (directory? file-name))
-        (not-found (build-uri 'http
-                              #:port (web-config 'port)
-                              #:path (string-join path "/" 'prefix)))
+        (not-found (page-error-404 path))
         ;; Check file size before returning the file.
         (let ((file-stat (stat file-name)))
           (if (> (stat:size file-stat) (web-config 'max-file-size))
