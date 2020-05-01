@@ -34,7 +34,8 @@
 (define* (render-scheme-page request-path path #:optional data)
   (or (and-let* ((module (resolve-module `(gwl www pages ,@path) #:ensure #f))
                  (page-symbol (symbol-append 'page- (last path)))
-                 (page-proc (module-ref module page-symbol)))
+                 (page-proc (false-if-exception
+                             (module-ref module page-symbol))))
         (render-html (if data
                          (page-proc request-path #:post-data data)
                          (page-proc request-path))))
