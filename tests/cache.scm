@@ -24,17 +24,16 @@
   #:use-module ((rnrs io ports)
                 #:select (get-bytevector-all))
   #:use-module ((rnrs bytevectors)
-                #:select (bytevector->u8-list
+                #:select (string->utf8
+                          bytevector->u8-list
                           u8-list->bytevector))
-  #:use-module ((ice-9 iconv)
-                #:select (string->bytevector))
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-64))
 
 (test-begin "cache")
 
 (define input-file
-  (let* ((port (mkstemp! "/tmp/gwl-test-input-XXXXXX"))
+  (let* ((port (mkstemp! "/tmp/gwl-test-input華-XXXXXX"))
          (name (port-filename port)))
     (display "this is a test input" port)
     (close port)
@@ -113,11 +112,10 @@
 (define (input-file-hash file-name)
   (let ((st (stat file-name)))
     (bytevector->u8-list
-     (sha256 (string->bytevector (format #f "~a~a~a"
-                                         file-name
-                                         (stat:mtime st)
-                                         (stat:size st))
-                                 "ISO-8859-1")))))
+     (sha256 (string->utf8 (format #f "~a~a~a"
+                                   file-name
+                                   (stat:mtime st)
+                                   (stat:size st)))))))
 
 (define (hashes->hash-string hashes)
   (bytevector->base32-string

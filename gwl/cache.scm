@@ -23,14 +23,13 @@
   #:use-module ((guix base32)
                 #:select (bytevector->base32-string))
   #:use-module ((rnrs bytevectors)
-                #:select (bytevector->u8-list
+                #:select (string->utf8
+                          bytevector->u8-list
                           u8-list->bytevector))
   #:use-module ((rnrs io ports)
                 #:select (get-bytevector-all))
   #:use-module ((gcrypt hash)
                 #:select (sha256))
-  #:use-module ((ice-9 iconv)
-                #:select (string->bytevector))
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
@@ -71,11 +70,10 @@ names that must be considered when computing the hash."
             (let ((st (stat file-name)))
               (cons file-name
                     (bytevector->u8-list
-                     (sha256 (string->bytevector (format #f "~a~a~a"
-                                                         file-name
-                                                         (stat:mtime st)
-                                                         (stat:size st))
-                                                 "ISO-8859-1")))))))
+                     (sha256 (string->utf8 (format #f "~a~a~a"
+                                                   file-name
+                                                   (stat:mtime st)
+                                                   (stat:size st)))))))))
          free-inputs-map))
   ;; Compute hashes for chains of scripts.
   (define (kons process acc)
