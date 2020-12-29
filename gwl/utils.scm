@@ -32,7 +32,8 @@
             pick
             expand
 
-            wisp-suffix))
+            wisp-suffix
+            normalize-file-name))
 
 ;; Convenience procedure to simplify Wisp syntax of higher-order
 ;; procedures such as "map" by having the collection first.
@@ -351,3 +352,25 @@ information, or #f if it could not be found."
          (let* ((stack (make-stack #t handle-error tag))
                 (frame (last-frame-with-source stack)))
            (report-load-error file args frame)))))
+
+(define (normalize-file-name file-name)
+  "Return FILE-NAME after collapsing slashes, removing \".\" directory
+components, and resolving \"..\"."
+  (let* ((components
+          (string-tokenize file-name (char-set-complement (char-set #\/))))
+         (without-dots
+          (reverse
+           (fold (lambda (component result)
+                   (if (string=? ".." component)
+                       (match result
+                         ((previous . rest) rest)
+                         (_ '()))
+                       (cons component result)))
+                 '()
+                 (delete "."
+                         components))))
+         (tail (string-join without-dots "/")))
+    (string-append (if (absolute-file-name? file-name)
+                       ""
+                       ".")
+                   "/" tail)))

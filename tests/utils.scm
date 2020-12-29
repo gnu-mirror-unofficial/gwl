@@ -59,4 +59,33 @@
   '("/hello/world")
   (expand "/hello/" "wor" "ld"))
 
+
+(test-equal "normalize-file-name: collapse slashes"
+  "/hello/world"
+  (normalize-file-name "/////hello////world///"))
+
+(test-equal "normalize-file-name: remove single dots"
+  "/hello/world"
+  (normalize-file-name "//.///hello///./world/"))
+
+(test-equal "normalize-file-name: resolve double dots"
+  "/hello/world"
+  (normalize-file-name "/bye/../hello/how/are/you/../../../world"))
+
+(test-equal "normalize-file-name: ignore double dots beyond the root"
+  "/hello/world"
+  (normalize-file-name "/../../whatever/../../../bye/../hello/world"))
+
+(test-equal "normalize-file-name: ignore double dots beyond the root"
+  "/"
+  (normalize-file-name "/../../"))
+
+(test-equal "normalize-file-name: prefix relative file names 1/2"
+  "./hello/world"
+  (normalize-file-name "./what/../hello/world"))
+
+(test-equal "normalize-file-name: prefix relative file names 2/2"
+  "./hello/world"
+  (normalize-file-name "what/../hello/world"))
+
 (test-end "utils")
