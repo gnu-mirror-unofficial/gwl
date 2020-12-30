@@ -12,7 +12,7 @@ package manager.
 2. Install GWL:
 
 ```bash
-guix package -i gwl
+guix install gwl
 ```
 
 ## Getting started
