@@ -15,6 +15,7 @@
 
 (use-modules (guix packages)
              (gnu packages package-management)
+             (gnu packages guile-xyz)
              (gnu packages tex))
 
 (define-public gwl/devel
@@ -24,6 +25,9 @@
     (arguments
      '(#:make-flags
        '("GUILE_AUTO_COMPILE=0")))
+    (inputs
+     `(("guile-config" ,guile-config)
+       ,@(package-inputs gwl)))
     (native-inputs
      `(("texlive" ,texlive-tiny) ; for make distcheck
        ,@(package-native-inputs gwl)))))
