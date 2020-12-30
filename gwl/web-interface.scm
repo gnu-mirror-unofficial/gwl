@@ -61,12 +61,12 @@
            (oops
             (not-found (page-error-404 oops))))))
 
-(define (run-web-interface)
+(define* (run-web-interface #:optional (port (web-config 'port)))
   (format (current-error-port)
           "GWL web service is running at http://127.0.0.1:~a~%"
-          (web-config 'port))
+          port)
   (format (current-error-port)
           "Press C-c C-c to quit.~%")
   (run-server request-handler 'http
-              `(#:port ,(web-config 'port)
+              `(#:port ,port
                 #:addr ,INADDR_ANY)))
