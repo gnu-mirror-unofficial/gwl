@@ -1,4 +1,4 @@
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@
   #:export (%gwl-package-name
             %gwl-version
             %gwl-bug-report-address
-            %gwl-home-page-url))
+            %gwl-home-page-url
+            %gwl-git-browse-url))
 
 (define %gwl-package-name
   "@PACKAGE_NAME@")
@@ -30,3 +31,6 @@
 
 (define %gwl-home-page-url
   "@PACKAGE_URL@")
+
+(define %gwl-git-browse-url
+  "https://git.sv.gnu.org/cgit/gwl.git")

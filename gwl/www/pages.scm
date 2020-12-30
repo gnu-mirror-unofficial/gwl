@@ -16,6 +16,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages)
+  #:use-module (gwl config)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
@@ -69,5 +70,5 @@
                    (class "width-control"))
                 ,content-tree)
            (div (@ (id "footer"))
-                (p (a (@ (href "https://git.sv.gnu.org/cgit/gwl.git"))
+                (p (a (@ (href ,%gwl-git-browse-url))
                       "Download the source code of this page") ".")))))))
