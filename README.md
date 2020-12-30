@@ -1,9 +1,9 @@
 GNU Guix Workflow Language extension
 ====================================
 
-This project provides two subcommands to GNU Guix and introduces two record
-types that provide a workflow management extension built on top of GNU Guix's
-package manager.
+This project provides the "workflow" subcommand to GNU Guix and
+introduces features that provide a workflow management extension built
+on top of GNU Guix's package manager.
 
 ## Installation
 
