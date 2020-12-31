@@ -29,6 +29,29 @@
     (equal? '(this that whatever)
             (process-inputs proc))))
 
+(test-assert "make-process macro supports implicit concatenation"
+  (let ((proc (make-process
+               (name "anything" " is " "possible")
+               (procedure '(const #t)))))
+    (equal? "anything is possible"
+            (process-name proc))))
+
+(test-assert "make-process implicit concatenation does not break variable references 1/2"
+  (let* ((whatever "my-name")
+         (proc (make-process
+                (name whatever)
+                (procedure '(const #t)))))
+    (equal? "my-name"
+            (process-name proc))))
+
+(test-assert "make-process implicit concatenation does not break variable references 2/2"
+  (let* ((whatever "my-name")
+         (proc (make-process
+                (name "this is " whatever)
+                (procedure '(const #t)))))
+    (equal? "this is my-name"
+            (process-name proc))))
+
 (test-assert "make-process macro supports implicit lists that are already lists"
   (let ((proc (make-process
                (name "anything")

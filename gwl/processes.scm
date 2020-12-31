@@ -176,6 +176,7 @@
   (name
    #:accessor process-name
    #:init-keyword #:name
+   #:implicit-concatenation? #t
    #:required? #t)
   (version
    #:accessor process-version

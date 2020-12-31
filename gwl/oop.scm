@@ -58,6 +58,13 @@
                         (list-cdr-set! (memq keyword initargs)
                                        0 (cons (list value) rest)))
                        (_ #t))) ; it's a list, let it be
+
+                (and (memq #:implicit-concatenation? options)
+                     (match tail
+                       ((_ (? (negate string?) value) . rest)
+                        (list-cdr-set! (memq keyword initargs)
+                                       0 (cons (apply string-append value) rest)))
+                       (_ #t)))
                 ;; Run transformers on slot values
                 (match (memq #:transformer options)
                   ((_ transform . rest)
