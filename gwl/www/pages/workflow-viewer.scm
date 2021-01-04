@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -16,11 +16,11 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages workflow-viewer)
+  #:use-module (gwl config)
   #:use-module (gwl utils)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows graph)
   #:use-module (gwl www pages)
-  #:use-module (gwl www config)
   #:use-module (ice-9 format)
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 match)
@@ -32,8 +32,8 @@
 (define *current-filename* (make-parameter #f))
 
 (define %all-workflows
-  (let* ((dir (or (web-config 'workflows-directory)
-                  (web-config 'examples-root)))
+  (let* ((dir (or (%config 'workflows-directory)
+                  (%config 'examples-root-directory)))
          (files (filter (lambda (file)
                           (or (wisp-suffix file)
                               (string-suffix? ".scm" file)))
@@ -56,7 +56,7 @@
   (match (find-workflow-by-name workflow-name version)
     (#f `(p "Sorry, there is no matching workflow."))
     (workflow
-     (let* ((dot-file (string-append (web-config 'static-root)
+     (let* ((dot-file (string-append (%config 'assets-directory)
                                      "/graphs/" workflow-name ".dot"))
             (svg-file (string-append (dirname dot-file) "/"
                                      (basename dot-file ".dot") ".svg"))
@@ -65,7 +65,7 @@
          (with-output-to-file dot-file
            (lambda _
              (display (workflow->dot workflow))))
-         (system* (web-config 'dot) "-Tsvg" dot-file
+         (system* (%config 'dot) "-Tsvg" dot-file
                   (string-append "-o" svg-file)))
        `(img (@ (src ,web-path)
                 (style "max-height: 100%; max-width: 100%")))))))

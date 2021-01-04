@@ -3,13 +3,15 @@
 #+STARTUP: content hidestars
 
 Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
 * Changes since 0.2.1
+** Command line interface
+- Add sub-commands “run”, “graph”, and “web”; remove options from the main command.
 ** Bug fixes
 - handle caching of files with UTF-8 encoded file names
 - handle more errors in the web interface

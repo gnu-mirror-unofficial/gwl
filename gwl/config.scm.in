@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -14,7 +14,14 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl config)
-  #:export (%gwl-package-name
+  #:use-module (ice-9 match)
+  #:use-module (config)
+  #:use-module (config api)
+  #:use-module (config licenses)
+  #:export (config
+            %config
+
+            %gwl-package-name
             %gwl-version
             %gwl-bug-report-address
             %gwl-home-page-url
@@ -34,3 +41,182 @@
 
 (define %gwl-git-browse-url
   "https://git.sv.gnu.org/cgit/gwl.git")
+
+(define config
+  (configuration
+   (name '#{guix workflow}#)
+   (synopsis "Reproducible Scientific Workflows based on Guix.")
+   (description "The Guix Workflow Language (GWL) is a scientific
+computing extension to the Guix package manager.  It combines the
+specification of work units and their relationship to one another with
+the reproducible software deployment facilities of the functional
+package manager GNU Guix.  A GWL workflow will always run in a
+reproducible environment that GNU Guix automatically prepares.  The
+GWL extends your Guix installation with a single new sub-command: guix
+workflow.")
+   (subcommands
+    (list
+     (configuration
+      (name 'run)
+      (synopsis "Run a workflow")
+      (description
+       "This command runs or prepares to run a specified workflow.")
+      (arguments
+       (list
+        (argument
+         (name 'file)
+         (optional? #false)
+         (test file-exists?)
+         (handler identity)
+         (example "/path/to/my-workflow.w"))))
+      (keywords
+       (list
+        (switch
+         (name 'input)
+         (character #\i)
+         (synopsis "Specify workflow input NAME, optionally mapped to FILE")
+         (example "NAME[=FILE]")
+         (test string?))
+        (switch
+         (name 'output)
+         (character #\o)
+         (synopsis "Set LOCATION as output for a workflow")
+         (example "LOCATION"))
+        (switch
+         (name 'engine)
+         (character #\e)
+         (synopsis "Set ENGINE, e.g. for offloading to a cluster")
+         (default "simple-engine")
+         (example "ENGINE")
+         (test (lambda (value)
+                 (member value '("simple-engine"
+                                 "bash-engine"
+                                 "grid-engine")))))
+        (switch
+         (name 'force)
+         (character #\f)
+         (default #false)
+         (test boolean?)
+         (synopsis "Bypass the cache and execute all processes"))
+        (switch
+         (name 'containerize)
+         (character #\c)
+         (default #false)
+         (test boolean?)
+         (synopsis "Run the workflow in a container"))
+        (switch
+         (name 'prepare)
+         (character #\p)
+         (default #false)
+         (test boolean?)
+         (synopsis "Prepare the workflow, do not run it"))
+        (switch
+         (name 'dry-run)
+         (character #\n)
+         (default #false)
+         (test boolean?)
+         (synopsis "Prepare scripts and show what would be done")))))
+
+     (configuration
+      (name 'graph)
+      (synopsis "Visualize a workflow")
+      (description
+       "This command generates a visualization (e.g. in Graphviz Dot
+format) of the specified workflow.")
+      (arguments
+       (list
+        (argument
+         (name 'file)
+         (optional? #false)
+         (test file-exists?)
+         (handler identity)
+         (example "/path/to/my-workflow.w")))))
+
+     (configuration
+      (name 'web)
+      (synopsis "Start the web interface")
+      (description
+       "This command starts the web interface on the specified port.
+One server process handles one connection at a time.  You should start
+multiple server processes on different ports and use a load balancer
+or reverse proxy to dispatch connections to the application web
+servers.")
+      (keywords
+       (list
+        (switch
+         (name 'port)
+         (synopsis "Port on which to listen for connections")
+         (character #\p)
+         (default 5000)
+         (test integer?)
+         (handler string->number))
+        (switch
+         (name 'root)
+         (synopsis "The directory name of the web interface module file")
+         (character #false)
+         (default (dirname (search-path
+                            (map (lambda (path)
+                                   (string-append path "/gwl"))
+                                 %load-path) "web-interface.scm")))
+         (test (lambda (value)
+                 (and (string? value)
+                      (file-exists? value)))))
+        (switch
+         (name 'assets-directory)
+         (synopsis "Location of web assets (CSS, JavaScript, images)")
+         (character #false)
+         (example "/path/to/assets")
+         (default (if (getenv "GWL_UNINSTALLED")
+                      (string-append (getcwd) "/gwl/static")
+                      "@prefix@/share/@PACKAGE@/gwl/static"))
+         (test (lambda (value)
+                 (and (string? value)
+                      (file-exists? value)))))
+        (switch
+         (name 'examples-root-directory)
+         (synopsis "The name of the directory containing workflow examples")
+         (character #false)
+         (default (if (getenv "GWL_UNINSTALLED")
+                      (string-append (getcwd) "/doc/examples")
+                      "@prefix@/share/@PACKAGE@/doc/examples"))
+         (test (lambda (value)
+                 (and (string? value)
+                      (file-exists? value)))))
+        (switch
+         (name 'workflows-directory)
+         (synopsis "The name of the directory containing other workflows")
+         (character #false)
+         (default #false)
+         (test (lambda (value)
+                 (and (string? value)
+                      (file-exists? value)))))
+        (switch
+         (name 'dot)
+         (synopsis "The file name of the 'dot' command")
+         (character #false)
+         (default "@DOT@")
+         (example "/path/to/dot")
+         (test (lambda (value)
+                 (and (string? value)
+                      (file-exists? value)))))
+        (switch
+         (name 'max-file-size)
+         (synopsis "The maximum size (in bytes) of files served by the web interface")
+         (character #false)
+         (default 2500000000)
+         (test (lambda (value)
+                 (and (string? value)
+                      (file-exists? value))))))))))
+   (generate-cmdtree? #false)
+   (version "@PACKAGE_VERSION@")
+   (license gpl3+)
+   (copyright '(2016 2017 2018 2019 2020))
+   (author "Guix Workflow Language authors")))
+
+(define %config
+  (let ((codex '()))
+    (match-lambda
+      ((? codex? options)
+       (set! codex options)
+       #true)
+      (key (option-ref codex key)))))

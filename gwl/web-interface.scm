@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018  Roel Janssen <roel@gnu.org>
-;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -23,7 +23,7 @@
   #:use-module (web uri)
   #:use-module ((rnrs bytevectors) #:select (utf8->string))
   #:use-module (ice-9 match)
-  #:use-module (gwl www config)
+  #:use-module (gwl config)
   #:use-module (gwl www render)
   #:use-module (gwl www util)
   #:use-module (gwl www pages)
@@ -61,7 +61,7 @@
            (oops
             (not-found (page-error-404 oops))))))
 
-(define* (run-web-interface #:optional (port (web-config 'port)))
+(define* (run-web-interface #:optional (port (%config 'port)))
   (format (current-error-port)
           "GWL web service is running at http://127.0.0.1:~a~%"
           port)

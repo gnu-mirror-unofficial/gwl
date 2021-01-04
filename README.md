@@ -20,7 +20,7 @@ guix install gwl
 GWL has a built-in getting-started guide.  To use it, run:
 
 ```bash
-guix workflow --web-interface
+guix workflow web
 ```
 
 Then point your web browser to the following location:

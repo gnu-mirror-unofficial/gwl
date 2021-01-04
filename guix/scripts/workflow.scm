@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix scripts workflow)
+  #:use-module (config)
+  #:use-module (config api)
   #:use-module (gwl process-engines)
   #:use-module (gwl web-interface)
   #:use-module (gwl workflows graph)
@@ -22,154 +24,73 @@
   #:use-module (gwl utils)
   #:use-module (gwl ui)
   #:use-module (gwl config)
-  #:use-module (guix scripts)
   #:use-module (ice-9 match)
-  #:use-module (srfi srfi-37)
+  #:use-module ((srfi srfi-37) #:prefix s37:)
   #:use-module (srfi srfi-1)
   #:export (guix-workflow))
 
 (define *current-filename* (make-parameter #f))
-
-(define (show-help)
-  (for-each
-   (lambda (line) (display line) (newline))
-   '("Usage: guix workflow [OPTION]..."
-     "Run multiple predefined computational processes in a workflow"
-     ""
-     "  -i, --input=NAME=FILE  Specify workflow input NAME, optionally mapped to FILE"
-     "  -o, --output=LOCATION  set LOCATION as output for a workflow"
-     "  -e, --engine=ENGINE    set ENGINE, e.g. for offloading to a cluster"
-     "  -p, --prepare=FILE     Prepare to run workflow from FILE"
-     "  -r, --run=FILE         Run workflow from FILE"
-     "  -n, --dry-run          Prepare scripts and show what would be done"
-     "  -f, --force            Bypass the cache and execute all processes"
-     "  -g, --graph=FILE       Load the workflow FILE and generate a graph in Dot-format"
-     "  -w, --web-interface    Start the web interface"
-     "  -h, --help             display this help and exit"
-     "  -V, --version          display version information and exit"
-     "")))
-
-(define* (show-version-and-exit #:optional (command (car (command-line))))
-  "Display version information for COMMAND and `(exit 0)'."
-  (simple-format #t "~a (~a) ~a~%"
-                 command %gwl-package-name %gwl-version)
-  (format #t "Copyright ~a 2016--2020 ~a"
-          ;; TRANSLATORS: Translate "(C)" to the copyright symbol
-          ;; (C-in-a-circle), if this symbol is available in the user's
-          ;; locale.  Otherwise, do not translate "(C)"; leave it as-is.  */
-          (G_ "(C)")
-          (G_ "the Guix Workflow Language authors\n"))
-  (display (G_"\
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.
-"))
-  (exit 0))
-
-(define %options
-  ;; List of command-line options.
-  (list (option '(#\h "help") #f #f
-                (lambda args (show-help) (exit 0)))
-        (option '(#\V "version") #f #f
-                (lambda args (show-version-and-exit "guix workflow")))
-        (option '(#\e "engine") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'engine arg
-                              (alist-delete 'engine result))))
-        (option '(#\i "input") #t #f
-                (lambda (opt name arg result . rest)
-                  (apply values
-                         (alist-cons 'input arg result)
-                         rest)))
-        (option '(#\o "output") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'output arg
-                              (alist-delete 'output result))))
-        (option '(#\p "prepare") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'query 'prepare
-                              (alist-cons 'value arg
-                                          (alist-delete 'prepare result)))))
-        (option '(#\r "run") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'query 'run
-                              (alist-cons 'value arg
-                                          (alist-delete 'run result)))))
-        (option '(#\n "dry-run") #f #f
-                (lambda (opt name arg result)
-                  (alist-cons 'dry-run #t result)))
-        (option '(#\f "force") #f #f
-                (lambda (opt name arg result)
-                  (alist-cons 'force #t result)))
-        (option '(#\c "container") #f #f
-                (lambda (opt name arg result)
-                  (alist-cons 'container #t result)))
-        (option '(#\g "graph") #t #f
-                (lambda (opt name arg result)
-                  (alist-cons 'query 'graph
-                              (alist-cons 'value arg
-                                          (alist-delete 'graph result)))))
-        (option '(#\w "web-interface") #f #f
-                (lambda args
-                  (run-web-interface)
-                  (exit 0)))))
-
-(define %default-options
-  `((engine . "simple-engine")))
 
 ;;;
 ;;; Entry point.
 ;;;
 
 (define (guix-workflow . args)
-  (define (parse-options)
-    ;; Return the alist of option values.
-    (args-fold* args %options
-                (lambda (opt name arg result)
-                  (leave (G_ "~A: unrecognized option~%") name))
-                (lambda (arg result)
-                  (when (assq 'argument result)
-                    (leave (G_ "~A: extraneous argument~%") arg))
+  ;; We use the cdr here, because the first word will always be "guix"
+  (let ((opts (getopt-config-auto (cdr (command-line)) config)))
+    ;; Initialize %config
+    (%config opts)
 
-                  (alist-cons 'argument arg result))
-                %default-options))
-
-  (let ((opts (parse-options)))
-    (match (assoc-ref opts 'query)
+    (match (full-command opts)
+      ((_)
+       (format (current-error-port)
+               "guix workflow: missing or unknown command name~%")
+       (emit-help opts))
+      ((_ "web")
+       (let ((port (%config 'port)))
+         (run-web-interface port)))
       ;; Handle running or preparing workflows.
-      ((and (or 'prepare 'run) action)
-       (let* ((file-name (assoc-ref opts 'value))
+      ((_ "run")
+       (let* ((file-name (option-ref opts '(file)))
               (wf (parameterize ((*current-filename* file-name))
                     (load-workflow file-name)))
-              (engine-name (assoc-ref opts 'engine)))
-         (unless engine-name
-           (leave (G_ "Please provide --engine argument.~%")))
+              (engine-name (option-ref opts 'engine)))
          (let ((engine (find-engine-by-name engine-name)))
            (unless engine
              (leave (G_ "The engine ~s is not available.~%") engine-name))
-           (case action
-             ((prepare) (workflow-prepare
-                         wf engine
-                         #:containerize?
-                         (assoc-ref opts 'container)))
-             ((run)     (workflow-run wf engine
-                                      #:inputs (filter-map (lambda (val)
-                                                             (and (eq? (car val) 'input)
-                                                                  (cdr val)))
-                                                           opts)
-                                      #:dry-run? (assoc-ref opts 'dry-run)
-                                      #:force? (assoc-ref opts 'force)
-                                      #:containerize?
-                                      (assoc-ref opts 'container))))))
-       #t)
+           (if (option-ref opts 'prepare)
+               ;; Only prepare the workflow
+               (workflow-prepare
+                wf engine
+                #:containerize?
+                (option-ref opts 'container))
+
+               ;; Run the workflow
+               ;; TODO: see https://gitlab.com/a-sassmannshausen/guile-config/-/issues/15
+               (let* ((options (s37:args-fold (cdr (command-line))
+                                              (list (s37:option '(#\i "input") #t #f
+                                                                (lambda (opt name arg result . rest)
+                                                                  (apply values
+                                                                         (alist-cons 'input arg result)
+                                                                         rest))))
+                                              (lambda (opt name arg result) #f) ; ignore
+                                              (lambda (op loads) (cons op loads))
+                                              '()))
+                      (inputs (filter-map (match-lambda
+                                            (('input . val) val)
+                                            (_ #f))
+                                          options)))
+                 (workflow-run wf engine
+                               #:inputs inputs
+                               #:dry-run? (option-ref opts 'dry-run)
+                               #:force? (option-ref opts 'force)
+                               #:containerize?
+                               (option-ref opts 'container)))))))
       ;; Handle workflow visualization
-      ('graph
-       (let* ((file-name (assoc-ref opts 'value)))
+      ((_ "graph")
+       (let* ((file-name (option-ref opts '(file))))
          (parameterize ((*current-filename* file-name))
            (match (load-workflow file-name)
              ((? workflow? wf)
               (format #t "~a\n" (workflow->dot wf)))
-             (_ (leave (G_ "Failed to process the workflow.~%"))))))
-       #t)
-      ;; Ignore everything else
-      (_ #t))))
+             (_ (leave (G_ "Failed to process the workflow.~%"))))))))))

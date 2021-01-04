@@ -41,7 +41,6 @@ SOURCES =                                                 \
   gwl/sugar/workflow.scm                                  \
   gwl/sugar/reader.scm                                    \
   gwl/web-interface.scm                                   \
-  gwl/www/config.scm                                      \
   gwl/www/pages.scm                                       \
   gwl/www/pages/tutorial.scm                              \
   gwl/www/pages/community.scm                             \

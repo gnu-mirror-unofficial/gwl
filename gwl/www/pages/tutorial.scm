@@ -1,5 +1,5 @@
 ;;; Copyright © 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -16,7 +16,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages tutorial)
-  #:use-module (gwl www config)
+  #:use-module (gwl config)
   #:use-module (gwl www pages)
   #:use-module (syntax-highlight)
   #:use-module (syntax-highlight scheme)
@@ -116,7 +116,7 @@ using a process named " (code "compress-file") ".")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(with-input-from-file
-                          (string-append (web-config 'examples-root)
+                          (string-append (%config 'examples-root-directory)
                                          "/example-workflow1.w")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
@@ -172,7 +172,7 @@ and " (code "map") " to simplify the work for us:")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(with-input-from-file
-                          (string-append (web-config 'examples-root)
+                          (string-append (%config 'examples-root-directory)
                                          "/example-workflow.w")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 
@@ -206,7 +206,7 @@ we can extend a workflow at any point in a new workflow.")
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
                      ,(with-input-from-file
-                          (string-append (web-config 'examples-root)
+                          (string-append (%config 'examples-root-directory)
                                          "/extended-example-workflow.w")
                         (lambda () (highlights->sxml (highlight lex-scheme)))))))
 

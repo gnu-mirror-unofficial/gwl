@@ -15,7 +15,7 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www render)
-  #:use-module (gwl www config)
+  #:use-module (gwl config)
   #:use-module (gwl www util)
   #:use-module (gwl www pages error)
   #:use-module (sxml simple)
@@ -56,14 +56,14 @@
 
 (define (render-static-file path)
   ;; PATH is a list of path components
-  (let ((file-name (string-join (cons* (web-config 'static-root) path) "/")))
+  (let ((file-name (string-join (cons* (%config 'assets-directory) path) "/")))
     (if (or (any (cut string-contains <> "..") path)
             (not (file-exists? file-name))
             (directory? file-name))
         (not-found (page-error-404 path))
         ;; Check file size before returning the file.
         (let ((file-stat (stat file-name)))
-          (if (> (stat:size file-stat) (web-config 'max-file-size))
+          (if (> (stat:size file-stat) (%config 'max-file-size))
               (render-html (page-error-filesize path))
               (list `((content-type . ,(or (assoc-ref file-mime-types
                                                       (file-extension file-name))

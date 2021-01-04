@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -16,8 +16,8 @@
 ;;; <http://www.gnu.org/licenses/>.
 
 (define-module (gwl www pages error)
+  #:use-module (gwl config)
   #:use-module (gwl www pages)
-  #:use-module (gwl www config)
   #:export (page-error-404
             page-error-filesize
             page-error))
@@ -29,6 +29,6 @@
 (define (page-error-filesize request-path)
   (page-root-template "Oops!" request-path
    `(p ,(format #f "The maximum file size has been set to ~a megabytes."
-                (/ (web-config 'max-file-size) 1000000)))))
+                (/ (%config 'max-file-size) 1000000)))))
 
 (define page-error page-error-404)
