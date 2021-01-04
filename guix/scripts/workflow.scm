@@ -47,8 +47,9 @@
                "guix workflow: missing or unknown command name~%")
        (emit-help opts))
       ((_ "web")
-       (let ((port (%config 'port)))
-         (run-web-interface port)))
+       (let ((host (%config 'host))
+             (port (%config 'port)))
+         (run-web-interface host port)))
       ;; Handle running or preparing workflows.
       ((_ "run")
        (let* ((file-name (option-ref opts '(file)))

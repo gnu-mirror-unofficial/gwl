@@ -18,6 +18,7 @@
 (define-module (gwl web-interface)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-2)
+  #:use-module (srfi srfi-26)
   #:use-module (web server)
   #:use-module (web request)
   #:use-module (web uri)
@@ -61,12 +62,37 @@
            (oops
             (not-found (page-error-404 oops))))))
 
-(define* (run-web-interface #:optional (port (%config 'port)))
-  (format (current-error-port)
-          "GWL web service is running at http://127.0.0.1:~a~%"
-          port)
-  (format (current-error-port)
-          "Press C-c C-c to quit.~%")
-  (run-server request-handler 'http
-              `(#:port ,port
-                #:addr ,INADDR_ANY)))
+(define %default-socket-options
+  ;; List of options passed to 'setsockopt' when transmitting files.
+  (list (list SO_SNDBUF (* 208 1024))))
+
+(define* (configure-socket socket #:key (level SOL_SOCKET)
+                           (options %default-socket-options))
+  "Apply multiple option tuples in OPTIONS to SOCKET, using LEVEL."
+  (for-each (cut apply setsockopt socket level <>)
+            options))
+
+(define (open-server-socket address)
+  "Return a TCP socket bound to ADDRESS, a socket address."
+  (let ((sock (socket (sockaddr:fam address) SOCK_STREAM 0)))
+    (configure-socket sock #:options (cons (list SO_REUSEADDR 1)
+                                           %default-socket-options))
+    (bind sock address)
+    sock))
+
+(define* (run-web-interface #:optional
+                            (host (%config 'host))
+                            (port (%config 'port)))
+  (let* ((address (let ((addr host))
+                    (make-socket-address (sockaddr:fam addr)
+                                         (sockaddr:addr addr)
+                                         port)))
+         (socket  (open-server-socket address)))
+    (format (current-error-port)
+            "GWL web service is running at http://~a:~a~%"
+            (inet-ntop (sockaddr:fam address) (sockaddr:addr address))
+            (sockaddr:port address))
+    (format (current-error-port)
+            "Press C-c C-c to quit.~%")
+    (run-server request-handler 'http
+                `(#:socket ,socket))))

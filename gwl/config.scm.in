@@ -144,6 +144,26 @@ servers.")
       (keywords
        (list
         (switch
+         (name 'host)
+         (synopsis "Host name on which to listen for connections")
+         (character #\H)
+         (default (match (getaddrinfo "localhost")
+                    ((info _ ...)
+                     (addrinfo:addr info))))
+         (example "0.0.0.0")
+         (handler (lambda (value)
+                    (catch 'getaddrinfo-error
+                      (lambda ()
+                        (match (getaddrinfo value)
+                          ((info _ ...)
+                           (addrinfo:addr info))))
+                      (lambda (key error)
+                        (format (current-error-port)
+                                "lookup of host '~a' failed: ~a~%"
+                                value (gai-strerror error))
+                        #f))))
+         (test vector?))
+        (switch
          (name 'port)
          (synopsis "Port on which to listen for connections")
          (character #\p)

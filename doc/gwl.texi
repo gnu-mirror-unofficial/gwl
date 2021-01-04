@@ -919,6 +919,11 @@ file system.
 @itemx -p @var{port}
 The network port on which the web interface listens for connections.
 
+@item --host=@var{host}
+@itemx -H @var{host}
+The network host on which to listen for connections.  This defaults to
+@code{localhost}.
+
 @item --workflows-directory=@var{location}
 This is a location containing other workflows that the web interface
 may access to visualize them.
