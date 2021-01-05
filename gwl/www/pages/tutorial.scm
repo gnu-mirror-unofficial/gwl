@@ -18,8 +18,8 @@
 (define-module (gwl www pages tutorial)
   #:use-module (gwl config)
   #:use-module (gwl www pages)
+  #:use-module (gwl www util)
   #:use-module (syntax-highlight)
-  #:use-module (syntax-highlight scheme)
   #:export (page-tutorial))
 
 (define (page-tutorial request-path)
@@ -59,9 +59,10 @@ what a workflow might look like.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-(span (@ (class "syntax-special")) "process") " hello-world
+                     ,(highlights->sxml (highlight lex-gwl "\
+process hello-world
   # { echo \"Hello, world!\" }
-")))
+")))))
 
      (p "This text defines a " (code "process") " named ”hello-world”
 which would run a shell snippet that prints “Hello, world!” to the
@@ -78,17 +79,17 @@ the " (code "packages") " field.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-"
-" (span (@ (class "syntax-special")) "process") " samtools-index
-  packages " (span (@ (class "syntax-string")) "\"samtools\"") "
-  inputs " (span (@ (class "syntax-string")) "\"/tmp/sample.bam\"") "
+                     ,(highlights->sxml (highlight lex-gwl "\
+process samtools-index
+  packages \"samtools\"
+  inputs \"/tmp/sample.bam\"
   # {
-    " (span (@ (class "syntax-string")) "samtools index {{") "inputs" (span (@ (class "syntax-string")) "}}") "
+    samtools index {{inputs}}
   }
 
-" (span (@ (class "syntax-special")) "workflow") " do-the-thing
+workflow do-the-thing
   processes samtools-index
-")))
+")))))
 
      (p "The " (code "packages") " field declares that we want
 the " (code "samtools") " package to be available in the environment
@@ -118,14 +119,14 @@ using a process named " (code "compress-file") ".")
                      ,(with-input-from-file
                           (string-append (%config 'examples-root-directory)
                                          "/example-workflow1.w")
-                        (lambda () (highlights->sxml (highlight lex-scheme)))))))
+                        (lambda () (highlights->sxml (highlight lex-gwl)))))))
 
      (p "With these definitions in place, we can run both in one go by
 defining a workflow.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme "\
+                     ,(highlights->sxml (highlight lex-gwl "\
 workflow file-workflow
   processes
     auto-connect create-file compress-file")))))
@@ -145,7 +146,7 @@ on " (code "input") ":")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme "\
+                     ,(highlights->sxml (highlight lex-gwl "\
 process compress-file (with input)
   name
     string-append \"compress-file-\"
@@ -174,7 +175,7 @@ and " (code "map") " to simplify the work for us:")
                      ,(with-input-from-file
                           (string-append (%config 'examples-root-directory)
                                          "/example-workflow.w")
-                        (lambda () (highlights->sxml (highlight lex-scheme)))))))
+                        (lambda () (highlights->sxml (highlight lex-gwl)))))))
 
      (p "In the GWL, we can define process dependencies explicitly.
 This is useful when processes don't have explicit " (code "outputs") "
@@ -188,7 +189,7 @@ convenient " (code "graph") " syntax.")
 
      (div (@ (class "figure"))
           (pre (code (@ (class "scheme"))
-                     ,(highlights->sxml (highlight lex-scheme "\
+                     ,(highlights->sxml (highlight lex-gwl "\
 workflow graph-example
   processes
     graph
@@ -208,7 +209,7 @@ we can extend a workflow at any point in a new workflow.")
                      ,(with-input-from-file
                           (string-append (%config 'examples-root-directory)
                                          "/extended-example-workflow.w")
-                        (lambda () (highlights->sxml (highlight lex-scheme)))))))
+                        (lambda () (highlights->sxml (highlight lex-gwl)))))))
 
      (p "With " (code "list-file-template") " we created a procedure
 that returns a " (code "process") " that generates a file containing
