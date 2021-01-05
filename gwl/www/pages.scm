@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017  Roel Janssen <roel@gnu.org>
-;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -42,7 +42,7 @@
                 (_ '()))
               pages)))
 
-(define* (page-root-template title request-path content-tree #:key (dependencies '()))
+(define (page-root-template title request-path content-tree)
   `((html (@ (lang "en"))
      (head
       (title ,(string-append page-title-prefix title))
@@ -50,11 +50,6 @@
       (link (@ (rel "icon")
                (type "image/x-icon")
                (href "/static/favicon.ico")))
-      ,(if (memq 'highlight dependencies)
-         `((link (@ (rel "stylesheet") (href "/static/highlight/styles/github.css")))
-           (script (@ (src "/static/highlight/highlight.js")) "")
-           (script (@ (type "text/javascript")) "hljs.initHighlightingOnLoad();"))
-         `())
       (link (@ (rel "stylesheet")
                (href "/static/css/main.css")
                (type "text/css")
