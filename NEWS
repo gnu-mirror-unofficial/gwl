@@ -12,6 +12,9 @@ Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 * Changes since 0.2.1
 ** Command line interface
 - Add sub-commands “run”, “graph”, and “web”; remove options from the main command.
+- =guix/scripts/workflow.scm= no longer exists.  The file is now called =gwl/main.scm=.  The entry point, however, is now =guix/extensions/workflow.scm=, and it is invoked with =guix workflow= when the directory is found on the new =GUIX_EXTENSIONS_PATH= environment variable (since Guix commit cf289d7cfa34315bf13b3114b9a5bf3d3c05ebea).
+** Web interface
+- GWL source snippets now have better syntax highlighting.
 ** Bug fixes
 - handle caching of files with UTF-8 encoded file names
 - handle more errors in the web interface
