@@ -1,6 +1,6 @@
 # gwl - Workflow management extension for GNU Guix
 # Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-# Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+# Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Affero General Public License
@@ -23,6 +23,7 @@ godir=$(libdir)/guile/$(GUILE_EFFECTIVE_VERSION)/site-ccache
 
 SOURCES =                                                 \
   gwl/config.scm                                          \
+  gwl/main.scm                                            \
   gwl/oop.scm                                             \
   gwl/processes.scm                                       \
   gwl/process-engines.scm                                 \
@@ -48,8 +49,11 @@ SOURCES =                                                 \
   gwl/www/pages/welcome.scm                               \
   gwl/www/pages/workflow-viewer.scm                       \
   gwl/www/render.scm                                      \
-  gwl/www/util.scm                                        \
-  guix/scripts/workflow.scm
+  gwl/www/util.scm
+
+extensionsdir = $(prefix)/share/guix/extensions
+dist_extensions_DATA =                                    \
+  guix/extensions/workflow.scm
 
 assetsdir = $(prefix)/share/$(PACKAGE)
 nobase_dist_assets_DATA =                                 \
@@ -99,10 +103,27 @@ SCM_LOG_DRIVER =                                          \
 AM_SCM_LOG_DRIVER_FLAGS = --brief=yes
 
 EXTRA_DIST +=      \
+  guix/extensions/workflow.scm.in \
   pre-inst-env.in           \
   build-aux/test-driver.scm \
   doc/fdl-1.3.texi \
   $(dist_examples_DATA)
+
+# Handle substitution of fully-expanded Autoconf variables.
+do_subst = $(SED)					\
+  -e 's,[@]GUILE_LOAD_COMPILED_PATH[@],$(GUILE_LOAD_COMPILED_PATH),g'				\
+  -e 's,[@]GUILE_LOAD_PATH[@],$(GUILE_LOAD_PATH),g'				\
+  -e 's,[@]guilemoduledir[@],$(guilemoduledir),g'	\
+  -e 's,[@]guileobjectdir[@],$(guileobjectdir),g'	\
+  -e 's,[@]abs_top_srcdir[@],$(abs_top_srcdir),g'	\
+  -e 's,[@]abs_top_builddir[@],$(abs_top_builddir),g'	\
+  -e 's,[@]localedir[@],$(localedir),g'
+
+guix/extensions/workflow.scm: guix/extensions/workflow.scm.in Makefile
+	$(AM_V_at)rm -f $@ $@-t
+	$(AM_V_at)$(MKDIR_P) "$(@D)"
+	$(AM_V_GEN)$(do_subst) < "$(srcdir)/$@.in" > "$@-t"
+	mv -f "$@-t" "$@"
 
 dist-hook: $(distdir)/ChangeLog
 gen-ChangeLog $(distdir)/ChangeLog:

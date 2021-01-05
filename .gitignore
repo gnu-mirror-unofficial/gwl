@@ -13,8 +13,8 @@ doc/gwl.info
 doc/.dirstamp
 doc/stamp-vti
 doc/version.texi
-gwl/www/config.scm
 gwl/config.scm
+guix/extensions/workflow.scm
 test-suite.log
 tests/*.log
 tests/*.trs

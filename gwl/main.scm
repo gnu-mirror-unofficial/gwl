@@ -14,7 +14,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (guix scripts workflow)
+(define-module (gwl main)
   #:use-module (config)
   #:use-module (config api)
   #:use-module (gwl process-engines)
@@ -27,7 +27,7 @@
   #:use-module (ice-9 match)
   #:use-module ((srfi srfi-37) #:prefix s37:)
   #:use-module (srfi srfi-1)
-  #:export (guix-workflow))
+  #:export (guix-workflow-main))
 
 (define *current-filename* (make-parameter #f))
 
@@ -35,7 +35,7 @@
 ;;; Entry point.
 ;;;
 
-(define (guix-workflow . args)
+(define (guix-workflow-main . args)
   ;; We use the cdr here, because the first word will always be "guix"
   (let ((opts (getopt-config-auto (cdr (command-line)) config)))
     ;; Initialize %config

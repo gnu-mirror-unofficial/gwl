@@ -1,6 +1,6 @@
 dnl gwl - Workflow management extension for GNU Guix
 dnl Copyright © 2017 Roel Janssen <roel@gnu.org>
-dnl Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+dnl Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -31,6 +31,12 @@ if test "x$GUILD" = "x"; then
    AC_MSG_ERROR(['guild' binary not found; please check your Guile installation.])
 fi
 
+dnl Installation directories for .scm and .go files.
+guilemoduledir="${datarootdir}/guile/site/$GUILE_EFFECTIVE_VERSION"
+guileobjectdir="${libdir}/guile/$GUILE_EFFECTIVE_VERSION/site-ccache"
+AC_SUBST([guilemoduledir])
+AC_SUBST([guileobjectdir])
+
 GUILE_MODULE_REQUIRED(language wisp spec)
 GUILE_MODULE_REQUIRED(gcrypt hash)
 GUILE_MODULE_REQUIRED(pfds sets)
@@ -39,6 +45,14 @@ AC_PATH_PROG([DOT], [dot])
 if test "x$DOT" = "x"; then
    AC_MSG_ERROR(['dot' could not be found; please check your Graphviz installation.])
 fi
+
+AC_PATH_PROG([SED], [sed])
+if test "x$SED" = "x"; then
+   AC_MSG_ERROR(['sed' could not be found; it is needed during the build.])
+fi
+
+AC_ARG_VAR(GUILE_LOAD_PATH, [The Guile load path to be embedded in the main script])
+AC_ARG_VAR(GUILE_LOAD_COMPILED_PATH, [The Guile load path for compiled modules to be embedded in the main script])
 
 AC_CONFIG_FILES([Makefile gwl/config.scm])
 AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])

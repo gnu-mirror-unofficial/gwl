@@ -1,0 +1,57 @@
+;;; Copyright © 2021 Ricardo Wurmus <rekado@elephly.net>
+;;;
+;;; This program is free software; you can redistribute it and/or modify it
+;;; under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation; either version 3 of the License, or (at
+;;; your option) any later version.
+;;;
+;;; This program is distributed in the hope that it will be useful, but
+;;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+(define-module (guix extensions workflow)
+  #:use-module (guix scripts)
+  #:export (guix-workflow))
+
+;; IMPORTANT: We must avoid loading any modules from the GWL here,
+;; because we need to adjust the guile load paths first.  It's okay to
+;; import modules from core Guile and (guix scripts) though.
+
+(define (replace-load-paths!)
+  (let ((own-load-path
+         (if (getenv "GWL_UNINSTALLED")
+             (list "@abs_top_srcdir@"
+                   "@abs_top_builddir@")
+             (list "@guilemoduledir@")))
+        (own-load-compiled-path
+         (if (getenv "GWL_UNINSTALLED")
+             (list "@abs_top_srcdir@"
+                   "@abs_top_builddir@")
+             (list "@guileobjectdir@"))))
+    ;; Override load paths
+    (set! %load-path
+          (append own-load-path
+                  (parse-path "@GUILE_LOAD_PATH@")
+                  %load-path))
+    (set! %load-compiled-path
+          (append own-load-compiled-path
+                  (parse-path "@GUILE_LOAD_COMPILED_PATH@")
+                  %load-compiled-path))))
+
+;;;
+;;; Entry point.
+;;;
+
+(define-command (guix-workflow . args)
+  (category main) ; TODO: use something else
+  (synopsis "execute or visualize workflows")
+
+  (replace-load-paths!)
+  (let ((main (module-ref (resolve-interface '(gwl main))
+                          'guix-workflow-main)))
+    ;;(bindtextdomain "guix-workflow" "@localedir@")
+    (apply main args)))
