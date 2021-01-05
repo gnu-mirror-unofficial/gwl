@@ -198,7 +198,7 @@ div.inline-figure {
 }
 
 pre {
-    background-color: #f2efe4;
+    background-color: #fdf6e3;
     text-align: left;
     font-family: 'FiraMono', monospace;
     font-style: normal;
@@ -243,12 +243,16 @@ div.action-button:hover {
     background: #f6bf57;
 }
 
-.syntax-open { color: #555555; }
-.syntax-close { color: #555555; }
-.syntax-string { color: #aa0000; }
-.syntax-symbol { color: #000000; }
-.syntax-special { color: #000000; text-decoration: underline; }
-.syntax-comment { color: #aaaaaa; }
+.syntax-open { color: #657b83; }
+.syntax-close { color: #657b83; }
+.syntax-string { color: #dc322f; }
+.syntax-symbol { color: #657b83; }
+.syntax-special { color: #002b36; font-weight: bold; }
+.syntax-gwl-field { color: #859900; font-weight: bold; }
+.syntax-comment { color: #93a1a1; }
+.syntax-placeholder { color: #268bd2; }
+.syntax-function { color: #586e75; font-style: italic; }
+
 img { border: 0; outline: 0; }
 
 
