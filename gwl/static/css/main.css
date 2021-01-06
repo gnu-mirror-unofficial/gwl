@@ -96,11 +96,11 @@ a {
 }
 a:hover { color: #555555; }
 
-.menu a {
+#header .menu a {
     color: #aaaaaa;
     border: none;
 }
-.menu a:hover { color: #fff; }
+#header .menu a:hover { color: #fff; }
 
 h1 {
     font-family: 'Roboto-Bold';
