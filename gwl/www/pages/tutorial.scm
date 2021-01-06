@@ -55,7 +55,7 @@ executed in order with the " (code "guix workflow") " command.")
 what a workflow might look like.")
 
      (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
+          (pre (code (@ (class "gwl"))
                      ,(highlights->sxml (highlight lex-gwl "\
 process hello-world
   # { echo \"Hello, world!\" }
@@ -75,7 +75,7 @@ deployment of a potentially complex software environment using
 the " (code "packages") " field.")
 
      (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
+          (pre (code (@ (class "gwl"))
                      ,(highlights->sxml (highlight lex-gwl "\
 process samtools-index
   packages \"samtools\"
@@ -112,7 +112,7 @@ process named " (code "create-file") ", and we will compress that file
 using a process named " (code "compress-file") ".")
 
      (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
+          (pre (code (@ (class "gwl"))
                      ,(with-input-from-file
                           (string-append (%config 'examples-root-directory)
                                          "/example-workflow1.w")
@@ -122,7 +122,7 @@ using a process named " (code "compress-file") ".")
 defining a workflow.")
 
      (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
+          (pre (code (@ (class "gwl"))
                      ,(highlights->sxml (highlight lex-gwl "\
 workflow file-workflow
   processes
@@ -143,7 +143,7 @@ outputs.  Here is a process template that is parameterized
 on " (code "input") ":")
 
      (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
+          (pre (code (@ (class "gwl"))
                      ,(highlights->sxml (highlight lex-gwl "\
 process compress-file (with input)
   name
@@ -170,7 +170,7 @@ input file names.  We use Scheme's " (code "let") ",
 and " (code "map") " to simplify the work for us:")
 
      (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
+          (pre (code (@ (class "gwl"))
                      ,(with-input-from-file
                           (string-append (%config 'examples-root-directory)
                                          "/example-workflow.w")
@@ -187,7 +187,7 @@ processes to their dependencies, or via the
 convenient " (code "graph") " syntax.")
 
      (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
+          (pre (code (@ (class "gwl"))
                      ,(highlights->sxml (highlight lex-gwl "\
 workflow graph-example
   processes
@@ -205,7 +205,7 @@ containing some information about these compressed files to learn how
 we can extend a workflow at any point in a new workflow.")
 
      (div (@ (class "figure"))
-          (pre (code (@ (class "scheme"))
+          (pre (code (@ (class "gwl"))
                      ,(with-input-from-file
                           (string-append (%config 'examples-root-directory)
                                          "/extended-example-workflow.w")
