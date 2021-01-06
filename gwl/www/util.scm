@@ -46,7 +46,7 @@
 
 (define char-set:lisp-delimiters
   (char-set-union char-set:whitespace
-                  (char-set #\# #\newline #\( #\) #\[ #\] #\{ #\})))
+                  (char-set #\: #\# #\newline #\( #\) #\[ #\] #\{ #\})))
 
 (define char-set:lisp-symbol
   (char-set-complement char-set:lisp-delimiters))
@@ -135,11 +135,11 @@ SPECIAL-PREFIXES with the 'special' tag."
             (lex-tag 'string (lex-delimited "\""))
             (lex-tag 'keyword
                      (lex-any (lex-map2 string-append
-                                        (lex-all (lex-string "#:")
-                                                 (lex-char-set char-set:lisp-symbol)))
-                              (lex-map2 string-append
                                         (lex-all (lex-char-set char-set:lisp-symbol)
-                                                 (lex-string ":")))))
+                                                 (lex-string ":")))
+                              (lex-map2 string-append
+                                        (lex-all (lex-string "#:")
+                                                 (lex-char-set char-set:lisp-symbol)))))
             (lex-tag 'symbol
                      (lex-any (lex-delimited "#{" #:until "}#")
                               (lex-char-set char-set:lisp-symbol))) )))
