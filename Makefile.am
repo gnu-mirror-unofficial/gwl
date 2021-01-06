@@ -135,3 +135,8 @@ gen-ChangeLog $(distdir)/ChangeLog:
 	fi
 
 .PHONY: gen-ChangeLog
+
+CLEANFILES += \
+  guix/extensions/workflow.scm                      \
+  $(SCM_TESTS:tests/%.scm=%.log)
+
