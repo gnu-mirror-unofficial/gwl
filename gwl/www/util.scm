@@ -87,7 +87,10 @@
         "basename"
         "zip"
         "map"
-        "string-append"))
+        "string-append"
+        "with-output-to-file"
+        "list"
+        "display"))
 
 (define gwl-fields
   (list "name"
@@ -95,6 +98,9 @@
         "inputs"
         "outputs"
         "run-time"
+        "synopsis"
+        "procedure"
+        "description"
         "processes"))
 
 (define (make-gwl-lexer special-symbols special-prefixes)
