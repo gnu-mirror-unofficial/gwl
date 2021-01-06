@@ -83,7 +83,3 @@ process foo
 
 Or rather: let the “resources” field accept an arbitrary list of resource values.
 
-* use guile-config for CLI argument handling and help output?
-https://gitlab.com/a-sassmannshausen/guile-config
-“Guile Config is a library providing a declarative approach to application configuration specification.”
-
