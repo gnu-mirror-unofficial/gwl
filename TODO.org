@@ -83,3 +83,5 @@ process foo
 
 Or rather: let the “resources” field accept an arbitrary list of resource values.
 
+* Documentation
+Only the HTML files have highlighting, not the gzipped  HTML files!
