@@ -1,5 +1,8 @@
 #+TYP_TODO: MAYBE DONE TODO
 
+* rewrite process->script
+The =process->script= procedure in =(gwl processes)= is the absolute worst.  It is hard to understand, overly long, terribly nested.  It needs a careful rewrite and excellent tests.
+
 * load-path magic…
 The GWL uses Guix as a library and as a way to build environments.
 When starting the GWL, however, it will use the Guix modules (and the
@@ -31,6 +34,9 @@ used at GWL build time.
 - mount the GWL cache directories for inputs and outputs (not the full cache)
 
 * catch Ctrl-C and abort execution of all processes, not just the current one
+
+* web interface needs C-c twice to terminate
+This is a common problem with Guile web server applications.  For some reason installing a SIGINT signal handler (as the web server does) causes the first =C-c= to be swallowed.
 
 * --output option has no effect!
 This should serve as a prefix for all output files.  But how would this affect processes that use output files as inputs?
