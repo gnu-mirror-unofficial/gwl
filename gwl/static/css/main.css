@@ -216,7 +216,7 @@ pre code {
     border-radius: 0px;
 }
 
-p code {
+p code, dt code {
     padding: 0.3em;
 }
 
@@ -276,4 +276,19 @@ img { border: 0; outline: 0; }
 
 select {
     margin-bottom: 1rem;
+}
+
+/*****************************/
+/* Manual styles             */
+/*****************************/
+pre.menu-comment {
+    background: none;
+}
+
+/* do not count the ToC */
+#content h2.contents-heading {
+    counter-set: heading3;
+}
+#content h2.contents-heading:before {
+    content: "";
 }
