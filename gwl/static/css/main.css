@@ -132,7 +132,7 @@ h1 {
     counter-increment: heading3;
 }
 
-#content h2:before{
+#content h2:before {
     color: #93a1a1;
     content: counter(heading3);
     position: absolute;
@@ -194,7 +194,7 @@ pre {
     margin-right: 3em; /* compensate for line numbers */
 }
 
-code {
+code, pre.example {
     font-family: 'FiraMono', monospace;
     font-style: normal;
     font-size: 0.9em;
@@ -281,7 +281,17 @@ select {
 /*****************************/
 /* Manual styles             */
 /*****************************/
-pre.menu-comment {
+hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+}
+
+#content h2.chapter {
+    margin-top: 3em;
+}
+
+pre.menu-comment, pre.display {
     background: none;
 }
 
@@ -291,4 +301,38 @@ pre.menu-comment {
 }
 #content h2.contents-heading:before {
     content: "";
+}
+
+div.example {
+    background: none;
+    margin: 0;
+}
+pre.example {
+    padding: 1em;
+}
+
+.symbol-definition {
+    font-weight: normal;
+    background: #eee;
+    margin: 0;
+    padding: .5em;
+    -webkit-border-radius: 8px 8px 0 0;
+    -moz-border-radius: 8px 8px 0 0;
+    border-radius: 8px 8px 0 0;
+}
+
+.symbol-definition-category { 	/* first argument to @deffn etc. */
+    color: #333;
+    margin-right: 10px;
+    padding: 5px;
+}
+
+.symbol-definition-prototype { /* remaining arguments to @deffn etc. */
+    font-family: 'FiraMono';
+}
+
+.symbol-definition + dd {
+    background: #fafafa;
+    margin: 0;
+    padding: .5em 3% 1em 3%;
 }
