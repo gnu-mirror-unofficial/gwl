@@ -44,11 +44,13 @@ body,html {
 
 /* Arrange to have between 40 and 70 characters per line.  */
 .width-control {
-    max-width: 800px;
+    max-width: 45em;
     width: 65%;
 }
 
 @media all and (max-width: 760px) { .width-control { width: 90%; } };
+@media all and (max-width: 1024px) { .width-control { width: 90%; } };
+@media all and (min-width: 1024px) { .width-control { max-width: 800px; } };
 
 #wrapper {
     width: 100%;
