@@ -67,12 +67,6 @@ body,html {
 
 #header .logo { padding: 60px 0px 30px 0px; margin: 0px; text-align: center; }
 #header .title { padding: 5px 5px 0px 5px; }
-#header .title h1 {
-    line-height: 125%;
-    padding: 0px;
-    margin: 0px;
-    text-align: left;
-}
 
 #header .menu { padding: 5px 5px 0px 5px; }
 #header .menu ul { display: inline-block; padding: 0px; margin: 0px; }
@@ -108,6 +102,13 @@ a:hover { color: #555555; }
 }
 .menu a:hover { color: #fff; }
 
+h1 {
+    font-family: 'Roboto-Bold';
+    font-weight: bold;
+    text-align: center;
+    margin: 1.5em 3em 1em;
+}
+
 #content {
     margin: auto;
     padding: 0;
@@ -124,15 +125,14 @@ a:hover { color: #555555; }
     margin-inline-start: 0;
     margin-inline-end: 0;
 }
-#content h2 { margin: 0px; padding-bottom: 5px; }
-#content h3 {
+#content h2 {
     margin: 0px;
     padding-top: 5px;
     width: 100%;
     counter-increment: heading3;
 }
 
-#content h3:before{
+#content h2:before{
     color: #93a1a1;
     content: counter(heading3);
     position: absolute;
@@ -142,9 +142,8 @@ a:hover { color: #555555; }
     padding-left: .5em;
 }
 
-@media all and (max-width: 760px) { #content h3:before { display: none; } };
+@media all and (max-width: 760px) { #content h2:before { display: none; } };
 
-#content h4 { margin: 0px; padding-top: 5px; }
 #content ul { padding: 0px 0px 0px 10px; margin: 0px 0px 0px 10px; }
 #content li { line-height: 1.5em; }
 #content table {

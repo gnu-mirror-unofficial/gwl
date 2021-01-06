@@ -21,7 +21,7 @@
 
 (define (page-welcome request-path)
   (page-root-template "Guix Workflow Language" request-path
-   `((h2 "A workflow management language extension for GNU Guix")
+   `((h1 "A workflow management language extension for GNU Guix")
 
      (p "The Guix Workflow Language (GWL) provides a scientific
 computing extension to GNU Guix's "

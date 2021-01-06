@@ -81,7 +81,7 @@
     (lambda* (request-path #:key (post-data ""))
       (page-root-template
        "Guix Workflow Language" request-path
-       `((h2 "Workflow viewer")
+       `((h1 "Workflow viewer")
          (p "There " ,(if (> num-workflows 1) "are " "is ")
             ,num-workflows " available workflows.  Please choose one below.")
          (form (@ (action "/workflow-viewer")

@@ -24,9 +24,9 @@
 
 (define (page-tutorial request-path)
   (page-root-template "Guix Workflow Language" request-path
-   `((h2 "Getting started with the Guix workflow language")
+   `((h1 "Getting started with the Guix workflow language")
 
-     (h3 "Installation")
+     (h2 "Installation")
 
      (p "This guide assumes " (a (@ (href "https://www.gnu.org/software/"
                                           "guix/manual/html_node/Binary-"
@@ -35,7 +35,7 @@
         " have been installed already.  In case the GNU GWL hasn't been"
         " installed, run: " (code "guix install gwl"))
 
-     (h3 "Introduction")
+     (h2 "Introduction")
 
      (p "In the GWL there are two concepts we need to know
 about: " (em "processes") " and " (em "workflows") ".  We describe a
@@ -49,7 +49,7 @@ process " (code "A") ").")
 language embedded in the general purpose language Scheme.  They can be
 executed in order with the " (code "guix workflow") " command.")
 
-     (h3 "Example")
+     (h2 "Example")
 
      (p "Let's start by writing the obligatory “Hello, world!” to see
 what a workflow might look like.")
@@ -65,7 +65,7 @@ process hello-world
 which would run a shell snippet that prints “Hello, world!” to the
 screen.  Delightful!")
 
-     (h3 "Running programs")
+     (h2 "Running programs")
 
      (p "But the “hello-world” doesn't justify building yet another
 workflow language.  When approaching the real world a little further,
@@ -103,7 +103,7 @@ the " (code "samtools-index") " process.")
 processes in a workflow.  We will also use process templates to
 generate processes from a list of input file names.")
 
-          (h3 "Defining workflows")
+          (h2 "Defining workflows")
 
      (p "A " (em "workflow") " describes how " (em "processes") "
 relate to each other.  So before we can write the workflow, we must
@@ -135,7 +135,7 @@ all specified processes and ensures that the processes are run in the
 correct order.  Later we will see other ways to specify process
 dependencies.")
 
-     (h3 "Process templates")
+     (h2 "Process templates")
 
      (p "We can parameterize the inputs and outputs for a process, so
 that the same process template can serve for different inputs and
@@ -162,7 +162,7 @@ process compress-file (with input)
   }
 ")))))
 
-     (h3 "Dynamic workflows")
+     (h2 "Dynamic workflows")
 
      (p "We can now dynamically create compression processes by
 instantiating the " (code "compress-file") " template with specific
@@ -197,7 +197,7 @@ workflow graph-example
       C -> B
 ")))))
 
-     (h3 "Extending workflows")
+     (h2 "Extending workflows")
 
      (p "In the " (code "dynamic-workflow") " we created files and
 compressed them.  In the following workflow we will generate a file
@@ -220,7 +220,7 @@ each " (code "compress-file") " process.")
      (p "In the " (code "processes") " field we include the contents
 of " (code "dynamic-workflow") ", thereby concisely extending it.")
 
-     (h3 "Further reading")
+     (h2 "Further reading")
 
      (p "The "
         (a (@ (href "https://workflows.guix.info/manual/"))
