@@ -147,3 +147,6 @@ manual: web-manual
 		$(top_srcdir)/build-aux/post-process-manual.scm \
 		"$(abs_builddir)/doc/manual/" "$(abs_builddir)/doc/manual-highlighted/"
 	rsync -avhr "$(abs_builddir)/doc/manual-highlighted/" "$(abs_builddir)/doc/manual/"
+
+upload-manual: manual
+	rsync -azzvhr --delete "$(abs_builddir)/doc/manual/" workflows.guix.info:/srv/gwl-manual/
