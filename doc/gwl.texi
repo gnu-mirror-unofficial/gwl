@@ -125,9 +125,9 @@ start by writing a simple workflow.
 
 Here is a simple workflow example:
 
-@example
+@lisp
 @verbatiminclude examples/simple-wisp.w
-@end example
+@end lisp
 
 This white-space sensitive syntax is called Wisp and if you're familiar
 with Python or YAML you should feel right at home.  To use this syntax
@@ -139,9 +139,9 @@ embedded in Guile Scheme, so if you're a Lisper you may prefer to write
 your workflows directly in Scheme while basking in its parenthetical
 glow:
 
-@example
+@lisp
 @verbatiminclude examples/simple.scm
-@end example
+@end lisp
 
 Everything you can express in Scheme can also be expressed with the Wisp
 syntax, so the choice is down to personal preference.
@@ -161,12 +161,12 @@ description, for display purposes.
 We create a process with the @code{make-process} constructor like
 this:
 
-@example
+@lisp
 make-process
   name "hello"
   procedure
      ' display "hello"
-@end example
+@end lisp
 
 This creates a process with the name ``hello'', which will print the
 string @code{"hello"} once the process is executed.  The
@@ -180,13 +180,13 @@ example to combine them in a workflow definition.  To do that we need
 to bind the created processes to variable names.  Here we bind the
 above process to a variable named @code{hello}:
 
-@example
+@lisp
 define hello
   make-process
     name "hello"
     procedure
        ' display "hello"
-@end example
+@end lisp
 
 @cindex process, constructor
 @cindex process, definition macro
@@ -194,11 +194,11 @@ This is a very common thing to do, so the GWL offers a shorter syntax
 for not only creating a process but also binding it to a variable.
 The following example is equivalent to the above definition:
 
-@example
+@lisp
 process hello
   procedure
      ' display "hello"
-@end example
+@end lisp
 
 
 @node @code{process} Fields
@@ -244,28 +244,28 @@ The @code{packages} field accepts a list of packages as well as
 multiple values (an ``implicit list'').  All of the following
 specifications are valid.  A single package:
 
-@example
+@lisp
 process
   packages "guile"
   @dots{}
-@end example
+@end lisp
 
 More than one package:
 
-@example
+@lisp
 process
   packages "guile" "python"
   @dots{}
-@end example
+@end lisp
 
 A single list of packages:
 
-@example
+@lisp
 process
   packages
     list "guile" "python"
   @dots{}
-@end example
+@end lisp
 
 @cindex inputs, process field
 @item inputs
@@ -285,24 +285,24 @@ prefixing it with a keyword (@pxref{Keywords,,,guile,GNU Guile
 Reference Manual}).  Here's an example of an implicit list of inputs
 spread across multiple lines where two inputs have been tagged:
 
-@example
+@lisp
 process
   inputs
     . genome: "hg19.fa"
     . "cookie-recipes.txt"
     . samples: "foo.fq"
   @dots{}
-@end example
+@end lisp
 
 The leading period is Wisp syntax to continue the previous line.  You
 can, of course, do without the periods, but this may look a little
 more cluttered:
 
-@example
+@lisp
 process
   inputs genome: "hg19.fa" "cookie-recipes.txt" samples: "foo.fq"
   @dots{}
-@end example
+@end lisp
 
 @cindex pick, items from a tagged list
 @cindex select, tagged items in a list
@@ -311,21 +311,21 @@ of your process definition without having to awkwardly traverse the
 whole list of inputs.  Here is one way to select the first input that
 was tagged with the @code{samples:} keyword:
 
-@example
+@lisp
 pick genome: inputs
-@end example
+@end lisp
 
 To select the second item after the tag @code{genome:} do this:
 
-@example
+@lisp
 pick second genome: inputs
-@end example
+@end lisp
 
 or using a numerical zero-based index:
 
-@example
+@lisp
 pick 1 genome: inputs
-@end example
+@end lisp
 
 @ref{Code Snippets} for a convenient way to access named items in code
 snippets without having to define your picks beforehand.
@@ -378,7 +378,7 @@ Supported time units are @code{seconds}, @code{minutes}, and
 Here is an example of a single-threaded process that is granted 20 MiB
 of run-time memory for a duration of 10 seconds:
 
-@example
+@lisp
 process stamp-inputs
   inputs "first" "second" "third"
   outputs "inputs.txt"
@@ -388,7 +388,7 @@ process stamp-inputs
       time  10 seconds
       threads 1
   # @{ echo @{@{inputs@}@} > @{@{outputs@}@} @}
-@end example
+@end lisp
 
 When this process is executed by a scheduler that honors resource
 limits, the process will be granted at most 20 MiB of memory and will
@@ -405,7 +405,7 @@ Snippets}).
 Here's an example of a process with a procedure that writes a haiku to
 a file:
 
-@example
+@lisp
 process haiku
   outputs "haiku.txt"
   synopsis "Write a haiku to a file"
@@ -419,7 +419,7 @@ to the file \"haiku.txt\"."
 the library book
 overdue?
 slow falling snow"
-@end example
+@end lisp
 
 The Scheme expression here is quasiquoted (with a leading @code{`}) to
 allow for unquoting (with @code{,}) of variables, such as
@@ -467,7 +467,7 @@ As this is a somewhat common thing to do in real workflows, the GWL
 provides simplified syntax to express the same concepts with a little
 less effort:
 
-@example
+@lisp
 process build-me-a-process (with thing)
   name
     string-append "show-" thing
@@ -480,7 +480,7 @@ define show-kitchen
   build-me-a-process "kitchen"
 define show-table
   build-me-a-process "table"
-@end example
+@end lisp
 
 The result is the same: you get a procedure @code{build-me-a-process}
 that you can use to define a number of similar processes.  In the end
@@ -506,7 +506,7 @@ purpose of this procedure is to improve legibility when using Wisp
 syntax, as it allows one to avoid leading dots.  The following two
 expressions are equivalent:
 
-@example
+@lisp
 ;; With "on"
 on numbers map
    lambda (number)
@@ -517,7 +517,7 @@ map
   lambda (number)
     + number 10
   . samples
-@end example
+@end lisp
 @end deffn
 
 @cindex expand, helper procedure
@@ -529,7 +529,7 @@ file name parts given as arguments.  A file name part can either be a
 string or a list of strings.  This is very useful when you need to
 generate a list of input or output file names.
 
-@example
+@lisp
 (expand "/home/"
         '("me" "you" "them")
         "/data/"
@@ -541,7 +541,7 @@ generate a list of input or output file names.
      "/home/you/data/new"
      "/home/them/data/old"
      "/home/them/data/new")
-@end example
+@end lisp
 @end deffn
 
 @cindex pick, helper procedure
@@ -558,7 +558,7 @@ number it is used as a zero-based index into the list of items
 following the @var{key}.  If the selector is a procedure it is applied
 to the list of items following the @var{key}.
 
-@example
+@lisp
 define collection
   list
     . "one"
@@ -583,7 +583,7 @@ pick second mine: collection
 pick 0 yours: collection
 
 ; => "six"
-@end example
+@end lisp
 @end deffn
 
 @cindex load-workflow
@@ -617,11 +617,11 @@ special syntax is provided in the @code{(gwl sugar)} module, and is
 loaded by default.  Here is an example of a process that runs an
 embedded Bash shell script:
 
-@example
+@lisp
 process run-bash
   packages "bash"
   # bash @{ echo "hello from bash!" @}
-@end example
+@end lisp
 
 Notice how the ``procedure'' field name was not used here, because the
 code snippet came last.  This cuts down on boilerplate.
@@ -637,10 +637,10 @@ interpreter.  For convenience we provide the special interpreters
 specify a more complicated command line.  When no interpreter is
 provided the generic shell interpreter @code{/bin/sh} will be used:
 
-@example
+@lisp
 process run-sh
   # @{ echo "hello from a shell!" @}
-@end example
+@end lisp
 
 @cindex string interpolation, code snippets
 @cindex accessing variables, code snippets
@@ -651,7 +651,7 @@ other process fields.  In the following example, the shell snippet
 refers to the @code{name} and @code{inputs} fields of the current
 process:
 
-@example
+@lisp
 process run-bash
   packages "bash"
   inputs
@@ -662,14 +662,14 @@ process run-bash
     echo "The name of this process: @{@{name@}@}."
     echo "The data inputs are: @{@{inputs@}@}."
   @}
-@end example
+@end lisp
 
 @cindex accessing named values in variables, code snippets
 You can even access named or tagged values in lists.  In the following
 example, the shell snippet refers to only selected values of the
 @code{inputs} field of the current process:
 
-@example
+@lisp
 process run-bash
   packages "bash"
   inputs
@@ -680,7 +680,7 @@ process run-bash
   # bash @{
     echo "This is mine: @{@{inputs:mine@}@}, and this is yours: @{@{inputs:yours@}@}."
   @}
-@end example
+@end lisp
 
 As expected, this will output the following text when run:
 
@@ -691,7 +691,7 @@ This is mine: b, and this is yours: d.
 @cindex accessing multiple named values, code snippets
 You can also access tagged sub-lists with the @code{::} accessor:
 
-@example
+@lisp
 process frobnicate
   packages "frobnicator"
   inputs
@@ -702,7 +702,7 @@ process frobnicate
   # @{
     frobnicate -g @{@{inputs:genome@}@} --files @{@{inputs::samples@}@} > @{@{outputs@}@}
   @}
-@end example
+@end lisp
 
 This process will cause the following command to be executed:
 
@@ -718,7 +718,7 @@ second of the inputs after the keyword @code{samples:}, i.e. the
 string @code{the}.  We can then refer to that variable by name in the
 code snippet.
 
-@example
+@lisp
 process foo
   inputs
     . "something"
@@ -727,7 +727,7 @@ process foo
     define second-sample
       pick second samples: inputs
     # @{ echo @{@{second-sample@}@} @}
-@end example
+@end lisp
 
 @cindex environment variables, code snippets
 @cindex process meta data, code snippets
@@ -760,13 +760,13 @@ inputs and outputs of all processes.
 
 A workflow definition will look something like this:
 
-@example
+@lisp
 workflow do-stuff
   processes
     . this
     . that
     . something-else
-@end example
+@end lisp
 
 This defines a workflow with the name ``do-stuff'', binds it to a variable
 @code{do-stuff}, and declares that it consists of the three processes
@@ -780,14 +780,14 @@ the processes and ensure that only independent processes are run
 simultaneously.  Use the @code{auto-connect} procedure on your
 processes:
 
-@example
+@lisp
 workflow do-stuff
   processes
     auto-connect
       . this
       . that
       . something-else
-@end example
+@end lisp
 
 @cindex graph, workflow order
 You can also explicitly construct a graph of processes with the aptly
@@ -797,13 +797,13 @@ process @code{combine} run after @code{generate-A} and
 @code{compress} will run after @code{combine}, and thus at the very
 end.
 
-@example
+@lisp
 workflow frobnicate
   processes
     graph
       combine -> generate-A generate-B
       compress -> combine
-@end example
+@end lisp
 
 
 @c *********************************************************************
