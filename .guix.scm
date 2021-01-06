@@ -17,7 +17,10 @@
              (gnu packages base)
              (gnu packages package-management)
              (gnu packages guile-xyz)
-             (gnu packages tex))
+             (gnu packages tex)
+             (gnu packages perl)
+             (gnu packages ssh)
+             (gnu packages version-control))
 
 (define-public gwl/devel
   (package
@@ -32,6 +35,14 @@
     (native-inputs
      `(("texlive" ,texlive-tiny) ; for make distcheck
        ("sed" ,sed)
+
+       ;; For "make release"
+       ("perl" ,perl)
+       ("git" ,git-minimal)
+
+       ;; For "git push"
+       ("ssh" ,openssh)
+
        ,@(package-native-inputs gwl)))))
 
 gwl/devel
