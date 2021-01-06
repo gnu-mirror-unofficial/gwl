@@ -75,7 +75,7 @@ body,html {
     list-style-type: none;
     margin: 0px;
     margin: 0px 10px 0px 0px;
-    padding: 2px 2px 0px 2px;
+    padding: .5em 1em 0px 1em;
     -webkit-border-radius: 8px 8px 0px 0px;
     -moz-border-radius: 8px 8px 0px 0px;
     border-radius: 8px 8px 0px 0px;
@@ -84,7 +84,7 @@ body,html {
 
 #header .menu li.active {
     background: #ffffff;
-    padding: 6px;
+    padding: .5em 1em;
 }
 
 a {
