@@ -1,6 +1,6 @@
 
 manual_title = Guix Workflow Language
-_header='<div id=header><div id=header-inner class=width-control><div class=logo><img src=/static/images/logo.png></div><div class=menu><ul><li><a href=/>Home</a></li><li class=active>Manual</li></ul></div></div></div><div id=content class=width-control>'
+_header='<div id=header><div id=header-inner class=width-control><div class=logo><img  src=\"/static/images/logo.png\"></div><div class=menu><ul><li><a href=/>Home</a></li><li class=active>Manual</li></ul></div></div></div><div id=content class=width-control>'
 
 gendocs_options_ = \
   -I $(abs_srcdir)/build-aux \
