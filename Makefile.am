@@ -140,3 +140,10 @@ CLEANFILES += \
   guix/extensions/workflow.scm                      \
   $(SCM_TESTS:tests/%.scm=%.log)
 
+# Like web-manual in maint.mk but with post-processing
+manual: web-manual
+	$(top_builddir)/pre-inst-env                            \
+		$(GUILE) --no-auto-compile -e main                      \
+		$(top_srcdir)/build-aux/post-process-manual.scm \
+		"$(abs_builddir)/doc/manual/" "$(abs_builddir)/doc/manual-highlighted/"
+	rsync -avhr "$(abs_builddir)/doc/manual-highlighted/" "$(abs_builddir)/doc/manual/"
