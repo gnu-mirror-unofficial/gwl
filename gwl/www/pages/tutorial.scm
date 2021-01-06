@@ -129,7 +129,8 @@ defining a workflow.")
                      ,(highlights->sxml (highlight lex-gwl "\
 workflow file-workflow
   processes
-    auto-connect create-file compress-file")))))
+    auto-connect create-file compress-file
+")))))
 
      (p "The workflow specifies all processes that should run.
 The " (code "auto-connect") " procedure links up all inputs and outputs of
@@ -161,7 +162,8 @@ process compress-file (with input)
       time  10 seconds
   # {
     gzip {{input}} -c > {{outputs}}
-  }")))))
+  }
+")))))
 
      (h3 "Dynamic workflows")
 
@@ -195,7 +197,8 @@ workflow graph-example
     graph
       A -> B C
       B -> D
-      C -> B")))))
+      C -> B
+")))))
 
      (h3 "Extending workflows")
 
