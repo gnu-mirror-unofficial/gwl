@@ -33,10 +33,7 @@
                                           "Installation.html")) "GNU Guix")
         " and " (a (@ (href "https://www.gnu.org/software/gwl")) "GNU GWL")
         " have been installed already.  In case the GNU GWL hasn't been"
-        " installed, run:")
-
-     (div (@ (class "figure"))
-          (pre (code (@ (class "bash")) "guix install gwl")))
+        " installed, run: " (code "guix install gwl"))
 
      (h3 "Introduction")
 

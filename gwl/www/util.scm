@@ -102,7 +102,8 @@
 that are in SPECIAL-SYMBOLS or match one of the string prefixes in
 SPECIAL-PREFIXES with the 'special' tag."
   (lex-consume
-   (lex-any (lex-char-set char-set:whitespace)
+   (lex-any (lex-tag 'line (lex-regexp "$\n"))
+            (lex-char-set char-set:whitespace)
             (lex-tag 'code-snippet-start
                      (lex-regexp "# [^ ]* ?\\{"))
             (lex-tag 'code-snippet-end
