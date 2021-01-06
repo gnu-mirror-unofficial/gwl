@@ -220,11 +220,11 @@ p code, dt code {
     padding: 0.3em;
 }
 
-code span.syntax-line, code span.syntax-comment {
+code.gwl span.syntax-line, code.gwl span.syntax-comment {
     counter-increment: line;
 }
 
-code span.syntax-line:before, code span.syntax-comment:before{
+code.gwl span.syntax-line:before, code.gwl span.syntax-comment:before{
     color: #93a1a1;
     content: counter(line) '\A0';
     position: absolute;
