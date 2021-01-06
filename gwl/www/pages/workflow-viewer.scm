@@ -39,8 +39,9 @@
                               (string-suffix? ".scm" file)))
                         (scandir dir))))
     (filter workflow? (map (lambda (file)
-                             (parameterize ((*current-filename* file))
-                               (load-workflow (string-append dir "/" file))))
+                             (false-if-exception
+                              (parameterize ((*current-filename* file))
+                                (load-workflow (string-append dir "/" file)))))
                            files))))
 
 (define (find-workflow-by-name name version)
