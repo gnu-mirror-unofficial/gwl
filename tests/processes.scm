@@ -29,6 +29,14 @@
     (equal? '(this that whatever)
             (process-inputs proc))))
 
+(test-assert "make-process macro flattens implicit lists"
+  (let ((proc (make-process
+               (name "anything")
+               (procedure '(const #t))
+               (inputs '(this and) 'that '(whatever you say)))))
+    (equal? '(this and that whatever you say)
+            (process-inputs proc))))
+
 (test-assert "make-process macro supports implicit concatenation"
   (let ((proc (make-process
                (name "anything" " is " "possible")
