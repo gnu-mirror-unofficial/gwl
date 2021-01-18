@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -246,5 +246,58 @@ make-workflow
                  (list "second" "fourth")))
     (prepare-inputs (wf3 prefix)
                     incomplete-inputs-map)))
+
+(test-equal "make-workflow rejects invalid field names 1/3"
+  '("workflow: extraneous fields: garbage \n")
+  (catch 'misc-error
+    (lambda ()
+      (test-read-eval-string (format #false "~s"
+                                     '(make-workflow
+                                       (name "anything")
+                                       (processes '())
+                                       (garbage 'this-is)))))
+    (lambda (key _ format-string message . rest)
+      message)))
+
+(test-equal "make-workflow rejects invalid field names 2/3"
+  "workflow: Invalid field name"
+  (catch 'syntax-error
+    (lambda ()
+      (test-read-eval-string (format #false "~s"
+                                     '(make-workflow
+                                       (name "anything")
+                                       (processes '())
+                                       (#:garbage 'this-is)))))
+    (lambda (key _ message . rest)
+      message)))
+
+(test-equal "make-workflow rejects invalid field names 3/3"
+  "workflow: Invalid field name"
+  (catch 'syntax-error
+    (lambda ()
+      (test-read-eval-string (format #false "~s"
+                                     '(make-workflow
+                                       (name "anything")
+                                       (processes '())
+                                       (#:garbage 'this-is 'still-garbage)))))
+    (lambda (key _ message . rest)
+      message)))
+
+#;
+(test-assert "make-workflow macro supports implicit lists"
+  (let ((wf (make-workflow
+             (name "anything")
+             (packages "hello" "coreutils"))))
+    (equal? '(this that whatever)
+            (workflow-packages wf))))
+
+#;
+(test-assert "make-process macro flattens implicit lists"
+  (let ((proc (make-process
+               (name "anything")
+               (procedure '(const #t))
+               (inputs '(this and) 'that '(whatever you say)))))
+    (equal? '(this and that whatever you say)
+            (process-inputs proc))))
 
 (test-end "workflows")
