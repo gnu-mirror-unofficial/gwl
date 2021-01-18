@@ -1,4 +1,4 @@
-;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -72,11 +72,41 @@
              (procedure '(const #t))
              (run-time (complexity (threads 2))))))
 
-(test-error "make-process rejects invalid field names" #t
-            (make-process
-             (name "anything")
-             (procedure '(const #t))
-             (garbage 'this-is)))
+(test-equal "make-process rejects invalid field names 1/3"
+  '("process: extraneous fields: garbage \n")
+  (catch 'misc-error
+    (lambda ()
+      (test-read-eval-string (format #false "~s"
+                                     '(make-process
+                                       (name "anything")
+                                       (procedure '(const #t))
+                                       (garbage 'this-is)))))
+    (lambda (key _ format-string message . rest)
+      message)))
+
+(test-equal "make-process rejects invalid field names 2/3"
+  "process: Invalid field name"
+  (catch 'syntax-error
+    (lambda ()
+      (test-read-eval-string (format #false "~s"
+                                     '(make-process
+                                       (name "anything")
+                                       (procedure '(const #t))
+                                       (#:garbage 'this-is)))))
+    (lambda (key _ message . rest)
+      message)))
+
+(test-equal "make-process rejects invalid field names 3/3"
+  "process: Invalid field name"
+  (catch 'syntax-error
+    (lambda ()
+      (test-read-eval-string (format #false "~s"
+                                     '(make-process
+                                       (name "anything")
+                                       (procedure '(const #t))
+                                       (#:garbage 'this-is 'still-garbage)))))
+    (lambda (key _ message . rest)
+      message)))
 
 (test-assert "make-process permits definitions in field values"
   (let* ((proc (make-process

@@ -1,5 +1,5 @@
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -281,8 +281,19 @@
                               ((empty-field)
                                (syntax-violation #f "process: Empty field" #'empty-field))
                               ((key value)
+                               ;; No valid fields are keywords.
+                               ;; Signal this error early instead of
+                               ;; constructing an invalid let*.
+                               (when (keyword? (syntax->datum #'key))
+                                 (syntax-violation #f "process: Invalid field name" #'key))
                                #'(key value))
                               ((key values ...)
+                               ;; No valid fields are keywords.
+                               ;; Signal this error early instead of
+                               ;; constructing an invalid let*.
+                               (when (keyword? (syntax->datum #'key))
+                                 (syntax-violation #f "process: Invalid field name" #'key))
+
                                ;; XXX: This is a crude way to allow
                                ;; for definitions inside of field
                                ;; values.
