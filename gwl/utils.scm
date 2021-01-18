@@ -243,6 +243,9 @@ arguments."
   "Report the failure to load FILE, a user-provided Scheme or Wisp file.
 ARGS is the list of arguments received by the 'throw' handler."
   (match args
+    (('system-error "open-file" format-string . strings)
+     (report-error (G_ "failed to load '~a': ~a~%") file
+                   (apply format #false "~?" format-string strings)))
     (('system-error . rest)
      (let ((err (system-error-errno args)))
        (report-error (G_ "failed to load '~a': ~a~%") file (strerror err))))
