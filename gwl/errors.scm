@@ -211,9 +211,9 @@ arguments."
     (('unbound-variable proc message (variable) _ ...)
      (match (known-variable-definition variable)
        (#f
-        (display-hint (G_ "Did you forget a @code{use-modules} form?")))
+        (display-hint (G_ "Did you forget an @code{import} form?")))
        ((? module? module)
-        (display-hint (format #f (G_ "Did you forget @code{(use-modules ~a)}?")
+        (display-hint (format #f (G_ "Did you forget @code{(import ~a)}?")
                               (module-name module))))))))
 
 ;; Adapted from (guix ui).
