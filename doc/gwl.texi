@@ -509,10 +509,11 @@ that you can use to define a number of similar processes.  In the end
 you have the three processes @code{show-fruit}, @code{show-kitchen},
 and @code{show-table}.
 
-@node Useful procedures
-@section Useful procedures
+@node Useful procedures and macros
+@section Useful procedures and macros
 @cindex (gwl utils)
 @cindex Helper procedures
+@cindex Helper macros
 @cindex Utilities
 
 The @code{(gwl utils)} module provides a number of useful helpers that
@@ -542,27 +543,78 @@ map
 @end lisp
 @end deffn
 
-@cindex expand, helper procedure
-@cindex expand file name templates
-@cindex file name expansion
-@deffn {Scheme Procedure} expand @var{file-name-part}@dots{}
-This procedure returns a list of file names by combining any number of
-file name parts given as arguments.  A file name part can either be a
-string or a list of strings.  This is very useful when you need to
-generate a list of input or output file names.
+@cindex file, helper macro
+@cindex construct a single file name
+@deffn {Scheme Macro} file @var{file-name-part}@dots{}
+This macro enables you to construct a normalized file name out of any
+number of file name parts given as arguments.  A file name part can
+either be a string literal or a variable or expression that evaluates
+to a string.
+
+Directories are separated with a literal slash.  This allows you to
+construct file names where parts of a directory or file name are
+computed from other values.
 
 @lisp
-(expand "/home/"
-        '("me" "you" "them")
-        "/data/"
-        '("old" "new"))
+define user
+  . "rekado"
 
-=> '("/home/me/data/old"
-     "/home/me/data/new"
-     "/home/you/data/old"
-     "/home/you/data/new"
-     "/home/them/data/old"
-     "/home/them/data/new")
+define my-list
+  iota 32
+
+define num
+  number->string
+    + 10
+      length my-list
+
+file / "home" / user / "file_" num ".txt"
+
+=> "/home/rekado/file_42.txt"
+@end lisp
+@end deffn
+
+@cindex files, helper macro
+@cindex construct multiple file names
+@cindex file name expansion
+@deffn {Scheme Macro} files @var{file-name-part}@dots{}
+Much like the @code{file} macro, the @code{files} macro enables you to
+construct multiple normalized file names out of any number of file
+name parts given as arguments.  A file name part can either be a
+string literal, a variable or expression that evaluates to a string,
+or a variable or expression that evaluates to a list of strings.
+
+Any list of strings will lead to the construction of a combinatorial
+variant.  This is very useful when you need to generate a list of
+input or output file names.
+
+Directories are separated with a literal slash.  This allows you to
+construct file names where parts of a directory or file name are
+computed from other values.
+
+@lisp
+define users
+  list "rekado" "zimoun"
+
+define projects
+  list "foo" "bar"
+
+define extensions
+  list "txt" "tar.gz" "scm"
+
+files / "home" / users / "proj_" projects / "file." extensions
+
+=> '("/home/rekado/proj_foo/file.txt"
+     "/home/rekado/proj_foo/file.tar.gz"
+     "/home/rekado/proj_foo/file.scm"
+     "/home/rekado/proj_bar/file.txt"
+     "/home/rekado/proj_bar/file.tar.gz"
+     "/home/rekado/proj_bar/file.scm"
+     "/home/zimoun/proj_foo/file.txt"
+     "/home/zimoun/proj_foo/file.tar.gz"
+     "/home/zimoun/proj_foo/file.scm"
+     "/home/zimoun/proj_bar/file.txt"
+     "/home/zimoun/proj_bar/file.tar.gz"
+     "/home/zimoun/proj_bar/file.scm")
 @end lisp
 @end deffn
 
@@ -733,12 +785,11 @@ frobnicate -g hg19.fa --files a b c > result
 @end example
 
 If these two ways to access elements of a list are not enough, we
-recommend defining a variable using @code{pick} (@ref{Useful
-procedures}).  In the following example we define a variable
-@var{second-sample} inside of the @code{procedure} field to hold the
-second of the inputs after the keyword @code{samples:}, i.e. the
-string @code{the}.  We can then refer to that variable by name in the
-code snippet.
+recommend defining a variable using @code{pick} (@ref{Useful procedures and macros}).
+In the following example we define a variable @var{second-sample}
+inside of the @code{procedure} field to hold the second of the inputs
+after the keyword @code{samples:}, i.e. the string @code{the}.  We can
+then refer to that variable by name in the code snippet.
 
 @lisp
 process foo

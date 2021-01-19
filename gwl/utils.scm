@@ -30,7 +30,8 @@
   #:export (load-workflow
             on
             pick
-            expand
+            file
+            files
 
             wisp-suffix
             normalize-file-name))
@@ -79,6 +80,35 @@ combinations."
                    ls))
       (_ (list prefix))))
   (inner "" file-parts))
+
+(define (slash-transformer parts)
+  (let loop ((parts parts)
+             (result (list)))
+    (if (null? parts)
+        (reverse result)
+        (syntax-case (car parts) (/)
+          (/
+           (loop (cdr parts)
+                 (cons #'"/" result)))
+          (s
+           (loop (cdr parts)
+                 (cons #'s result)))))))
+
+(define-syntax file
+  (lambda (x)
+    (syntax-case x ()
+      ((_ rest ...)
+       #`(normalize-file-name
+          (string-append
+           #,@(slash-transformer #'(rest ...))))))))
+
+(define-syntax files
+  (lambda (x)
+    (syntax-case x ()
+      ((_ rest ...)
+       #`(map normalize-file-name
+              (expand
+               #,@(slash-transformer #'(rest ...))))))))
 
 (define (wisp-suffix file)
   (cond ((string-suffix? ".w" file) ".w")

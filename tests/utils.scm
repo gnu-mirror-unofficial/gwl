@@ -43,6 +43,10 @@
 (test-equal "pick accepts SRFI-1 accessor procedures"
   8 (pick third #:yours l))
 
+
+;; expand is used internally by "files"
+(define expand (@@ (gwl utils) expand))
+
 (test-equal "expand returns list of strings"
   '("/tmp/foo/1/bar/baz"
     "/tmp/foo/2/bar/baz"
@@ -87,5 +91,24 @@
 (test-equal "normalize-file-name: prefix relative file names 2/2"
   "./hello/world"
   (normalize-file-name "what/../hello/world"))
+
+
+(test-equal "file: returns a simple string"
+  "/hello/world"
+  (file / "hello" / "world"))
+
+(test-equal "file: returns a simple string with simple variable"
+  "/hello/world"
+  (let ((who "world"))
+    (file / "hello" / who)))
+
+(test-equal "file: normalizes file name"
+  "/hello/world"
+  (let ((who "world"))
+    (file / "hello" / / / who / / ".." / who /)))
+
+(test-equal "files: returns a list"
+  '("/hello/world" "/bye/world")
+  (files / (list "hello" "bye") / "world"))
 
 (test-end "utils")
