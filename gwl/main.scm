@@ -69,15 +69,16 @@
 
                ;; Run the workflow
                ;; TODO: see https://gitlab.com/a-sassmannshausen/guile-config/-/issues/15
-               (let* ((options (s37:args-fold (cdr (command-line))
-                                              (list (s37:option '(#\i "input") #t #f
-                                                                (lambda (opt name arg result . rest)
-                                                                  (apply values
-                                                                         (alist-cons 'input arg result)
-                                                                         rest))))
-                                              (lambda (opt name arg result) #f) ; ignore
-                                              (lambda (op loads) (cons op loads))
-                                              '()))
+               (let* ((options (or (s37:args-fold (cdr (command-line))
+                                                  (list (s37:option '(#\i "input") #t #f
+                                                                    (lambda (opt name arg result . rest)
+                                                                      (apply values
+                                                                             (alist-cons 'input arg result)
+                                                                             rest))))
+                                                  (lambda (opt name arg result) '()) ; ignore
+                                                  (lambda (op loads) (cons op loads))
+                                                  '())
+                                   '()))
                       (inputs (filter-map (match-lambda
                                             (('input . val) val)
                                             (_ #f))
