@@ -316,7 +316,7 @@ of missing files."
   (match unspecified-inputs
     (()
      ;; verify input files
-     (match (filter (negate file-exists?) input-files)
+     (match (remove file-exists? input-files)
        (()
         ;; Link all mapped input files to their target locations
         ;; TODO: ensure that target directories exist.
