@@ -10,7 +10,7 @@ process list-file-template (with filename)
   packages "gzip"
   inputs filename
   outputs
-    string-append filename ".list"
+    file filename ".list"
   run-time
     complexity
       space 20 mebibytes

@@ -1,5 +1,6 @@
 process create-file
-  outputs "/tmp/file.txt"
+  outputs
+    file / "tmp" / "file.txt"
   run-time
     complexity
       space 20 MiB
@@ -8,8 +9,10 @@ process create-file
 
 process compress-file
   packages "gzip"
-  inputs "/tmp/file.txt"
-  outputs "/tmp/file.txt.gz"
+  inputs
+    file / "tmp" / "file.txt"
+  outputs
+    file / "tmp" / "file.txt.gz"
   run-time
     complexity
       space 20 mebibytes

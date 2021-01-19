@@ -16,7 +16,7 @@ process compress-file (with input)
   packages "gzip"
   inputs input
   outputs
-    string-append input ".gz"
+    file input ".gz"
   run-time
     complexity
       space 20 mebibytes
