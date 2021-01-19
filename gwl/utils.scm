@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-31)
   #:use-module (srfi srfi-34)
+  #:use-module (system base language)
   #:use-module (language wisp)
   #:export (load-workflow
             on
@@ -132,17 +133,22 @@ where all the basic GWL modules are available."
          file target))))
 
 
-(define (read-one-wisp-sexp port)
-  "Read a Wisp expression from PORT."
-  ;; allow using "# foo" as #(foo).
-  (read-hash-extend #\# (λ (chr port) #\#))
-  (cond
-   ((eof-object? (peek-char port))
-    (read-char port)) ; return eof: we’re done
-   (else
-    (match (wisp-scheme-read-chunk port)
-      (() #f)
-      ((chunk . _) chunk)))))
+(define wisp-reader
+  ;; XXX We'd like to use language-reader here, but (language wisp
+  ;; spec) triggers a very annoying setlocale warning because it
+  ;; evaluates (setlocale LC_ALL "foo").
+  #;
+  (language-reader (lookup-language 'wisp))
+  (lambda (port env)
+    ;; allow using "# foo" as #(foo).
+    (read-hash-extend #\# (λ (chr port) #\#))
+    (cond
+     ((eof-object? (peek-char port))
+      (read-char port)) ; return eof: we’re done
+     (else
+      (match (wisp-scheme-read-chunk port)
+        (() #false)
+        ((chunk . _) chunk))))))
 
 ;; Adapted from (guix ui).
 (define* (load* file user-module)
@@ -173,7 +179,8 @@ where all the basic GWL modules are available."
                ;; try to search for FILE in %LOAD-COMPILED-PATH.
                (load (canonicalize-path file)
                      (and (wisp-suffix file)
-                          read-one-wisp-sexp)))
+                          (lambda (port)
+                            (wisp-reader port user-module)))))
              (const #f))))))
     (lambda _
       (exit 1))
