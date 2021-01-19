@@ -25,6 +25,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-31)
   #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:use-module (system base language)
   #:use-module (language wisp)
   #:export (load-workflow
@@ -46,25 +47,61 @@
   (case-lambda
     ;; First item.
     ((key collection)
-     (and=> (memq key collection) cadr))
+     (when (null? collection)
+       (raise (condition
+               (&gwl-error)
+               (&message
+                (message "pick: Cannot pick from empty collection.~%")))))
+     (or (and=> (memq key collection) cadr)
+         (raise (condition
+                 (&gwl-error)
+                 (&formatted-message
+                  (format "pick: Cannot find item with key `~a'.~%")
+                  (arguments (list key)))))))
     ;; Nth item
     ((n key collection)
+     (when (null? collection)
+       (raise (condition
+               (&gwl-error)
+               (&message
+                (message "pick: Cannot pick from empty collection.~%")))))
      (let ((sub
             (and=> (memq key collection)
                    (lambda (sublist)
                      (break keyword? (cdr sublist))))))
+       (unless sub
+         (raise (condition
+                 (&gwl-error)
+                 (&formatted-message
+                  (format "pick: Cannot pick item with key `~a'.~%")
+                  (arguments (list key))))))
        (cond
         ((number? n)
-         (and (> (length sub) n)
-              (list-ref sub n)))
+         (let ((len (length sub)))
+           (unless (> len n)
+             (raise (condition
+                     (&gwl-error)
+                     (&formatted-message
+                      (format "pick: Cannot pick item number ~a, there are only ~a items.~%")
+                      (arguments (list n len)))))))
+         (list-ref sub n))
         ;; All items
         ((and (procedure? n)
               (eq? (procedure-name n) '*))
          sub)
         ;; SRFI-1 accessors like "first"
         ((procedure? n)
-         (n sub))
-        (else (error "pick: Selector not supported.")))))))
+         (or (n sub)
+             (raise (condition
+                     (&gwl-error)
+                     (&formatted-message
+                      (format "pick: Could not pick item with selector `~a'~%")
+                      (arguments (list (procedure-name n))))))))
+        (else
+         (raise (condition
+                 (&gwl-type-error
+                  (expected-type (list "<number>" "<procedure>"))
+                  (actual-value n))))))))))
 
 (define (expand . file-parts)
   "Expand the file name template consisting of strings interspersed

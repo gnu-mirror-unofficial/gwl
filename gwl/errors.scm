@@ -28,6 +28,9 @@
             formatted-message-string
             formatted-message-arguments
 
+            &gwl-error
+            gwl-error?
+
             &gwl-package-error
             gwl-package-error-package-spec
 

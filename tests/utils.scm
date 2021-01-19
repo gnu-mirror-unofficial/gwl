@@ -15,7 +15,10 @@
 
 (define-module (test-utils)
   #:use-module (gwl utils)
+  #:use-module (gwl errors)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:use-module (srfi srfi-64))
 
 (test-begin "utils")
@@ -28,8 +31,9 @@
 (test-equal "pick can pick a single item"
   4 (pick 1 #:mine l))
 
-(test-equal "pick does not overshoot the end of a list"
-  #f (pick 10 #:mine l))
+(test-error "pick does not overshoot the end of a list"
+            &gwl-error
+            (pick 10 #:mine l))
 
 (test-equal "pick can pick a single item at the end of a sublist"
   5 (pick 2 #:mine l))
@@ -42,6 +46,18 @@
 
 (test-equal "pick accepts SRFI-1 accessor procedures"
   8 (pick third #:yours l))
+
+(test-error "pick complains if the collection is empty 1/3" &gwl-error
+            (pick 1 #:yours '()))
+
+(test-error "pick complains if the collection is empty 2/3" &gwl-error
+            (pick third #:yours '()))
+
+(test-error "pick complains if the collection is empty 3/3" &gwl-error
+            (pick * #:yours '()))
+
+(test-error "pick complains if the selector type is bogus" &gwl-error
+            (pick "foo" #:mine l))
 
 
 ;; expand is used internally by "files"
