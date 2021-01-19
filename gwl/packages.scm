@@ -55,6 +55,7 @@
                    (expected-type "<inferior>")
                    (actual-value val)))))))
         (raise (condition
+                (&gwl-error)
                 (&formatted-message
                  (format "Could not open inferior Guix at ~a.~%")
                  (arguments (list default-guix))))))))
