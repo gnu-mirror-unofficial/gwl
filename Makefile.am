@@ -26,6 +26,7 @@ SOURCES =                                                 \
   gwl/errors.scm                                          \
   gwl/main.scm                                            \
   gwl/oop.scm                                             \
+  gwl/packages.scm                                        \
   gwl/processes.scm                                       \
   gwl/process-engines.scm                                 \
   gwl/process-engines/simple-engine.scm                   \
