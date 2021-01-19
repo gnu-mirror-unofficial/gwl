@@ -17,6 +17,7 @@
 (define-module (gwl main)
   #:use-module (config)
   #:use-module (config api)
+  #:use-module (gwl errors)
   #:use-module (gwl process-engines)
   #:use-module (gwl web-interface)
   #:use-module (gwl workflows graph)

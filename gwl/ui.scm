@@ -1,4 +1,4 @@
-;;; Copyright © 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,11 +15,7 @@
 
 (define-module (gwl ui)
   #:use-module (gwl ui)
-  #:export (G_ leave))
-
-(define (leave . msg)
-  (apply format (current-error-port) msg)
-  (exit 1))
+  #:export (G_))
 
 ;; TODO: add gettext support
 (define (G_ msg) msg)

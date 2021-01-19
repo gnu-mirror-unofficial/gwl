@@ -23,6 +23,7 @@ godir=$(libdir)/guile/$(GUILE_EFFECTIVE_VERSION)/site-ccache
 
 SOURCES =                                                 \
   gwl/config.scm                                          \
+  gwl/errors.scm                                          \
   gwl/main.scm                                            \
   gwl/oop.scm                                             \
   gwl/processes.scm                                       \
