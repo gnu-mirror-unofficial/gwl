@@ -18,6 +18,8 @@ Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ** Bug fixes
 - handle caching of files with UTF-8 encoded file names
 - handle more errors in the web interface
+** Package handling
+– packages are now looked up in an inferior Guix, which defaults to the current Guix.  This avoids the problem of loading older packages from the Guix that was available when the GWL was built.
 ** Error handling
 - accidental keywords instead of =process= or =workflow= field names now trigger a more specific “invalid field” syntax error instead of generating invalid syntax that throws an unclear error later.
 

@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
 (define-module (gwl workflows graph)
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
+  #:use-module (gwl packages)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows utils)
-  #:use-module ((guix packages) #:select (package-full-name package?))
   #:export (workflow->dot))
 
 ;;; ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ label=<<FONT POINT-SIZE=\"14\">~a</FONT><BR/>\
             (match (process-packages process)
               (() "")
               (inputs (format #f "<BR/>Uses: ~{~a~^, ~}."
-                              (map package-full-name inputs)))))))
+                              (map package-name inputs)))))))
 
 (define (workflow-restriction->dot process . restrictions)
   "Write the dependency relationships of a restriction in dot format."

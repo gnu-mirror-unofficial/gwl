@@ -234,10 +234,32 @@ A longer description about the purpose of this process.
 This field is used to specify what software packages need to be
 available when executing the process.  Packages can either be Guix
 package specifications --- such as the string @code{"guile@@3.0"} for
-Guile version 3.0 --- or package variable names.  When using package
-variable names, you need to make sure to import the appropriate Guix
-module at the top of your workflow file, e.g. @code{(import (gnu
-packages guile))} for the variable @code{guile}.
+Guile version 3.0 --- or package variable names.
+
+@cindex packages, looked up in inferior Guix
+@cindex packages, using current Guix
+By default, package specifications are looked up in the context of the
+current Guix, i.e. the same version of Guix that you used to invoke
+@command{guix workflow}.  This is to ensure that you get exactly those
+packages that you would expect given the Guix channels you have
+configured.
+
+@cindex packages, using Guix modules
+We strongly advise against using package variables from Guix modules.
+The workflow language uses Guix as a library and is compiled and
+tested with the version of Guix that is currently available as the
+@code{guix} package in @code{(gnu packages package-management)}.  The
+version of this Guix will likely be older than the version of Guix you
+use to invoke @command{guix workflow}.
+
+@cindex packages, from channels
+Package variables are useful for one-off ad-hoc packages that are not
+contained in any channel and are defined in the workflow file itself.
+You suggest you use the procedure @code{lookup-package} from the
+@code{(gwl packages)} module to look up inputs in the context of the
+current Guix.  To ensure reproducibility, however, we urge you to
+publish packages in a version-controlled channel.  See the Guix
+reference manual to learn all there is to know about channels.
 
 @cindex implicit list, process.packages
 The @code{packages} field accepts a list of packages as well as

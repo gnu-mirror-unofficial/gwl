@@ -16,8 +16,10 @@
 
 (define-module (gwl processes)
   #:use-module (oop goops)
+  #:use-module (gwl errors)
   #:use-module (gwl oop)
   #:use-module (gwl process-engines)
+  #:use-module (gwl packages)
   #:use-module ((guix monads)
                 #:select (mlet* mlet mwhen return))
   #:use-module ((guix derivations)
@@ -35,10 +37,6 @@
                 (search-path-specification->sexp))
   #:use-module ((guix packages)
                 #:select (package?))
-  #:use-module ((gnu packages)
-                #:select (specification->package))
-  #:use-module ((gnu packages bash)
-                #:select (bash-minimal))
   #:use-module (guix gexp)
   #:use-module ((guix store)
                 #:select
@@ -53,6 +51,8 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:export (make-process
             process?
             process-name
@@ -196,7 +196,7 @@
    #:init-value '()
    #:implicit-list? #t
    #:validator? (lambda (value)
-                  (every package? value))
+                  (every valid-package? value))
    #:transformer
    ;; TODO: the instance name is not be available at this point, so we
    ;; can't report the process name here.  We should move the
@@ -204,15 +204,15 @@
    (lambda (instance value)
      (map (match-lambda
             ((and (? string?) spec)
-             (catch #t
-               (lambda ()
-                 (specification->package spec))
-               (lambda _
-                 (error (format #f "no such package: ~a~%" spec)))))
+             (lookup-package spec))
             ((and (? package?) pkg)
              pkg)
             (x
-             (error (format #f "must provide package value or string: ~a~%" x))))
+             (raise
+              (condition
+               (&gwl-type-error
+                (expected-type (list "<package>" "<string>"))
+                (actual-value x))))))
           value)))
   (inputs
    #:accessor process-raw-inputs
@@ -539,7 +539,7 @@ available.  OUTPUTS are copied outside of the container."
               (unless (file-exists? "/bin/sh")
                 (unless (file-exists? "/bin")
                   (mkdir "/bin"))
-                (symlink #$(file-append bash-minimal "/bin/sh") "/bin/sh"))
+                (symlink #$(file-append (bash-minimal) "/bin/sh") "/bin/sh"))
 
               ;; Create a dummy /etc/passwd to satisfy applications that demand
               ;; to read it.
@@ -594,7 +594,7 @@ and returns its location."
     (let* ((name (process-full-name process))
            (exp (procedure->gexp process))
            (make-wrapper (process-engine-wrapper engine))
-           (packages (cons bash-minimal
+           (packages (cons (bash-minimal)
                            (process-packages process)))
            (manifest (packages->manifest packages))
            (search-paths (delete-duplicates

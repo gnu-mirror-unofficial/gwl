@@ -3,29 +3,6 @@
 * rewrite process->script
 The =process->script= procedure in =(gwl processes)= is the absolute worst.  It is hard to understand, overly long, terribly nested.  It needs a careful rewrite and excellent tests.
 
-* load-path magic…
-The GWL uses Guix as a library and as a way to build environments.
-When starting the GWL, however, it will use the Guix modules (and the
-dependencies of Guix) and *not* the libraries that the GWL was built
-with.  This can result in run-time conflicts and unexpected behaviour
-as Guix is upgraded and diverges from the version of Guix used to
-build the GWL.
-
-We should aim to insulate the GWL from the version of Guix used to
-start it.  One idea is to set the load-path in (guix scripts workflow)
-to what it was at build time.  Then we build packages in an inferior
-Guix — which is the Guix used to run “guix workflow”, i.e. the user’s
-current version of Guix.
-
-An obstacle here is in the definition of processes.  Processes can
-access package variables directly or via specification->package.
-load-workflow is evaluated with the launching Guix, not with an
-inferior as this all happens before a Gexp is compiled.
-
-We’d also have to replace “specification->package” with a variant that
-queries the user’s current Guix (or an inferior) instead of the Guix
-used at GWL build time.
-
 * documentation
 - document the cache
 - add a procedure reference

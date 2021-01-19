@@ -1,6 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This file is part of GNU Guix.
 ;;;
@@ -18,11 +18,11 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl process-engines grid-engine)
+  #:use-module (gwl packages)
   #:use-module (gwl process-engines)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (guix gexp)
-  #:use-module (gnu packages bash)
   #:use-module (ice-9 format)
   #:export (grid-engine))
 
@@ -75,7 +75,8 @@ requirements of PROCESS."
   "Return a G-expression for an executable wrapper script that sets up
 an environment in which to call the PROCESS SCRIPT with constraints
 provided by WORKFLOW."
-  (let* ((name               (process-full-name process))
+  (let* ((bash               (bash-minimal))
+         (name               (process-full-name process))
          (restrictions       (process->grid-engine-restrictions-string process workflow))
          (time-str           (process->grid-engine-time-limit process))
          (space-str          (process->grid-engine-space-limit process))
