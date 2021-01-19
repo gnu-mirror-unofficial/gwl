@@ -21,12 +21,12 @@ process bye
 
 workflow simple-wisp
   processes
-    let
-      :
-        eat-fruit : eat "fruit"
-        eat-veges : eat "vegetables"
-      graph
-        eat-fruit -> greet
-        eat-veges -> greet
-        sleep     -> eat-fruit eat-veges
-        bye       -> sleep
+    define eat-fruit
+      eat "fruit"
+    define eat-veges
+      eat "vegetables"
+    graph
+      eat-fruit -> greet
+      eat-veges -> greet
+      sleep     -> eat-fruit eat-veges
+      bye       -> sleep
