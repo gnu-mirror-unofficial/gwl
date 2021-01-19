@@ -138,9 +138,12 @@ a location object."
           (colorize-string prefix colors))
         identity))
 
-  (format (current-error-port) "~a: ~a"
-          (location-color (location->string location))
-          (prefix-color prefix)))
+  (if (location? location)
+      (format (current-error-port) "~a: ~a"
+              (location-color (location->string location))
+              (prefix-color prefix))
+      (format (current-error-port) "~a"
+              (prefix-color prefix))))
 
 (define %hint-color (color BOLD CYAN))
 (define %error-color (color BOLD RED))
