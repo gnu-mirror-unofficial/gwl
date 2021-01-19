@@ -35,8 +35,6 @@
   #:use-module ((guix search-paths)
                 #:select
                 (search-path-specification->sexp))
-  #:use-module ((guix packages)
-                #:select (package?))
   #:use-module (guix gexp)
   #:use-module ((guix store)
                 #:select
@@ -205,13 +203,13 @@
      (map (match-lambda
             ((and (? string?) spec)
              (lookup-package spec))
-            ((and (? package?) pkg)
+            ((and (? valid-package?) pkg)
              pkg)
             (x
              (raise
               (condition
                (&gwl-type-error
-                (expected-type (list "<package>" "<string>"))
+                (expected-type (list "<package>" "<inferior-package>" "<string>"))
                 (actual-value x))))))
           value)))
   (inputs
