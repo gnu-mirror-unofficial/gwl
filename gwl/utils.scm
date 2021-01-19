@@ -183,10 +183,11 @@ where all the basic GWL modules are available."
           (srfi srfi-26))))
   (let ((result (load* file (make-user-module modules))))
     (unless (workflow? result)
-      (format (current-error-port)
-              "File `~a' does not evaluate to a workflow value.~%"
-              file)
-      (exit 1))
+      (raise (condition
+              (&gwl-error)
+              (&formatted-message
+               (format "File `~a' does not evaluate to a workflow value.~%")
+               (arguments (list file))))))
     result))
 
 ;; Helper to handle relative file names.
