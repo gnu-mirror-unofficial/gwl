@@ -225,9 +225,10 @@ arguments."
 ARGS is the list of arguments received by the 'throw' handler."
   (define loc
     (and frame (source-properties->location (frame-source frame))))
+
   (match args
-    (('system-error "open-file" format-string . strings)
-     (report-error loc (G_ "failed to load '~a': ~a~%") file
+    (('system-error "open-file" (? string? format-string) . strings)
+     (report-error loc (G_ "~a~%")
                    (apply format #false "~?" format-string strings)))
     (('system-error . rest)
      (let ((err (system-error-errno args)))
