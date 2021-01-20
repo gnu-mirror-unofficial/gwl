@@ -99,7 +99,7 @@ workflow.")
          (test boolean?)
          (synopsis "Bypass the cache and execute all processes"))
         (switch
-         (name 'containerize)
+         (name 'container)
          (character #\c)
          (default #false)
          (test boolean?)
