@@ -238,10 +238,12 @@ ARGS is the list of arguments received by the 'throw' handler."
      (if (string-suffix? "end of file" message)
          (let ((location (string-drop-right message
                                             (string-length "end of file"))))
+           (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
            (format (current-error-port) (G_ "~amissing closing parenthesis~%")
                    location))
          (apply throw args)))
     (('read-error "scm_read_extended_symbol" message _ ...)
+     (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
      ;; This error indicates that "#{" was used instead of "# {"
      (if (string-suffix? "end of file while reading symbol" message)
          (let ((location (string-drop-right message
@@ -254,6 +256,7 @@ ARGS is the list of arguments received by the 'throw' handler."
                     loc (location file 1 0))))
        (report-error loc (G_ "~a~%  ~y~%") message form)))
     (('unbound-variable _ ...)
+     (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
      (report-unbound-variable-error args #:frame frame))
     ((key args ...)
      (let ((loc (or loc (location file 1 0))))
@@ -283,11 +286,13 @@ ARGS is the list of arguments received by the 'throw' handler."
           (when (fix-hint? c)
             (display-hint (condition-fix-hint c))))
          (((? symbol? proc) (? string? message) (args ...) . rest)
+          (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
           (display-error frame (current-error-port) proc message
                          args rest))
          (_
           ;; Some exceptions like 'git-error' do not follow Guile's convention
           ;; above and need to be printed with 'print-exception'.
+          (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
           (print-exception (current-error-port) frame key args)))))))
 
 (define (last-frame-with-source stack file)
