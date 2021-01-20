@@ -236,13 +236,20 @@ ARGS is the list of arguments received by the 'throw' handler."
     (('read-error "scm_i_lreadparen" message _ ...)
      ;; Guile's missing-paren messages are obscure so we make them more
      ;; intelligible here.
-     (if (string-suffix? "end of file" message)
-         (let ((location (string-drop-right message
-                                            (string-length "end of file"))))
-           (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
-           (format (current-error-port) (G_ "~amissing closing parenthesis~%")
-                   location))
-         (apply throw args)))
+     (cond
+      ((string-suffix? "end of file" message)
+       (let ((location (string-drop-right message
+                                          (string-length "end of file"))))
+         (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
+         (format (current-error-port) (G_ "~amissing closing parenthesis~%")
+                 location)))
+      ((string-suffix? "missing close paren" message)
+       (let ((location (string-drop-right message
+                                          (string-length "missing close paren"))))
+         (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
+         (format (current-error-port) (G_ "~amissing closing parenthesis~%")
+                 location)))
+      (else (apply throw args))))
     (('read-error "scm_read_extended_symbol" message _ ...)
      (print-diagnostic-prefix (G_ "error: ") #:colors %error-color)
      ;; This error indicates that "#{" was used instead of "# {"
