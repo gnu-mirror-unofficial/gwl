@@ -256,7 +256,8 @@ where all the basic GWL modules are available."
          ;; Capture the stack up to this procedure call, excluded, and pass
          ;; the faulty stack frame to 'report-load-error'.
          (let* ((stack (make-stack #t handle-error tag))
-                (frame (last-frame-with-source stack)))
+                (frame (last-frame-with-source stack
+                                               (basename (canonicalize-path file)))))
            (report-load-error file args frame)))))
 
 (define (normalize-file-name file-name)

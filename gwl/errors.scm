@@ -290,18 +290,23 @@ ARGS is the list of arguments received by the 'throw' handler."
           ;; above and need to be printed with 'print-exception'.
           (print-exception (current-error-port) frame key args)))))))
 
-(define (last-frame-with-source stack)
+(define (last-frame-with-source stack file)
   "Walk stack upwards and return the last frame that has source location
-information, or #f if it could not be found."
+information in FILE, or #f if it could not be found."
   (define (frame-with-source frame)
     ;; Walk from FRAME upwards until source location information is found.
     (let loop ((frame    frame)
                (previous frame))
       (if (not frame)
           previous
-          ;; On Guile 3, the latest frame with source may be that of
-          ;; 'raise-exception' in boot-9.scm.  Skip it.
           (if (and (frame-source frame)
+                   ;; Restrict to FILE.
+                   (string=? file
+                             (basename
+                              (location-file
+                               (source-properties->location (frame-source frame)))))
+                   ;; On Guile 3, the latest frame with source may be that of
+                   ;; 'raise-exception' in boot-9.scm.  Skip it.
                    (not (eq? 'raise-exception (frame-procedure-name frame))))
               frame
               (loop (frame-previous frame) frame)))))
