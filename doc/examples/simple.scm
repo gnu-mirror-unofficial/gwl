@@ -1,15 +1,13 @@
-(import (gnu packages base))
-
 (define-public greet
   (make-process
    (name "greet")
-   (packages (list hello))
+   (packages (list "hello"))
    (procedure '(system "hello"))))
 
 (define-public sleep
   (make-process
    (name "sleep")
-   (packages (list coreutils))
+   (packages (list "coreutils"))
     (procedure
      '(begin
         (display "Sleeping...\n")

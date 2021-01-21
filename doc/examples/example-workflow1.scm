@@ -1,5 +1,3 @@
-(import (only (gnu packages compression) gzip))
-
 (define-public create-file
   (make-process
    (name "create-file")
@@ -15,7 +13,7 @@
 (define-public compress-file
   (make-process
    (name "compress-file")
-   (packages (list gzip))
+   (packages (list "gzip"))
    (inputs (list "/tmp/file.txt"))
    (outputs (list "/tmp/file.txt.gz"))
    (run-time (complexity

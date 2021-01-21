@@ -1,5 +1,3 @@
-(import (only (gnu packages compression) gzip))
-
 (define (create-file filename)
   (make-process
    (name (string-append "create-file-" (basename filename)))
@@ -15,7 +13,7 @@
 (define (compress-file input)
   (make-process
    (name (string-append "compress-file-" (basename input)))
-   (packages (list gzip))
+   (packages (list "gzip"))
    (inputs (list input))
    (outputs (list (string-append input ".gz")))
    (run-time (complexity

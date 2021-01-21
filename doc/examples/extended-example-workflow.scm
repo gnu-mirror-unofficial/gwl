@@ -1,6 +1,3 @@
-(import (only (gnu packages compression) gzip)
-        (gnu packages bash))
-
 ;; We are going to extend "example-workflow".
 (define dynamic-workflow
   (load-workflow "example-workflow.scm"))
@@ -8,7 +5,7 @@
 (define (list-file-template filename)
   (make-process
    (name (string-append "list-file-" (basename filename)))
-   (packages (list gzip))
+   (packages (list "gzip"))
    (inputs (list filename))
    (outputs (list (string-append filename ".list")))
    (run-time (complexity
