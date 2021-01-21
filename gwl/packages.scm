@@ -23,7 +23,8 @@
                           lookup-inferior-packages
                           inferior-package?
                           inferior-package-name
-                          inferior-package-version))
+                          inferior-package-version
+                          inferior-package-native-inputs))
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -36,7 +37,8 @@
             valid-package?
             package-name
 
-            bash-minimal))
+            bash-minimal
+            default-guile))
 
 (define current-guix
   (let* ((default-guix (format #false "~a/.config/guix/current"
@@ -90,3 +92,10 @@ the version.  By default, DELIMITER is \"@\"."
 
 (define (bash-minimal)
   (lookup-package "bash-minimal"))
+
+(define (default-guile)
+  "Return the variant of Guile that was used to build the \"guix\"
+package, which provides all library features used by the GWL.  We use
+this Guile to run scripts."
+  (and=> (assoc-ref (inferior-package-native-inputs (lookup-package "guix"))
+                    "guile") first))
