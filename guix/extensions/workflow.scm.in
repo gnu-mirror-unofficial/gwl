@@ -35,12 +35,31 @@
     ;; Override load paths
     (set! %load-path
           (append own-load-path
-                  (parse-path "@GUILE_LOAD_PATH@")
-                  %load-path))
+                  ;; This is Guile's own pristine load path.
+                  (list (%library-dir) (%site-dir)
+                        (%global-site-dir) (%package-data-dir))
+                  ;; When building in an impure environment this
+                  ;; variable may contain locations that collide with
+                  ;; Guile's own load path, so we put it at the very
+                  ;; end.  We add it for all the additional Guile
+                  ;; packages.
+                  (parse-path "@GUILE_LOAD_PATH@")))
     (set! %load-compiled-path
           (append own-load-compiled-path
-                  (parse-path "@GUILE_LOAD_COMPILED_PATH@")
-                  %load-compiled-path))))
+                  ;; This is Guile's own pristine load path for
+                  ;; compiled modules.
+                  (let ((ccache (%site-ccache-dir)))
+                    (list (string-append
+                           (string-drop-right ccache
+                                              (string-length "site-ccache"))
+                           "ccache")
+                          ccache))
+                  ;; When building in an impure environment this
+                  ;; variable may contain locations that collide with
+                  ;; Guile's own load path, so we put it at the very
+                  ;; end.  We add it for all the additional Guile
+                  ;; packages.
+                  (parse-path "@GUILE_LOAD_COMPILED_PATH@")))))
 
 ;;;
 ;;; Entry point.
