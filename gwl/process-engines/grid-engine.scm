@@ -72,8 +72,8 @@ requirements of PROCESS."
       ""))
 
 (define* (grid-engine-wrapper process script #:key workflow)
-  "Return a G-expression for an executable wrapper script that sets up
-an environment in which to call the PROCESS SCRIPT with constraints
+  "Return a computed file for an executable wrapper script that sets
+up an environment in which to call the PROCESS SCRIPT with constraints
 provided by WORKFLOW."
   (let* ((bash               (bash-minimal))
          (name               (process-full-name process))
@@ -85,27 +85,29 @@ provided by WORKFLOW."
                                           (format #f "-pe threaded ~a" threads)))
                                  ""))
          (logs-directory     (string-append (getcwd) "/logs")))
-    #~(call-with-output-file #$output
-        (lambda (port)
-          (use-modules (ice-9 format))
-          (format port "#!~a/bin/bash~%" #$bash)
-          ;; Write the SGE options to the header of the Bash script.
-          (format port
-                  "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
-                  #$bash
-                  #$restrictions
-                  #$space-str
-                  #$time-str
-                  #$threads-str)
-          ;; Write logs to the 'logs' subdirectory of the workflow output.
-          (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
-                  #$logs-directory
-                  #$name
-                  #$logs-directory
-                  #$name)
-          (format port "mkdir -p ~a~%" #$logs-directory)
-          (format port "~a~%" #$script)
-          (chmod port #o555)))))
+    (computed-file
+     (string-append "gwl-launch-" name ".sh")
+     #~(call-with-output-file #$output
+         (lambda (port)
+           (use-modules (ice-9 format))
+           (format port "#!~a/bin/bash~%" #$bash)
+           ;; Write the SGE options to the header of the Bash script.
+           (format port
+                   "#$ -S ~a/bin/bash~%~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~%~]~@[#$ ~a~]~%"
+                   #$bash
+                   #$restrictions
+                   #$space-str
+                   #$time-str
+                   #$threads-str)
+           ;; Write logs to the 'logs' subdirectory of the workflow output.
+           (format port "#$ -o ~a/~a.log~%#$ -e ~a/~a.errors~%~%"
+                   #$logs-directory
+                   #$name
+                   #$logs-directory
+                   #$name)
+           (format port "mkdir -p ~a~%" #$logs-directory)
+           (format port "~a~%" #$script)
+           (chmod port #o555))))))
 
 (define grid-engine
   (process-engine

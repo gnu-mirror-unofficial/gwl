@@ -657,10 +657,9 @@ and returns its location."
           (mlet %store-monad
               ((drv (lower-object
                      (if make-wrapper
-                         (computed-file (string-append "gwl-launch-" name ".scm")
-                                        (make-wrapper process
-                                                      computed-script
-                                                      #:workflow workflow))
+                         (make-wrapper process
+                                       computed-script
+                                       #:workflow workflow)
                          computed-script))))
             (build-derivations store (list drv))
             (match (derivation-outputs drv)
