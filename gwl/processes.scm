@@ -21,17 +21,18 @@
   #:use-module (gwl process-engines)
   #:use-module (gwl packages)
   #:use-module ((guix monads)
-                #:select (mlet* mlet mwhen return))
+                #:select (mlet* mlet return))
   #:use-module ((guix derivations)
-                #:select (derivation->output-path
+                #:select (build-derivations
                           built-derivations
-                          derivation-input
+                          derivation-outputs
+                          derivation-output-path
                           derivation-input-output-paths))
   #:use-module ((guix profiles)
                 #:select
-                (manifest-search-paths
-                 packages->manifest
-                 profile-derivation))
+                (profile
+                 manifest-search-paths
+                 packages->manifest))
   #:use-module ((guix search-paths)
                 #:select
                 (search-path-specification->sexp))
@@ -43,8 +44,6 @@
                  run-with-store
                  store-lift
                  requisites))
-  #:use-module ((guix modules)
-                #:select (source-module-closure))
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -492,70 +491,65 @@ of PROCESS."
   "Wrap EXP, an S-expression or G-expression, in a G-expression that
 causes EXP to be run in a container where the provided INPUTS are
 available.  OUTPUTS are copied outside of the container."
-  (with-imported-modules (source-module-closure
-                          '((gnu build accounts)
-                            (gnu build linux-container)
-                            (gnu system file-systems)
-                            (guix build utils)))
-    #~(begin
-        (use-modules (gnu build accounts)
-                     (gnu build linux-container)
-                     (gnu system file-systems)
-                     (guix build utils))
-        (define (location->file-system source target writable?)
-          (file-system
-            (device source)
-            (mount-point target)
-            (type "none")
-            (flags (if writable?
-                       '(bind-mount)
-                       '(bind-mount read-only)))
-            (check? #f)
-            (create-mount-point? #t)))
-        (let* ((thunk (lambda () #$exp))
-               (pwd (getpw))
-               (uid (getuid))
-               (gid (getgid))
-               (passwd (let ((pwd (getpwuid (getuid))))
-                         (password-entry
-                          (name (passwd:name pwd))
-                          (real-name (passwd:gecos pwd))
-                          (uid uid) (gid gid) (shell "/bin/sh")
-                          (directory (passwd:dir pwd)))))
-               (groups (list (group-entry (name "users") (gid gid))
-                             (group-entry (gid 65534) ;the overflow GID
-                                          (name "overflow")))))
-          (call-with-container
-              (append %container-file-systems
-                      ;; Current directory for final outputs
-                      (list (location->file-system
-                             (canonicalize-path ".") "/gwl" #t))
-                      (map (lambda (location)
-                             (location->file-system location location #f))
-                           '#$inputs))
-            (lambda ()
-              (unless (file-exists? "/bin/sh")
-                (unless (file-exists? "/bin")
-                  (mkdir "/bin"))
-                (symlink #$(file-append (bash-minimal) "/bin/sh") "/bin/sh"))
+  #~(begin
+      (use-modules (gnu build accounts)
+                   (gnu build linux-container)
+                   (gnu system file-systems)
+                   (guix build utils))
+      (define (location->file-system source target writable?)
+        (file-system
+          (device source)
+          (mount-point target)
+          (type "none")
+          (flags (if writable?
+                     '(bind-mount)
+                     '(bind-mount read-only)))
+          (check? #f)
+          (create-mount-point? #t)))
+      (let* ((thunk (lambda () #$exp))
+             (pwd (getpw))
+             (uid (getuid))
+             (gid (getgid))
+             (passwd (let ((pwd (getpwuid (getuid))))
+                       (password-entry
+                        (name (passwd:name pwd))
+                        (real-name (passwd:gecos pwd))
+                        (uid uid) (gid gid) (shell "/bin/sh")
+                        (directory (passwd:dir pwd)))))
+             (groups (list (group-entry (name "users") (gid gid))
+                           (group-entry (gid 65534) ;the overflow GID
+                                        (name "overflow")))))
+        (call-with-container
+            (append %container-file-systems
+                    ;; Current directory for final outputs
+                    (list (location->file-system
+                           (canonicalize-path ".") "/gwl" #t))
+                    (map (lambda (location)
+                           (location->file-system location location #f))
+                         '#$inputs))
+          (lambda ()
+            (unless (file-exists? "/bin/sh")
+              (unless (file-exists? "/bin")
+                (mkdir "/bin"))
+              (symlink #$(file-append (bash-minimal) "/bin/sh") "/bin/sh"))
 
-              ;; Create a dummy /etc/passwd to satisfy applications that demand
-              ;; to read it.
-              (unless (file-exists? "/etc")
-                (mkdir "/etc"))
-              (write-passwd (list passwd))
-              (write-group groups)
+            ;; Create a dummy /etc/passwd to satisfy applications that demand
+            ;; to read it.
+            (unless (file-exists? "/etc")
+              (mkdir "/etc"))
+            (write-passwd (list passwd))
+            (write-group groups)
 
-              (thunk)
+            (thunk)
 
-              ;; Copy generated files to final directory.
-              (for-each (lambda (output)
-                          (let ((target (string-append "/gwl/" output)))
-                            (mkdir-p (dirname target))
-                            (copy-file output target)))
-                        (filter file-exists? '#$outputs)))
-            #:guest-uid uid
-            #:guest-gid gid)))))
+            ;; Copy generated files to final directory.
+            (for-each (lambda (output)
+                        (let ((target (string-append "/gwl/" output)))
+                          (mkdir-p (dirname target))
+                          (copy-file output target)))
+                      (filter file-exists? '#$outputs)))
+          #:guest-uid uid
+          #:guest-gid gid))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; ADDITIONAL FUNCTIONS
@@ -589,77 +583,89 @@ keyword tags."
   "Build a procedure that transforms the process PROCESS into a script
 and returns its location."
   (lambda* (process #:key workflow (input-files '()))
-    (let* ((name (process-full-name process))
-           (exp (procedure->gexp process))
-           (make-wrapper (process-engine-wrapper engine))
-           (packages (cons (bash-minimal)
-                           (process-packages process)))
-           (manifest (packages->manifest packages))
-           (search-paths (delete-duplicates
-                          (map search-path-specification->sexp
-                               (manifest-search-paths manifest))))
-           (out (process-output-path process))
-           ;; TODO: with-imported-modules does not support nesting!
-           ;; So we need to list all the modules right here, or else
-           ;; containerization or search path magic simply won't work
-           ;; at runtime on all targets.
-           (modules (if containerize?
-                        '((gnu build accounts)
-                          (gnu build linux-container)
-                          (gnu system file-systems)
-                          (guix build utils)
-                          (guix search-paths))
-                        '((guix search-paths))))
-           (drv
-            (mlet* %store-monad
-                ((profile (profile-derivation manifest))
-                 (exp* -> (with-imported-modules (source-module-closure modules)
-                            #~(begin
-                                #$@(if (null? packages) '()
-                                       `((use-modules (guix search-paths))
-                                         (set-search-paths (map sexp->search-path-specification
-                                                                ',search-paths)
-                                                           (cons ,profile
-                                                                 ',packages))))
-                                #$(if out `(setenv "out" ,out) "")
-                                (setenv "_GWL_PROFILE" #$profile)
-                                #$exp)))
-                 (lowered (lower-gexp exp*))
-                 (inputs -> (cons* (derivation-input profile)
-                                   (lowered-gexp-guile lowered)
-                                   (lowered-gexp-inputs lowered)))
-                 (_ (built-derivations inputs))
-                 (items -> (append (append-map derivation-input-output-paths inputs)
-                                   (lowered-gexp-sources lowered)))
-                 (closure ((store-lift requisites) items))
-                 ;; Build everything
-                 (built (built-derivations closure))
-                 (script -> (if containerize?
-                                (containerize exp*
-                                              #:inputs
-                                              (append closure
-                                                      ;; Data inputs
-                                                      (process-inputs process)
-                                                      ;; Files mapped to free inputs
-                                                      input-files)
-                                              #:outputs
-                                              (process-outputs process))
-                                exp*)))
-              (gexp->script (string-append "gwl-" name ".scm") script))))
-      (with-store store
-        (run-with-store store
-          (mlet* %store-monad ((drv drv)
-                               (built (built-derivations (list drv))))
-            (if make-wrapper
+    (with-store store
+      (let* ((name         (process-full-name process))
+             (make-wrapper (process-engine-wrapper engine))
+             (packages     (cons* (build-time-guix)
+                                  (bash-minimal)
+                                  (process-packages process)))
+             (manifest     (packages->manifest packages))
+             (profile      (profile (content manifest)))
+             (search-paths (delete-duplicates
+                            (map search-path-specification->sexp
+                                 (manifest-search-paths manifest))))
+             (out          (process-output-path process))
+             (exp
+              #~(begin
+                  ;; Ensure that we can load (guix search-paths)
+                  ;; and container features if requested.
+                  (set! %load-path
+                        (cons (string-append #$(build-time-guix)
+                                             "/share/guile/site/"
+                                             (effective-version))
+                              %load-path))
+                  (set! %load-compiled-path
+                        (cons (string-append #$(build-time-guix)
+                                             "/lib/guile/"
+                                             (effective-version)
+                                             "/site-ccache")
+                              %load-compiled-path))
+                  #$@(if (null? packages) '()
+                         `((use-modules (guix search-paths))
+                           (set-search-paths (map sexp->search-path-specification
+                                                  ',search-paths)
+                                             (cons ,profile
+                                                   ',packages))))
+                  #$(if out `(setenv "out" ,out) "")
+                  (setenv "_GWL_PROFILE" #$profile)
+                  #$(procedure->gexp process)))
+             ;; The `containerize' procedure needs to know the
+             ;; locations of all inputs, including all Guile modules,
+             ;; so that it can map them into the container.
+             (closure
+              (run-with-store store
                 (mlet* %store-monad
-                    ((wrap (gexp->derivation
-                            (string-append "gwl-launch-" name ".scm")
-                            (make-wrapper process
-                                          (derivation->output-path drv)
-                                          #:workflow workflow)))
-                     (built (built-derivations (list wrap))))
-                  (return (derivation->output-path wrap)))
-                (return (derivation->output-path drv)))))))))
+                    ((lowered (lower-gexp exp))
+                     (inputs -> (cons (lowered-gexp-guile lowered)
+                                      (lowered-gexp-inputs lowered)))
+                     ;; These must all be built before we
+                     ;; can get the requisites :-/
+                     (_ (built-derivations inputs))
+                     (items -> (append (append-map derivation-input-output-paths inputs)
+                                       (lowered-gexp-sources lowered)))
+                     (closure ((store-lift requisites) items)))
+                  (return closure))))
+             (script
+              (if containerize?
+                  (containerize exp
+                                #:inputs
+                                (append closure
+                                        ;; Data inputs
+                                        (process-inputs process)
+                                        ;; Files mapped to free inputs
+                                        input-files)
+                                #:outputs
+                                (process-outputs process))
+                  exp))
+             (computed-script
+              (program-file (string-append "gwl-" name ".scm")
+                            script
+                            #:guile (default-guile))))
+        ;; Build everything that the script depends on and return the
+        ;; script's file name.
+        (run-with-store store
+          (mlet %store-monad
+              ((drv (lower-object
+                     (if make-wrapper
+                         (computed-file (string-append "gwl-launch-" name ".scm")
+                                        (make-wrapper process
+                                                      computed-script
+                                                      #:workflow workflow))
+                         computed-script))))
+            (build-derivations store (list drv))
+            (match (derivation-outputs drv)
+              (((_ . output) . rest)
+               (return (derivation-output-path output))))))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS
