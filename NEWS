@@ -20,6 +20,8 @@ Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 - handle more errors in the web interface
 ** Package handling
 – packages are now looked up in an inferior Guix, which defaults to the current Guix.  This avoids the problem of loading older packages from the Guix that was available when the GWL was built.
+- extra care is taken to ensure that the Guile load path is consistent and predictable, so that the version of Guix at runtime does not affect the behavior of the workflow language.  Only the variant of Guix that was used at build time is used as a library.
+- =process->script= now ensures that the Guile modules provided by the =guix= package are available at runtime.  This allow us to skip lengthy compilation of a sub-set of Guix modules.
 ** Error handling
 - accidental keywords instead of =process= or =workflow= field names now trigger a more specific “invalid field” syntax error instead of generating invalid syntax that throws an unclear error later.
 - errors when loading workflows no longer show the GWL or SRFI modules as the error location; instead they are limited to the source file where they originated.
