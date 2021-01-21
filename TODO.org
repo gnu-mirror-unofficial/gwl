@@ -1,7 +1,7 @@
 #+TYP_TODO: MAYBE DONE TODO
 
-* rewrite process->script
-The =process->script= procedure in =(gwl processes)= is the absolute worst.  It is hard to understand, overly long, terribly nested.  It needs a careful rewrite and excellent tests.
+* write tests for process->script
+The =process->script= procedure in =(gwl processes)= is important but complicated.  It needs tests.
 
 * documentation
 - document the cache
