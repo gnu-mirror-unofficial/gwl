@@ -555,18 +555,23 @@ available.  OUTPUTS are copied outside of the container."
 ;;; ADDITIONAL FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
-(define (process-inputs process)
+(define* (process-inputs process #:optional with-tags?)
   "Return the plain values of all inputs of PROCESS, without any
-keyword tags."
-  (remove keyword? (process-raw-inputs process)))
+keyword tags if WITH-TAGS? is #FALSE or missing."
+  (if with-tags?
+      (process-raw-inputs process)
+      (remove keyword? (process-raw-inputs process))))
 
-(define (process-outputs proc)
-  "Return the output location(s) of process PROC."
+(define* (process-outputs proc #:optional with-tags?)
+  "Return the output location(s) of process PROC, without any keyword
+tags if WITH-TAGS? is #FALSE or missing."
   (let* ((root (process-output-path proc))
          (mangle (if root
                      (cut string-append root "/" <>)
                      identity)))
-    (map mangle (remove keyword? (process-outputs* proc)))))
+    (if with-tags?
+        (map mangle (process-outputs* proc))
+        (map mangle (remove keyword? (process-outputs* proc))))))
 
 (define (process-takes-available process)
   "Returns #T when the data inputs of the PROCESS exist."

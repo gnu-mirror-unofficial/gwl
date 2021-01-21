@@ -352,6 +352,53 @@ pick 1 genome: inputs
 @ref{Code Snippets} for a convenient way to access named items in code
 snippets without having to define your picks beforehand.
 
+@cindex process-inputs, procedure
+@cindex getting process inputs
+The procedure @code{process-inputs} can be used to access the list of
+inputs of any given process.  By default, tags are removed from the
+list.  If you want to include tags (e.g. to select specific inputs
+with @code{pick}), you can pass the keyword @code{with-tags}.
+
+Here is an example of two processes where the second process refers to
+the inputs of the first.
+
+@lisp
+process count-reads (with sample)
+  packages
+    . "r-minimal"
+  inputs
+    . bam:
+    file sample "_Aligned.sortedByCoord.out.bam"
+    . bai:
+    file sample "_Aligned.sortedByCoord.out.bam.bai"
+    . script:
+    file "count-reads.R"
+  outputs
+    file sample ".read_counts.csv"
+  # @{
+    R @{@{inputs:script@}@} @{@{inputs:bam@}@} @{@{inputs:bai@}@} > @{@{outputs@}@}
+  @}
+
+process genome-coverage (with sample)
+  packages
+    . "r-minimal"
+  inputs
+    define other-inputs
+      process-inputs
+        count-reads sample with-tags:
+    . files:
+    pick bam: others
+    pick bai: others
+    . script:
+    file "genome-coverage.R"
+  outputs
+    files sample / (list ".forward" ".reverse") ".bigwig"
+  # @{
+    R @{@{inputs:script@}@} @{@{inputs::files@}@} > @{@{outputs@}@}
+  @}
+@end lisp
+
+
 @cindex outputs, process field
 @item outputs
 This field holds a list of outputs that are expected to appear after
@@ -363,6 +410,39 @@ The GWL can automatically connect processes by matching up their
 declared inputs and outputs, so that processes generating certain
 outputs are executed before those that declare the same item as an
 input.
+
+@cindex process-outputs, procedure
+@cindex getting process outputs
+The procedure @code{process-outputs} can be used to access the list of
+outputs of any given process.  By default, tags are removed from the
+list.  If you want to include tags (e.g. to select specific outputs
+with @code{pick}), you can pass the keyword @code{with-tags}.
+
+Here is an example of two processes where the second process refers to
+the outputs of the first.
+
+@lisp
+process one
+  packages
+    . "coreutils"
+  inputs
+    . "input.txt"
+  outputs
+    . log: "first.log"
+    . text: "first.txt"
+  # @{ tail @{@{inputs@}@} > @{@{outputs:text@}@} @}
+
+process two
+  packages
+    . "coreutils"
+  inputs
+    pick text:
+      process-outputs one with-tags:
+  outputs
+    . done: "second.txt"
+    . log: "second.log"
+  # @{ head @{@{inputs@}@} > @{@{outputs:done@}@} @}
+@end lisp
 
 @cindex output-path, process field
 @item output-path
