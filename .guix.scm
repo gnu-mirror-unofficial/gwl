@@ -13,16 +13,104 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(use-modules (guix packages)
+(use-modules (ice-9 vlist)
+             (ice-9 match)
+             (srfi srfi-1)
+             (srfi srfi-11)
+             (guix packages)
              (guix utils)
              (gnu packages base)
              (gnu packages package-management)
+             (gnu packages gnupg)
              (gnu packages guile-xyz)
              (gnu packages tex)
              (gnu packages perl)
              (gnu packages rsync)
              (gnu packages ssh)
              (gnu packages version-control))
+
+(define* (package-input-rewriting/spec* replacements
+                                        #:key
+                                        (deep? #t)
+                                        (cut? (const #f)))
+  "This is just like PACKAGE-INPUT-REWRITING/SPEC but takes an extra
+argument CUT?, a procedure that takes the package value and
+returns a boolean to determine whether rewriting should continue."
+  (define table
+    (fold (lambda (replacement table)
+            (match replacement
+              ((spec . proc)
+               (let-values (((name version)
+                             (package-name->name+version spec)))
+                 (vhash-cons name (list version proc) table)))))
+          vlist-null
+          replacements))
+
+  (define (find-replacement package)
+    (vhash-fold* (lambda (item proc)
+                   (or proc
+                       (match item
+                         ((#f proc)
+                          proc)
+                         ((version proc)
+                          (and (version-prefix? version
+                                                (package-version package))
+                               proc)))))
+                 #f
+                 (package-name package)
+                 table))
+
+  (define replacement-property
+    (gensym " package-replacement"))
+
+  (define (rewrite p)
+    (if (assq-ref (package-properties p) replacement-property)
+        p
+        (match (find-replacement p)
+          (#f p)
+          (proc
+           (let ((new (proc p)))
+             ;; Mark NEW as already processed.
+             (package/inherit new
+               (properties `((,replacement-property . #t)
+                             ,@(package-properties new)))))))))
+
+  (define (cut?* p)
+    (or (assq-ref (package-properties p) replacement-property)
+        (find-replacement p)
+        (cut? p)))
+
+  (package-mapping rewrite cut?*
+                   #:deep? deep?))
+
+(define guix-guile
+  (and=> (assoc-ref (package-native-inputs guix) "guile") car))
+
+(define with-guix-guile-instead-of-any-guile
+  ;; Replace all the packages called "guile" with the Guile variant
+  ;; used by the "guix" package.
+  (package-input-rewriting/spec*
+   `(("guile" . ,(const guix-guile)))
+   #:deep? #false
+   #:cut?
+   (lambda (p)
+     (not (or (string=? (package-name p) "gwl")
+              (string-prefix? "guile-"
+                              (package-name p)))))))
+
+;; The tests throw exceptions with Guile 3.0.5, because they evaluate
+;; (exit ...).
+(define-public guile-commonmark/fixed
+  (package
+    (inherit guile-commonmark)
+    (arguments
+     '(#:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'fix-tests-when-building-with-guile-3.0.5
+           (lambda _
+             (substitute* (find-files "tests" "\\.scm$")
+               (("\\(exit.*") ""))
+             #t)))))))
 
 (define guile-lib/htmlprag-fixed
   ;; Guile-Lib with a hotfix for (htmlprag).
@@ -50,31 +138,51 @@
                (setenv "XFAIL_TESTS" "htmlprag.scm")
                #t))))))))
 
+;; It's not just the GWL that uses guile-commonmark, so we need to
+;; change it throughout the input graph.
+(define with-fixed-commonmark
+  (package-input-rewriting/spec*
+   `(("guile-commonmark" . ,(const guile-commonmark/fixed)))
+   #:deep? #false
+   #:cut?
+   (lambda (p)
+     (not (or (string=? (package-name p) "gwl")
+              (string-prefix? "guile-"
+                              (package-name p)))))))
+
 (define-public gwl/devel
-  (package
-    (inherit gwl)
-    (source #f)
-    (arguments
-     '(#:make-flags
-       '("GUILE_AUTO_COMPILE=0")))
-    (inputs
-     `(("guile-config" ,guile-config)
-       ,@(package-inputs gwl)))
-    (native-inputs
-     `(("texlive" ,texlive-tiny) ; for make distcheck
-       ("sed" ,sed)
+  ((compose with-guix-guile-instead-of-any-guile
+            with-fixed-commonmark)
+   (package
+     (inherit gwl)
+     (source #f)
+     (arguments
+      '(#:make-flags
+        '("GUILE_AUTO_COMPILE=0")))
+     (inputs
+      `(("guix" ,guix)
+        ("guile" ,@(assoc-ref (package-native-inputs guix) "guile"))
+        ("guile-commonmark" ,guile-commonmark)
+        ("guile-config" ,guile-config)
+        ("guile-gcrypt" ,guile-gcrypt)
+        ("guile-pfds" ,guile-pfds)
+        ("guile-syntax-highlight" ,guile-syntax-highlight)
+        ("guile-wisp" ,guile-wisp)))
+     (native-inputs
+      `(("texlive" ,texlive-tiny)       ; for make distcheck
+        ("sed" ,sed)
 
-       ;; For "make release"
-       ("perl" ,perl)
-       ("git" ,git-minimal)
+        ;; For "make release"
+        ("perl" ,perl)
+        ("git" ,git-minimal)
 
-       ;; For manual post processing
-       ("guile-lib" ,guile-lib/htmlprag-fixed)
-       ("rsync" ,rsync)
+        ;; For manual post processing
+        ("guile-lib" ,guile-lib/htmlprag-fixed)
+        ("rsync" ,rsync)
 
-       ;; For "git push"
-       ("ssh" ,openssh)
+        ;; For "git push"
+        ("ssh" ,openssh)
 
-       ,@(package-native-inputs gwl)))))
+        ,@(package-native-inputs gwl))))))
 
 gwl/devel
