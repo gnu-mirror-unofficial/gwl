@@ -38,6 +38,7 @@
             package-name
 
             bash-minimal
+            build-time-guix
             default-guile))
 
 (define current-guix
@@ -93,9 +94,12 @@ the version.  By default, DELIMITER is \"@\"."
 (define (bash-minimal)
   (lookup-package "bash-minimal"))
 
+(define (build-time-guix)
+  (lookup-package "guix"))
+
 (define (default-guile)
   "Return the variant of Guile that was used to build the \"guix\"
 package, which provides all library features used by the GWL.  We use
 this Guile to run scripts."
-  (and=> (assoc-ref (inferior-package-native-inputs (lookup-package "guix"))
+  (and=> (assoc-ref (inferior-package-native-inputs (build-time-guix))
                     "guile") first))
