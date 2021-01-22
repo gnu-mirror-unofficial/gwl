@@ -26,7 +26,8 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
-  #:export (on
+  #:export (require-packages
+            on
             pick
             file
             files
@@ -145,6 +146,10 @@ combinations."
                #,@(slash-transformer #'(rest ...))))))))
 
 
+;; This is a marker at the top of a workflow file.  It is a list of
+;; package names that will be made available before the workflow is
+;; evaluated.
+(define require-packages list)
 
 (define (normalize-file-name file-name)
   "Return FILE-NAME after collapsing slashes, removing \".\" directory

@@ -959,6 +959,58 @@ workflow frobnicate
 @end lisp
 
 
+@node Declaring package requirements
+@section Declaring package requirements
+@cindex Declaring package requirements, workflows
+@cindex Installing packages, workflows
+@cindex Specify workflow environment
+@cindex Require external features
+@cindex require-packages, workflow declaration
+
+Sometimes it may be desirable to use features from external packages
+in the definition of the workflow.  For example, you may want to parse
+a configuration file with Guile DSV before even defining any
+processes.  Or perhaps you may need to use an application to prepare
+state or query a database before the workflow is executed.
+
+You can declare any package requirements with a
+@code{require-packages} form at the very top of your workflow file.
+This must be the first code expression after any commented lines.
+Before a workflow file is evaluated, the current environment is
+modified to make the specified packages available.  Any specified
+Guile libraries are added to the load path, so care should be taken to
+ensure that the libraries are in fact compatible with the version of
+Guile used by the Workflow Language.
+
+@cindex require-packages, declaration form
+@deffn {Scheme Procedure} require-packages @var{package}@dots{}
+The @code{require-packages} procedure takes any number of package
+specifications.  A package specification is the package name,
+optionally followed by @code{@@} and a version string.  The Workflow
+Language guarantees that the declared packages will be available when
+the workflow file is evaluated.
+
+@lisp
+;; Declare packages
+require-packages
+  . "guile-dsv"      ; for parsing CSV files
+  . "guile-libyaml"  ; for parsing YAML files
+
+;; Load them
+import
+  dsv
+  yaml
+
+;; Use them
+define : load-config file
+  if : file-exists? file
+    read-yaml-file file
+    error "Could not find configuration file!"
+  @dots{}
+@end lisp
+@end deffn
+
+
 @c *********************************************************************
 @node Process Engines
 @chapter Process Engines

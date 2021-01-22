@@ -16,6 +16,7 @@
 
 (define-module (gwl workflows utils)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-2)
   #:use-module (srfi srfi-31)
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
@@ -26,6 +27,17 @@
   #:use-module (gwl errors)
   #:use-module (gwl packages)
   #:use-module (gwl workflows)
+
+  #:use-module (guix profiles)
+  #:use-module (guix gexp)
+  #:use-module (guix monads)
+  #:use-module (guix store)
+  #:use-module (guix search-paths)
+  #:use-module ((guix derivations)
+                #:select (build-derivations
+                          derivation-outputs
+                          derivation-output-path))
+
   #:export (success?
             successful-execution?
             source->string
@@ -135,6 +147,81 @@
       (match (wisp-scheme-read-chunk port)
         (() #false)
         ((chunk . _) chunk))))))
+
+
+;;; Workflow profile and environment
+
+(define (required-packages file)
+  "Read the optional package declaration at the beginning of the
+workflow specified in FILE.  Return a list of package names or the
+empty list."
+  (define read*
+    (if (wisp-suffix file)
+        (lambda (port)
+          (wisp-reader port (user-module-for-file file)))
+        read))
+  (define declaration?
+    (call-with-input-file file
+      (lambda (port)
+        (let loop ((result (read* port)))
+          (if (eof-object? result) #false
+              (or result (loop (read* port))))))))
+  (match declaration?
+    (('require-packages packages ...)
+     packages)
+    (_ '())))
+
+(define (activate-workflow-environment! file-name)
+  "Set the environment variables specified by MANIFEST for the
+PROFILE-DIRECTORY.  Augment existing environment variables with
+additional search paths.  Handle Guile's load paths separately to
+modify the load path of the current process."
+  (define new-load-path '())
+  (define new-load-compiled-path '())
+  (and-let*
+      ((package-names (required-packages file-name))
+       (_assert       (not (null? package-names)))
+       (manifest      (packages->manifest
+                       (map lookup-package package-names)))
+       (profile       (profile (content manifest)))
+       (profile-directory
+        (with-store store
+          (run-with-store store
+            (mlet %store-monad
+                ((drv (lower-object profile)))
+              (build-derivations store (list drv))
+              (match (derivation-outputs drv)
+                (((_ . output) . rest)
+                 (return (derivation-output-path output)))))))))
+    (for-each (match-lambda
+                ((($ <search-path-specification>
+                     "GUILE_LOAD_PATH" _ separator) . value)
+                 (set! new-load-path
+                       (append (parse-path value)
+                               new-load-path)))
+                ((($ <search-path-specification>
+                     "GUILE_LOAD_COMPILED_PATH" _ separator) . value)
+                 (set! new-load-compiled-path
+                       (append (parse-path value)
+                               new-load-compiled-path)))
+                ((($ <search-path-specification> variable _ separator) . value)
+                 (let ((current (getenv variable)))
+                   (setenv variable
+                           (if current
+                               (if separator
+                                   (string-append value separator current)
+                                   value)
+                               value)))))
+              (profile-search-paths profile-directory manifest))
+    (unless (null? new-load-path)
+      (set! %load-path
+            (delete-duplicates
+             (append new-load-path %load-path))))
+    (unless (null? new-load-compiled-path)
+      (set! %load-compiled-path
+            (delete-duplicates
+             (append new-load-compiled-path %load-compiled-path))))))
+
 ;; Taken from (guix ui).
 (define (make-user-module modules)
   "Return a new user module with the additional MODULES loaded."
@@ -145,9 +232,7 @@
               modules)
     module))
 
-(define (load-workflow* file)
-  "Load the workflow specified in FILE in the context of a new module
-where all the basic GWL modules are available."
+(define (user-module-for-file file)
   (define modules
     (if (wisp-suffix file)
         '((gwl processes)
@@ -163,7 +248,13 @@ where all the basic GWL modules are available."
           (gwl utils)
           (srfi srfi-1)
           (srfi srfi-26))))
-  (let ((result (load* file (make-user-module modules))))
+  (make-user-module modules))
+
+(define (load-workflow* file)
+  "Load the workflow specified in FILE in the context of a new module
+where all the basic GWL modules are available."
+  (activate-workflow-environment! file)
+  (let ((result (load* file (user-module-for-file file))))
     (unless (workflow? result)
       (raise (condition
               (&gwl-error)
