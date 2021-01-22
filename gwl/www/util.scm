@@ -76,6 +76,7 @@
 (define gwl-special-symbols
   (cons* "process"
          "workflow"
+         "require-packages"
 
          "with"
 
@@ -90,7 +91,10 @@
         "string-append"
         "with-output-to-file"
         "list"
-        "display"))
+        "display"
+        "file-exists?"
+        "read-yaml-file"
+        "error"))
 
 (define gwl-fields
   (list "name"
@@ -116,6 +120,7 @@ SPECIAL-PREFIXES with the 'special' tag."
                      (lex-string "}"))
             (lex-tag 'placeholder
                      (lex-delimited "{{" #:until "}}"))
+            (lex-tag 'colon (lex-string ":"))
             (lex-tag 'open (lex-any* (map lex-string '("(" ))))
             (lex-tag 'close (lex-any* (map lex-string '(")"))))
             (lex-tag 'comment (lex-delimited ";" #:until "\n"))
