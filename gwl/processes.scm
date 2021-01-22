@@ -487,10 +487,10 @@ of PROCESS."
     (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
 
-(define* (containerize exp #:key inputs outputs)
-  "Wrap EXP, an S-expression or G-expression, in a G-expression that
-causes EXP to be run in a container where the provided INPUTS are
-available.  OUTPUTS are copied outside of the container."
+(define* (containerize script #:key inputs outputs)
+  "Call SCRIPT, a program-file object, in a G-expression that sets up a
+container where the provided INPUTS are available.  OUTPUTS are copied
+outside of the container."
   #~(begin
       (use-modules (gnu build accounts)
                    (gnu build linux-container)
@@ -506,8 +506,7 @@ available.  OUTPUTS are copied outside of the container."
                      '(bind-mount read-only)))
           (check? #f)
           (create-mount-point? #t)))
-      (let* ((thunk (lambda () #$exp))
-             (pwd (getpw))
+      (let* ((pwd (getpw))
              (uid (getuid))
              (gid (getgid))
              (passwd (let ((pwd (getpwuid (getuid))))
@@ -540,7 +539,7 @@ available.  OUTPUTS are copied outside of the container."
             (write-passwd (list passwd))
             (write-group groups)
 
-            (thunk)
+            (system* #$script)
 
             ;; Copy generated files to final directory.
             (for-each (lambda (output)
@@ -624,38 +623,41 @@ and returns its location."
                   #$(if out `(setenv "out" ,out) "")
                   (setenv "_GWL_PROFILE" #$profile)
                   #$(procedure->gexp process)))
-             ;; The `containerize' procedure needs to know the
-             ;; locations of all inputs, including all Guile modules,
-             ;; so that it can map them into the container.
-             (closure
-              (run-with-store store
-                (mlet* %store-monad
-                    ((lowered (lower-gexp exp))
-                     (inputs -> (cons (lowered-gexp-guile lowered)
-                                      (lowered-gexp-inputs lowered)))
-                     ;; These must all be built before we
-                     ;; can get the requisites :-/
-                     (_ (built-derivations inputs))
-                     (items -> (append (append-map derivation-input-output-paths inputs)
-                                       (lowered-gexp-sources lowered)))
-                     (closure ((store-lift requisites) items)))
-                  (return closure))))
              (script
-              (if containerize?
-                  (containerize exp
-                                #:inputs
-                                (append closure
-                                        ;; Data inputs
-                                        (process-inputs process)
-                                        ;; Files mapped to free inputs
-                                        input-files)
-                                #:outputs
-                                (process-outputs process))
-                  exp))
-             (computed-script
               (program-file (string-append "gwl-" name ".scm")
-                            script
-                            #:guile (default-guile))))
+                            exp
+                            #:guile (default-guile)))
+             (computed-script
+              (if containerize?
+                  ;; The `containerize' procedure needs to know the
+                  ;; locations of all inputs, including all Guile
+                  ;; modules, so that it can map them into the
+                  ;; container.
+                  ;; XXX: This is very expensive.
+                  (let ((closure
+                         (run-with-store store
+                           (mlet* %store-monad
+                               ((lowered (lower-gexp exp))
+                                (inputs -> (cons (lowered-gexp-guile lowered)
+                                                 (lowered-gexp-inputs lowered)))
+                                ;; These must all be built before we
+                                ;; can get the requisites :-/
+                                (_ (built-derivations inputs))
+                                (items -> (append (append-map derivation-input-output-paths inputs)
+                                                  (lowered-gexp-sources lowered)))
+                                (closure ((store-lift requisites) items)))
+                             (return closure)))))
+                    (program-file (string-append "gwl-" name "-container.scm")
+                                  (containerize script
+                                                #:inputs
+                                                (append closure
+                                                        ;; Data inputs
+                                                        (process-inputs process)
+                                                        ;; Files mapped to free inputs
+                                                        input-files)
+                                                #:outputs
+                                                (process-outputs process))))
+                  script)))
         ;; Build everything that the script depends on and return the
         ;; script's file name.
         (run-with-store store
