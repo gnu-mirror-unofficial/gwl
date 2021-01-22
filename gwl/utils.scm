@@ -19,23 +19,20 @@
   #:use-module (gwl ui)
   #:use-module (gwl errors)
   #:use-module (gwl processes)
-  #:use-module (gwl workflows)
+  #:use-module ((gwl workflows utils)
+                #:select (load-workflow))
   #:use-module (ice-9 match)
   #:use-module (ice-9 pretty-print)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-31)
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
-  #:use-module (system base language)
-  #:use-module (language wisp)
-  #:export (load-workflow
-            on
+  #:export (on
             pick
             file
             files
 
-            wisp-suffix
-            normalize-file-name))
+            normalize-file-name)
+  #:re-export (load-workflow))
 
 ;; Convenience procedure to simplify Wisp syntax of higher-order
 ;; procedures such as "map" by having the collection first.
@@ -147,118 +144,7 @@ combinations."
               (expand
                #,@(slash-transformer #'(rest ...))))))))
 
-(define (wisp-suffix file)
-  (cond ((string-suffix? ".w" file) ".w")
-        ((string-suffix? ".wisp" file) ".wisp")
-        ((string-suffix? ".gwl" file) ".gwl")
-        (else #f)))
-
-;; Taken from (guix ui).
-(define (make-user-module modules)
-  "Return a new user module with the additional MODULES loaded."
-  ;; Module in which the machine description file is loaded.
-  (let ((module (make-fresh-user-module)))
-    (for-each (lambda (iface)
-                (module-use! module (resolve-interface iface)))
-              modules)
-    module))
-
-(define (load-workflow* file)
-  "Load the workflow specified in FILE in the context of a new module
-where all the basic GWL modules are available."
-  (define modules
-    (if (wisp-suffix file)
-        '((gwl processes)
-          (gwl workflows)
-          (gwl sugar)
-          (gwl utils)
-          (srfi srfi-1)
-          (srfi srfi-26)
-          (srfi srfi-88))
-        '((gwl processes)
-          (gwl workflows)
-          (gwl sugar)
-          (gwl utils)
-          (srfi srfi-1)
-          (srfi srfi-26))))
-  (let ((result (load* file (make-user-module modules))))
-    (unless (workflow? result)
-      (raise (condition
-              (&gwl-error)
-              (&formatted-message
-               (format "File `~a' does not evaluate to a workflow value.~%")
-               (arguments (list file))))))
-    result))
-
-;; Helper to handle relative file names.
-(define-syntax-rule (load-workflow file)
-  (let ((target (string-append (dirname (or (current-filename)
-                                            (*current-filename*) ""))
-                               "/" file)))
-    (load-workflow*
-     (if (or (absolute-file-name? file)
-             (not (file-exists? target)))
-         file target))))
-
 
-(define wisp-reader
-  ;; XXX We'd like to use language-reader here, but (language wisp
-  ;; spec) triggers a very annoying setlocale warning because it
-  ;; evaluates (setlocale LC_ALL "foo").
-  #;
-  (language-reader (lookup-language 'wisp))
-  (lambda (port env)
-    ;; allow using "# foo" as #(foo).
-    (read-hash-extend #\# (λ (chr port) #\#))
-    (cond
-     ((eof-object? (peek-char port))
-      (read-char port)) ; return eof: we’re done
-     (else
-      (match (wisp-scheme-read-chunk port)
-        (() #false)
-        ((chunk . _) chunk))))))
-
-;; Adapted from (guix ui).
-(define* (load* file user-module)
-  "Load the user provided Scheme or Wisp source code FILE."
-  (define tag
-    (make-prompt-tag "user-code"))
-
-  (catch #t
-    (lambda ()
-
-      ;; Force re-compilation to avoid ABI issues
-      (set! %fresh-auto-compile #t)
-      (set! %load-should-auto-compile #t)
-
-      (save-module-excursion
-       (lambda ()
-         (set-current-module user-module)
-
-         ;; Hide the "auto-compiling" messages.
-         (parameterize ((current-warning-port (%make-void-port "w")))
-           (call-with-prompt tag
-             (lambda ()
-               ;; XXX: The Wisp reader fails to set source properties in all
-               ;; cases, so (current-filename) always returns #F.
-               (module-define! user-module '*current-filename*
-                               (make-parameter file))
-               ;; Give 'load' an absolute file name so that it doesn't
-               ;; try to search for FILE in %LOAD-COMPILED-PATH.
-               (load (canonicalize-path file)
-                     (and (wisp-suffix file)
-                          (lambda (port)
-                            (wisp-reader port user-module)))))
-             (const #f))))))
-    (lambda _
-      (exit 1))
-    (rec (handle-error . args)
-         ;; Capture the stack up to this procedure call, excluded, and pass
-         ;; the faulty stack frame to 'report-load-error'.
-         (let* ((stack (make-stack #t handle-error tag))
-                (frame (last-frame-with-source stack
-                                               (basename (canonicalize-path file)))))
-           (report-load-error file args frame)))))
 
 (define (normalize-file-name file-name)
   "Return FILE-NAME after collapsing slashes, removing \".\" directory

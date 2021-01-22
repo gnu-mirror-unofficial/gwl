@@ -1,4 +1,5 @@
 ;;; Copyright © 2016, 2018 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,7 +16,16 @@
 
 (define-module (gwl workflows utils)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-31)
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:use-module (ice-9 match)
+  #:use-module (language wisp)
+  #:use-module (system base language)
+
+  #:use-module (gwl errors)
+  #:use-module (gwl packages)
+  #:use-module (gwl workflows)
   #:export (success?
             successful-execution?
             source->string
@@ -25,7 +35,10 @@
             color-scheme-stepper
             %modern-color-scheme
             %light-color-scheme
-            %greyscale-color-scheme))
+            %greyscale-color-scheme
+
+            wisp-suffix
+            load-workflow))
 
 ;; Catch the return value of a call to (system* ...) and return #t when
 ;; it executed normally, and #f otherwise.
@@ -98,3 +111,115 @@
   '("#ffffff" "#eeeeee" "#dddddd" "#cccccc"
     "#bbbbbb" "#aaaaaa" "#999999" "#888888"
     "#777777" "#666666" "#555555" "#444444"))
+
+
+(define (wisp-suffix file)
+  (cond ((string-suffix? ".w" file) ".w")
+        ((string-suffix? ".wisp" file) ".wisp")
+        ((string-suffix? ".gwl" file) ".gwl")
+        (else #f)))
+
+(define wisp-reader
+  ;; XXX We'd like to use language-reader here, but (language wisp
+  ;; spec) triggers a very annoying setlocale warning because it
+  ;; evaluates (setlocale LC_ALL "foo").
+  #;
+  (language-reader (lookup-language 'wisp))
+  (lambda (port env)
+    ;; allow using "# foo" as #(foo).
+    (read-hash-extend #\# (λ (chr port) #\#))
+    (cond
+     ((eof-object? (peek-char port))
+      (read-char port)) ; return eof: we’re done
+     (else
+      (match (wisp-scheme-read-chunk port)
+        (() #false)
+        ((chunk . _) chunk))))))
+;; Taken from (guix ui).
+(define (make-user-module modules)
+  "Return a new user module with the additional MODULES loaded."
+  ;; Module in which the machine description file is loaded.
+  (let ((module (make-fresh-user-module)))
+    (for-each (lambda (iface)
+                (module-use! module (resolve-interface iface)))
+              modules)
+    module))
+
+(define (load-workflow* file)
+  "Load the workflow specified in FILE in the context of a new module
+where all the basic GWL modules are available."
+  (define modules
+    (if (wisp-suffix file)
+        '((gwl processes)
+          (gwl workflows)
+          (gwl sugar)
+          (gwl utils)
+          (srfi srfi-1)
+          (srfi srfi-26)
+          (srfi srfi-88))
+        '((gwl processes)
+          (gwl workflows)
+          (gwl sugar)
+          (gwl utils)
+          (srfi srfi-1)
+          (srfi srfi-26))))
+  (let ((result (load* file (make-user-module modules))))
+    (unless (workflow? result)
+      (raise (condition
+              (&gwl-error)
+              (&formatted-message
+               (format "File `~a' does not evaluate to a workflow value.~%")
+               (arguments (list file))))))
+    result))
+
+;; Helper to handle relative file names.
+(define-syntax-rule (load-workflow file)
+  (let ((target (string-append (dirname (or (current-filename)
+                                            (*current-filename*) ""))
+                               "/" file)))
+    (load-workflow*
+     (if (or (absolute-file-name? file)
+             (not (file-exists? target)))
+         file target))))
+
+;; Adapted from (guix ui).
+(define* (load* file user-module)
+  "Load the user provided Scheme or Wisp source code FILE."
+  (define tag
+    (make-prompt-tag "user-code"))
+
+  (catch #t
+    (lambda ()
+
+      ;; Force re-compilation to avoid ABI issues
+      (set! %fresh-auto-compile #t)
+      (set! %load-should-auto-compile #t)
+
+      (save-module-excursion
+       (lambda ()
+         (set-current-module user-module)
+
+         ;; Hide the "auto-compiling" messages.
+         (parameterize ((current-warning-port (%make-void-port "w")))
+           (call-with-prompt tag
+             (lambda ()
+               ;; XXX: The Wisp reader fails to set source properties in all
+               ;; cases, so (current-filename) always returns #F.
+               (module-define! user-module '*current-filename*
+                               (make-parameter file))
+               ;; Give 'load' an absolute file name so that it doesn't
+               ;; try to search for FILE in %LOAD-COMPILED-PATH.
+               (load (canonicalize-path file)
+                     (and (wisp-suffix file)
+                          (lambda (port)
+                            (wisp-reader port user-module)))))
+             (const #f))))))
+    (lambda _
+      (exit 1))
+    (rec (handle-error . args)
+         ;; Capture the stack up to this procedure call, excluded, and pass
+         ;; the faulty stack frame to 'report-load-error'.
+         (let* ((stack (make-stack #t handle-error tag))
+                (frame (last-frame-with-source stack
+                                               (basename (canonicalize-path file)))))
+           (report-load-error file args frame)))))

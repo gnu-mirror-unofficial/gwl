@@ -17,9 +17,9 @@
 
 (define-module (gwl www pages workflow-viewer)
   #:use-module (gwl config)
-  #:use-module (gwl utils)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows graph)
+  #:use-module (gwl workflows utils)
   #:use-module (gwl www pages)
   #:use-module (ice-9 format)
   #:use-module (ice-9 ftw)
