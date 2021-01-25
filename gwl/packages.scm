@@ -44,24 +44,13 @@
 (define current-guix
   (let* ((default-guix (format #false "~a/.config/guix/current"
                                (getenv "HOME")))
-         (current-guix-inferior
-          (open-inferior
-           (canonicalize-path default-guix))))
-    (if current-guix-inferior
-        (make-parameter current-guix-inferior
-          (lambda (val)
-            (if (inferior? val)
-                val
-                (raise
-                 (condition
-                  (&gwl-type-error
-                   (expected-type "<inferior>")
-                   (actual-value val)))))))
-        (raise (condition
-                (&gwl-error)
-                (&formatted-message
-                 (format "Could not open inferior Guix at ~a.~%")
-                 (arguments (list default-guix))))))))
+         (current-guix-inferior #false))
+    (lambda ()
+      (or current-guix-inferior
+          (begin
+            (set! current-guix-inferior (open-inferior
+                                         (canonicalize-path default-guix)))
+            current-guix-inferior)))))
 
 (define (lookup-package specification)
   (match (lookup-inferior-packages (current-guix) specification)
