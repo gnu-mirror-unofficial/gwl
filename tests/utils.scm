@@ -47,17 +47,32 @@
 (test-equal "pick accepts SRFI-1 accessor procedures"
   8 (pick third #:yours l))
 
-(test-error "pick complains if the collection is empty 1/3" &gwl-error
-            (pick 1 #:yours '()))
+(test-assert "pick complains if the collection is empty 1/3"
+  (string-contains
+   (guard (c ((gwl-error? c)
+              (condition-message c)))
+     (pick 1 #:yours '()))
+   "Cannot pick from empty collection"))
 
-(test-error "pick complains if the collection is empty 2/3" &gwl-error
-            (pick third #:yours '()))
+(test-assert "pick complains if the collection is empty 2/3"
+  (string-contains
+   (guard (c ((gwl-error? c)
+              (condition-message c)))
+     (pick third #:yours '()))
+   "Cannot pick from empty collection"))
 
-(test-error "pick complains if the collection is empty 3/3" &gwl-error
-            (pick * #:yours '()))
+(test-assert "pick complains if the collection is empty 3/3"
+  (string-contains
+   (guard (c ((gwl-error? c)
+              (condition-message c)))
+     (pick * #:yours '()))
+   "Cannot pick from empty collection"))
 
-(test-error "pick complains if the selector type is bogus" &gwl-error
-            (pick "foo" #:mine l))
+(test-equal "pick complains if the selector type is bogus"
+  '("<number>" "<procedure>")
+  (guard (c ((gwl-type-error? c)
+             (condition-ref c 'expected-type)))
+    (pick "foo" #:mine l)))
 
 
 ;; expand is used internally by "files"

@@ -35,6 +35,7 @@
             gwl-package-error-package-spec
 
             &gwl-type-error
+            gwl-type-error?
             gwl-type-error-expected-type
             gwl-type-error-actual-value
 
