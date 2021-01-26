@@ -1,7 +1,7 @@
 (define-public create-file
   (make-process
    (name "create-file")
-   (outputs (list "/tmp/file.txt"))
+   (outputs (list "file.txt"))
    (run-time (complexity
               (space 20 mebibytes)
               (time  10)))
@@ -14,8 +14,8 @@
   (make-process
    (name "compress-file")
    (packages (list "gzip"))
-   (inputs (list "/tmp/file.txt"))
-   (outputs (list "/tmp/file.txt.gz"))
+   (inputs (list "file.txt"))
+   (outputs (list "file.txt.gz"))
    (run-time (complexity
               (space 20 mebibytes)
               (time  10)))

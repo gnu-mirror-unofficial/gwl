@@ -26,9 +26,9 @@ process compress-file (with input)
 
 ;; All inputs files.  The leading dot continues the previous line.
 define files
-  list "/tmp/one.txt"
-     . "/tmp/two.txt"
-     . "/tmp/three.txt"
+  list "one.txt"
+     . "two.txt"
+     . "three.txt"
 
 ;; Map process templates to files to generate a list of processes.
 define create-file-processes

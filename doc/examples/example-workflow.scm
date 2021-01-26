@@ -24,9 +24,9 @@
 (make-workflow
  (name "dynamic-workflow")
  (processes
-  (let* ((files '("/tmp/one.txt"
-                  "/tmp/two.txt"
-                  "/tmp/three.txt"))
+  (let* ((files '("one.txt"
+                  "two.txt"
+                  "three.txt"))
          (create-file-processes
           (map create-file files))
          (compress-file-processes
