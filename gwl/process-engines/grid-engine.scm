@@ -107,7 +107,8 @@ provided by WORKFLOW."
                    #$name)
            (format port "mkdir -p ~a~%" #$logs-directory)
            (format port "~a~%" #$script)
-           (chmod port #o555))))))
+           (chmod port #o555)))
+     #:guile (default-guile))))
 
 (define grid-engine
   (process-engine
