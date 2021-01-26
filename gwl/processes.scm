@@ -539,7 +539,8 @@ the container."
                              (canonicalize-path ".") "/gwl" #t))
                       (map (lambda (location)
                              (location->file-system location location #f))
-                           '#$inputs))
+                           (append (call-with-input-file #$(references-file script) read)
+                                   '#$inputs)))
             (lambda ()
               (unless (file-exists? "/bin/sh")
                 (unless (file-exists? "/bin")
@@ -597,6 +598,27 @@ tags if WITH-TAGS? is #FALSE or missing."
 ;;; DERIVATIONS AND SCRIPTS FUNCTIONS
 ;;; ---------------------------------------------------------------------------
 
+;; Taken from (gnu services base)
+(define* (references-file item #:optional (name "references"))
+  "Return a file that contains the list of references of ITEM."
+  (if (struct? item)                              ;lowerable object
+      (computed-file name
+                     (with-extensions (list (lookup-package "guile-gcrypt")) ;for store-copy
+                       (with-imported-modules (source-module-closure
+                                               '((guix build store-copy)))
+                         #~(begin
+                             (use-modules (guix build store-copy))
+
+                             (call-with-output-file #$output
+                               (lambda (port)
+                                 (write (map store-info-item
+                                             (call-with-input-file "graph"
+                                               read-reference-graph))
+                                        port))))))
+                     #:options `(#:local-build? #false
+                                 #:references-graphs (("graph" ,item))))
+      (plain-file name "()")))
+
 (define* (process->script engine #:key containerize?)
   "Build a procedure that transforms the process PROCESS into a script
 and returns its location."
@@ -630,34 +652,16 @@ and returns its location."
                             #:guile (default-guile)))
              (computed-script
               (if containerize?
-                  ;; The `containerize' procedure needs to know the
-                  ;; locations of all inputs, including all Guile
-                  ;; modules, so that it can map them into the
-                  ;; container.
-                  ;; XXX: This is very expensive.
-                  (let ((closure
-                         (run-with-store store
-                           (mlet* %store-monad
-                               ((lowered (lower-gexp exp))
-                                (inputs -> (cons (lowered-gexp-guile lowered)
-                                                 (lowered-gexp-inputs lowered)))
-                                ;; These must all be built before we
-                                ;; can get the requisites :-/
-                                (_ (built-derivations inputs))
-                                (items -> (append (append-map derivation-input-output-paths inputs)
-                                                  (lowered-gexp-sources lowered)))
-                                (closure ((store-lift requisites) items)))
-                             (return closure)))))
-                    (program-file (string-append "gwl-" name "-container.scm")
-                                  (containerize script
-                                                #:inputs
-                                                (append closure
-                                                        ;; Data inputs
-                                                        (process-inputs process)
-                                                        ;; Files mapped to free inputs
-                                                        input-files)
-                                                #:outputs
-                                                (process-outputs process))))
+                  (program-file (string-append "gwl-" name "-container.scm")
+                                (containerize script
+                                              #:inputs
+                                              (append
+                                               ;; Data inputs
+                                               (process-inputs process)
+                                               ;; Files mapped to free inputs
+                                               input-files)
+                                              #:outputs
+                                              (process-outputs process)))
                   script)))
         ;; Build everything that the script depends on and return the
         ;; script's file name.
