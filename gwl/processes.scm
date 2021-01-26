@@ -44,6 +44,8 @@
                  run-with-store
                  store-lift
                  requisites))
+  #:use-module ((guix modules)
+                #:select (source-module-closure))
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -487,68 +489,80 @@ of PROCESS."
     (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
 
+(define* (script-modules #:optional containerize?)
+  (if containerize?
+      '((gnu build accounts)
+        (gnu build linux-container)
+        (gnu system file-systems)
+        (guix build utils)
+        (guix search-paths))
+      '((guix search-paths))))
+
 (define* (containerize script #:key inputs outputs)
-  "Call SCRIPT, a program-file object, in a G-expression that sets up a
-container where the provided INPUTS are available.  OUTPUTS are copied
-outside of the container."
-  #~(begin
-      (use-modules (gnu build accounts)
-                   (gnu build linux-container)
-                   (gnu system file-systems)
-                   (guix build utils))
-      (define (location->file-system source target writable?)
-        (file-system
-          (device source)
-          (mount-point target)
-          (type "none")
-          (flags (if writable?
-                     '(bind-mount)
-                     '(bind-mount read-only)))
-          (check? #f)
-          (create-mount-point? #t)))
-      (let* ((pwd (getpw))
-             (uid (getuid))
-             (gid (getgid))
-             (passwd (let ((pwd (getpwuid (getuid))))
-                       (password-entry
-                        (name (passwd:name pwd))
-                        (real-name (passwd:gecos pwd))
-                        (uid uid) (gid gid) (shell "/bin/sh")
-                        (directory (passwd:dir pwd)))))
-             (groups (list (group-entry (name "users") (gid gid))
-                           (group-entry (gid 65534) ;the overflow GID
-                                        (name "overflow")))))
-        (call-with-container
-            (append %container-file-systems
-                    ;; Current directory for final outputs
-                    (list (location->file-system
-                           (canonicalize-path ".") "/gwl" #t))
-                    (map (lambda (location)
-                           (location->file-system location location #f))
-                         '#$inputs))
-          (lambda ()
-            (unless (file-exists? "/bin/sh")
-              (unless (file-exists? "/bin")
-                (mkdir "/bin"))
-              (symlink #$(file-append (bash-minimal) "/bin/sh") "/bin/sh"))
+  "Call SCRIPT, a program-file object, in a G-expression that sets up
+a container where the provided INPUTS are available (in addition to
+all store items needed for execution).  OUTPUTS are copied outside of
+the container."
+  (with-imported-modules (source-module-closure
+                          (script-modules 'container))
+    #~(begin
+        (use-modules (gnu build accounts)
+                     (gnu build linux-container)
+                     (gnu system file-systems)
+                     (guix build utils))
+        (define (location->file-system source target writable?)
+          (file-system
+            (device source)
+            (mount-point target)
+            (type "none")
+            (flags (if writable?
+                       '(bind-mount)
+                       '(bind-mount read-only)))
+            (check? #f)
+            (create-mount-point? #t)))
+        (let* ((pwd (getpw))
+               (uid (getuid))
+               (gid (getgid))
+               (passwd (let ((pwd (getpwuid (getuid))))
+                         (password-entry
+                          (name (passwd:name pwd))
+                          (real-name (passwd:gecos pwd))
+                          (uid uid) (gid gid) (shell "/bin/sh")
+                          (directory (passwd:dir pwd)))))
+               (groups (list (group-entry (name "users") (gid gid))
+                             (group-entry (gid 65534) ;the overflow GID
+                                          (name "overflow")))))
+          (call-with-container
+              (append %container-file-systems
+                      ;; Current directory for final outputs
+                      (list (location->file-system
+                             (canonicalize-path ".") "/gwl" #t))
+                      (map (lambda (location)
+                             (location->file-system location location #f))
+                           '#$inputs))
+            (lambda ()
+              (unless (file-exists? "/bin/sh")
+                (unless (file-exists? "/bin")
+                  (mkdir "/bin"))
+                (symlink #$(file-append (bash-minimal) "/bin/sh") "/bin/sh"))
 
-            ;; Create a dummy /etc/passwd to satisfy applications that demand
-            ;; to read it.
-            (unless (file-exists? "/etc")
-              (mkdir "/etc"))
-            (write-passwd (list passwd))
-            (write-group groups)
+              ;; Create a dummy /etc/passwd to satisfy applications that demand
+              ;; to read it.
+              (unless (file-exists? "/etc")
+                (mkdir "/etc"))
+              (write-passwd (list passwd))
+              (write-group groups)
 
-            (system* #$script)
+              (system* #$script)
 
-            ;; Copy generated files to final directory.
-            (for-each (lambda (output)
-                        (let ((target (string-append "/gwl/" output)))
-                          (mkdir-p (dirname target))
-                          (copy-file output target)))
-                      (filter file-exists? '#$outputs)))
-          #:guest-uid uid
-          #:guest-gid gid))))
+              ;; Copy generated files to final directory.
+              (for-each (lambda (output)
+                          (let ((target (string-append "/gwl/" output)))
+                            (mkdir-p (dirname target))
+                            (copy-file output target)))
+                        (filter file-exists? '#$outputs)))
+            #:guest-uid uid
+            #:guest-gid gid)))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; ADDITIONAL FUNCTIONS
@@ -590,9 +604,8 @@ and returns its location."
     (with-store store
       (let* ((name         (process-full-name process))
              (make-wrapper (process-engine-wrapper engine))
-             (packages     (cons* (build-time-guix)
-                                  (bash-minimal)
-                                  (process-packages process)))
+             (packages     (cons (bash-minimal)
+                                 (process-packages process)))
              (manifest     (packages->manifest packages))
              (profile      (profile (content manifest)))
              (search-paths (delete-duplicates
@@ -600,29 +613,17 @@ and returns its location."
                                  (manifest-search-paths manifest))))
              (out          (process-output-path process))
              (exp
-              #~(begin
-                  ;; Ensure that we can load (guix search-paths)
-                  ;; and container features if requested.
-                  (set! %load-path
-                        (cons (string-append #$(build-time-guix)
-                                             "/share/guile/site/"
-                                             (effective-version))
-                              %load-path))
-                  (set! %load-compiled-path
-                        (cons (string-append #$(build-time-guix)
-                                             "/lib/guile/"
-                                             (effective-version)
-                                             "/site-ccache")
-                              %load-compiled-path))
-                  #$@(if (null? packages) '()
-                         `((use-modules (guix search-paths))
-                           (set-search-paths (map sexp->search-path-specification
-                                                  ',search-paths)
-                                             (cons ,profile
-                                                   ',packages))))
-                  #$(if out `(setenv "out" ,out) "")
-                  (setenv "_GWL_PROFILE" #$profile)
-                  #$(procedure->gexp process)))
+              (with-imported-modules (source-module-closure (script-modules))
+                #~(begin
+                    #$@(if (null? packages) '()
+                           `((use-modules (guix search-paths))
+                             (set-search-paths (map sexp->search-path-specification
+                                                    ',search-paths)
+                                               (cons ,profile
+                                                     ',packages))))
+                    #$(if out `(setenv "out" ,out) "")
+                    (setenv "_GWL_PROFILE" #$profile)
+                    #$(procedure->gexp process))))
              (script
               (program-file (string-append "gwl-" name ".scm")
                             exp
