@@ -35,7 +35,7 @@
   #:use-module (guix store)
   #:use-module (guix search-paths)
   #:use-module ((guix derivations)
-                #:select (build-derivations
+                #:select (built-derivations
                           derivation-outputs
                           derivation-output-path))
   #:use-module ((guix ui)
@@ -192,14 +192,15 @@ modify the load path of the current process."
                        (map lookup-package package-names)))
        (profile       (profile (content manifest)))
        (profile-directory
-        (with-store store
-          (run-with-store store
-            (mlet %store-monad
-                ((drv (lower-object profile)))
-              (build-derivations store (list drv))
-              (match (derivation-outputs drv)
-                (((_ . output) . rest)
-                 (return (derivation-output-path output)))))))))
+        (with-status-verbosity (%config 'verbosity)
+          (with-build-handler (build-notifier #:verbosity (%config 'verbosity))
+            (run-with-store (inferior-store)
+              (mlet* %store-monad
+                  ((drv (lower-object profile))
+                   (_ (built-derivations (list drv))))
+                (match (derivation-outputs drv)
+                  (((_ . output) . rest)
+                   (return (derivation-output-path output))))))))))
     (for-each (match-lambda
                 ((($ <search-path-specification>
                      "GUILE_LOAD_PATH" _ separator) . value)
