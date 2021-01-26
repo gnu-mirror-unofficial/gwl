@@ -20,14 +20,6 @@
   #:use-module (gwl oop)
   #:use-module (gwl process-engines)
   #:use-module (gwl packages)
-  #:use-module ((guix monads)
-                #:select (mlet* mlet return))
-  #:use-module ((guix derivations)
-                #:select (build-derivations
-                          built-derivations
-                          derivation-outputs
-                          derivation-output-path
-                          derivation-input-output-paths))
   #:use-module ((guix profiles)
                 #:select
                 (profile
@@ -37,13 +29,6 @@
                 #:select
                 (search-path-specification->sexp))
   #:use-module (guix gexp)
-  #:use-module ((guix store)
-                #:select
-                (%store-monad
-                 with-store
-                 run-with-store
-                 store-lift
-                 requisites))
   #:use-module ((guix modules)
                 #:select (source-module-closure))
   #:use-module (ice-9 format)
@@ -623,61 +608,53 @@ tags if WITH-TAGS? is #FALSE or missing."
   "Build a procedure that transforms the process PROCESS into a script
 and returns its location."
   (lambda* (process #:key workflow (input-files '()))
-    (with-store store
-      (let* ((name         (process-full-name process))
-             (make-wrapper (process-engine-wrapper engine))
-             (packages     (cons (bash-minimal)
-                                 (process-packages process)))
-             (manifest     (packages->manifest packages))
-             (profile      (profile (content manifest)))
-             (search-paths (delete-duplicates
-                            (map search-path-specification->sexp
-                                 (manifest-search-paths manifest))))
-             (out          (process-output-path process))
-             (exp
-              (with-imported-modules (source-module-closure (script-modules))
-                #~(begin
-                    #$@(if (null? packages) '()
-                           `((use-modules (guix search-paths))
-                             (set-search-paths (map sexp->search-path-specification
-                                                    ',search-paths)
-                                               (cons ,profile
-                                                     ',packages))))
-                    #$(if out `(setenv "out" ,out) "")
-                    (setenv "_GWL_PROFILE" #$profile)
-                    #$(procedure->gexp process))))
-             (script
-              (program-file (string-append "gwl-" name ".scm")
-                            exp
-                            #:guile (default-guile)))
-             (computed-script
-              (if containerize?
-                  (program-file (string-append "gwl-" name "-container.scm")
-                                (containerize script
-                                              #:inputs
-                                              (append
-                                               ;; Data inputs
-                                               (process-inputs process)
-                                               ;; Files mapped to free inputs
-                                               input-files)
-                                              #:outputs
-                                              (process-outputs process))
-                                #:guile (default-guile))
-                  script)))
-        ;; Build everything that the script depends on and return the
-        ;; script's file name.
-        (run-with-store store
-          (mlet %store-monad
-              ((drv (lower-object
-                     (if make-wrapper
-                         (make-wrapper process
-                                       computed-script
-                                       #:workflow workflow)
-                         computed-script))))
-            (build-derivations store (list drv))
-            (match (derivation-outputs drv)
-              (((_ . output) . rest)
-               (return (derivation-output-path output))))))))))
+    "Return a lowerable object for the script that will execute the
+process."
+    (let* ((name         (process-full-name process))
+           (make-wrapper (process-engine-wrapper engine))
+           (packages     (cons (bash-minimal)
+                               (process-packages process)))
+           (manifest     (packages->manifest packages))
+           (profile      (profile (content manifest)))
+           (search-paths (delete-duplicates
+                          (map search-path-specification->sexp
+                               (manifest-search-paths manifest))))
+           (out          (process-output-path process))
+           (exp
+            (with-imported-modules (source-module-closure (script-modules))
+              #~(begin
+                  #$@(if (null? packages) '()
+                         `((use-modules (guix search-paths))
+                           (set-search-paths (map sexp->search-path-specification
+                                                  ',search-paths)
+                                             (cons ,profile
+                                                   ',packages))))
+                  #$(if out `(setenv "out" ,out) "")
+                  (setenv "_GWL_PROFILE" #$profile)
+                  #$(procedure->gexp process))))
+           (script
+            (program-file (string-append "gwl-" name ".scm")
+                          exp
+                          #:guile (default-guile)))
+           (computed-script
+            (if containerize?
+                (program-file (string-append "gwl-" name "-container.scm")
+                              (containerize script
+                                            #:inputs
+                                            (append
+                                             ;; Data inputs
+                                             (process-inputs process)
+                                             ;; Files mapped to free inputs
+                                             input-files)
+                                            #:outputs
+                                            (process-outputs process))
+                              #:guile (default-guile))
+                script)))
+      (if make-wrapper
+          (make-wrapper process
+                        computed-script
+                        #:workflow workflow)
+          computed-script))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS

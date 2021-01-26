@@ -17,6 +17,8 @@
   #:use-module (gwl errors)
   #:use-module ((guix memoization)
                 #:select (mlambda))
+  #:use-module ((guix store)
+                #:select (open-connection close-connection))
   #:use-module ((guix packages)
                 #:select (package? package-full-name))
   #:use-module ((guix inferior)
@@ -26,7 +28,8 @@
                           inferior-package?
                           inferior-package-name
                           inferior-package-version
-                          inferior-package-native-inputs))
+                          inferior-package-native-inputs
+                          inferior-package-derivation))
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -34,6 +37,7 @@
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
   #:export (current-guix
+            inferior-store
 
             lookup-package
             valid-package?
@@ -41,7 +45,8 @@
 
             bash-minimal
             build-time-guix
-            default-guile))
+            default-guile
+            default-guile-derivation))
 
 (define current-guix
   (let* ((default-guix (format #false "~a/.config/guix/current"
@@ -53,6 +58,14 @@
             (set! current-guix-inferior (open-inferior
                                          (canonicalize-path default-guix)))
             current-guix-inferior)))))
+
+(define inferior-store
+  (let ((connection #false))
+    (lambda ()
+      (or connection
+          (begin
+            (set! connection (open-connection))
+            connection)))))
 
 (define (lookup-package specification)
   (match (lookup-inferior-packages (current-guix) specification)
@@ -97,3 +110,8 @@ package, which provides all library features used by the GWL.  We use
 this Guile to run scripts."
     (and=> (assoc-ref (inferior-package-native-inputs (build-time-guix))
                       "guile") first)))
+
+(define default-guile-derivation
+  (inferior-package-derivation
+   (inferior-store)
+   (default-guile)))

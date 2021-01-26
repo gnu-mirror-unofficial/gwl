@@ -19,7 +19,7 @@
   #:use-module ((gwl workflows)
                 #:select (workflow-restrictions))
   #:use-module ((gwl workflows utils)
-                #:select (mkdir-p))
+                #:select (mkdir-p script-name))
   #:use-module ((guix base32)
                 #:select (bytevector->base32-string))
   #:use-module ((rnrs bytevectors)
@@ -77,9 +77,17 @@ names that must be considered when computing the hash."
          free-inputs-map))
   ;; Compute hashes for chains of scripts.
   (define (kons process acc)
-    (let* ((script (make-script process #:workflow workflow))
-           (hash   (bytevector->u8-list
-                    (sha256 (call-with-input-file script get-bytevector-all)))))
+    ;; The name of the script file already contains the hash of all
+    ;; its inputs, so we use that instead of the contents of the
+    ;; script, which we don't want to compute right now.
+
+    ;; TODO: Going forward we will have one script per process
+    ;; template, so we would *also* need to include the process
+    ;; parameters in this computation.
+    (let* ((script-name
+            (script-name (make-script process #:workflow workflow)))
+           (hash (bytevector->u8-list
+                  (sha256 (string->utf8 script-name)))))
       (cons
        (cons process
              (append hash

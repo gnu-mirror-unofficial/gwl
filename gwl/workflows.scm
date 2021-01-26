@@ -278,7 +278,9 @@ can be used in a fold over the WORKFLOW's processes."
               (display command) (newline))
             (reverse (fold (workflow-kons
                             workflow
-                            (process->script engine #:containerize? containerize?))
+                            (script-name
+                             (process->script engine #:containerize? containerize?)
+                             #:build? #true))
                            '() ordered-processes))))
 
 (define (inputs->map inputs)
@@ -412,7 +414,8 @@ container."
                                 string=?
                                 (map second inputs-map-with-extra-files)
                                 (process-inputs process))))
-                 (command (append runner (list script))))
+                 (built-script (script-name script #:build? #true))
+                 (command (append runner (list built-script))))
             (if dry-run?
                 (format (current-error-port)
                         "Would execute: ~{~a ~}~%" command)

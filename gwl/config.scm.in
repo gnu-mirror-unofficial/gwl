@@ -72,6 +72,13 @@ workflow.")
       (keywords
        (list
         (switch
+         (name 'verbosity)
+         (character #\v)
+         (synopsis "Verbosity level")
+         (default 1)
+         (test integer?)
+         (handler string->number))
+        (switch
          (name 'input)
          (character #\i)
          (synopsis "Specify workflow input NAME, optionally mapped to FILE")
