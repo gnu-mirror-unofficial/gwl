@@ -15,6 +15,8 @@
 
 (define-module (gwl packages)
   #:use-module (gwl errors)
+  #:use-module ((guix memoization)
+                #:select (mlambda))
   #:use-module ((guix packages)
                 #:select (package? package-full-name))
   #:use-module ((guix inferior)
@@ -80,15 +82,18 @@ the version.  By default, DELIMITER is \"@\"."
     ((? inferior-package? pkg)
      (inferior-package-full-name pkg))))
 
-(define (bash-minimal)
-  (lookup-package "bash-minimal"))
+(define bash-minimal
+  (mlambda ()
+    (lookup-package "bash-minimal")))
 
-(define (build-time-guix)
-  (lookup-package "guix"))
+(define build-time-guix
+  (mlambda ()
+    (lookup-package "guix")))
 
-(define (default-guile)
-  "Return the variant of Guile that was used to build the \"guix\"
+(define default-guile
+  (mlambda ()
+    "Return the variant of Guile that was used to build the \"guix\"
 package, which provides all library features used by the GWL.  We use
 this Guile to run scripts."
-  (and=> (assoc-ref (inferior-package-native-inputs (build-time-guix))
-                    "guile") first))
+    (and=> (assoc-ref (inferior-package-native-inputs (build-time-guix))
+                      "guile") first)))
