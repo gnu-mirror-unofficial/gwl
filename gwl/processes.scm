@@ -661,7 +661,8 @@ and returns its location."
                                                ;; Files mapped to free inputs
                                                input-files)
                                               #:outputs
-                                              (process-outputs process)))
+                                              (process-outputs process))
+                                #:guile (default-guile))
                   script)))
         ;; Build everything that the script depends on and return the
         ;; script's file name.
