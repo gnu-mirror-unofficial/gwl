@@ -1,4 +1,4 @@
-;;; Copyright © 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -76,6 +76,8 @@
     (with-output-to-file file-name
       (lambda () (display contents)))
     file-name))
+
+(set! (@@ (gwl workflows utils) script-name) identity)
 
 (define workflow->data-hashes
   (@@ (gwl cache) workflow->data-hashes))
