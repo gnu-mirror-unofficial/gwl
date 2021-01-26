@@ -109,7 +109,7 @@
 (define (script-hash file)
   (bytevector->u8-list
    (sha256
-    (call-with-input-file file get-bytevector-all))))
+    (string->utf8 file))))
 
 (define (input-file-hash file-name)
   (let ((st (stat file-name)))
