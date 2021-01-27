@@ -1,4 +1,4 @@
-;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -23,6 +23,65 @@
   #:export (reader-extension-inline-code))
 
 (eval-when (expand load compile eval)
+  (define (process-placeholder
+           char balance chunks acc maybe-variable? port)
+    "Determine if a chunk enclosed in {{...}} is a reference to a
+variable and process it."
+    (let-values (((pre post) (break (cut eq? #\{ <>) acc)))
+      (if (and maybe-variable?
+               (not (null? post))
+               (>= (length post) 2)
+               (equal? (take post 2) '(#\{ #\{))
+               (eq? (peek-char port) #\})
+               (not (any (cut char-set-contains? char-set:whitespace <>) pre)))
+          (begin
+            (read-char port)            ; drop the closing "}"
+            (let ((new-balance (- balance 2))
+                  ;; Variables may access named
+                  ;; values with ":name".
+                  (reference
+                   (let-values (((pre: post:)
+                                 (break (cut eq? #\: <>)
+                                        (reverse pre))))
+                     (match post:
+                       ;; Simple variable identifier
+                       (() (string->symbol (list->string pre:)))
+                       ;; Complex identifier.
+                       ((_ . kw)
+                        (if (eq? #\: (car kw))
+                            ;; multiple items
+                            `(and=> (memq ,(symbol->keyword
+                                            (string->symbol
+                                             (list->string (cdr kw))))
+                                          ,(string->symbol (list->string pre:)))
+                                    (lambda (sublist)
+                                      (break keyword? (cdr sublist))))
+                            ;; single item
+                            `(and=> (memq ,(symbol->keyword
+                                            (string->symbol (list->string kw)))
+                                          ,(string->symbol (list->string pre:)))
+                                    cadr)))))))
+              (values
+               ;; new-balance
+               (- balance 2)
+               ;; new-chunks
+               (cons* reference
+                      ;; Drop the opening "{{"
+                      (list->string (reverse (drop post 2)))
+                      chunks)
+               ;; new-acc
+               '()
+               ;; new-maybe-variable?
+               #f)))
+
+          ;; Not a variable
+          ;; TODO: should this be an error?
+          (values (1- balance)
+                  (cons (list->string (reverse acc))
+                        chunks)
+                  (list char)
+                  #f))))
+
   (define (reader-extension-inline-code chr port)
     "When this reader macro is registered for CHR it reads all
 characters between code delimiters from PORT and returns a code
@@ -97,55 +156,8 @@ When no interpreter is provided it uses /bin/sh:
                             ((#\{ . _) #t)
                             (_ #f))))
                  (#\}
-                  (call-with-values
-                      (lambda () (break (cut eq? #\{ <>) acc))
-                    (lambda (pre post)
-                      (if (and maybe-variable?
-                               (not (null? post))
-                               (>= (length post) 2)
-                               (equal? (take post 2) '(#\{ #\{))
-                               (eq? (peek-char port) #\})
-                               (not (any (cut char-set-contains? char-set:whitespace <>) pre)))
-                          ;; This is a variable reference
-                          (begin
-                            (read-char port) ; drop the closing "}"
-                            (values (- balance 2)
-                                    (let ((reference
-                                           ;; Variables may access named
-                                           ;; values with ":name".
-                                           (call-with-values (lambda () (break (cut eq? #\: <>)
-                                                                          (reverse pre)))
-                                             (lambda (pre: post:)
-                                               (match post:
-                                                 ;; Simple variable identifier
-                                                 (() (string->symbol (list->string pre:)))
-                                                 ;; Complex identifier.
-                                                 ((_ . kw)
-                                                  (if (eq? #\: (car kw))
-                                                      ;; multiple items
-                                                      `(and=> (memq ,(symbol->keyword
-                                                                      (string->symbol
-                                                                       (list->string (cdr kw))))
-                                                                    ,(string->symbol (list->string pre:)))
-                                                              (lambda (sublist)
-                                                                (break keyword? (cdr sublist))))
-                                                      ;; single item
-                                                      `(and=> (memq ,(symbol->keyword
-                                                                      (string->symbol (list->string kw)))
-                                                                    ,(string->symbol (list->string pre:)))
-                                                              cadr))))))))
-                                      (cons* reference
-                                             ;; Drop the opening "{{"
-                                             (list->string (reverse (drop post 2)))
-                                             chunks))
-                                    '()
-                                    #f))
-                          ;; Not a variable
-                          (values (1- balance)
-                                  (cons (list->string (reverse acc))
-                                        chunks)
-                                  (list char)
-                                  #f)))))
+                  (process-placeholder
+                   char balance chunks acc maybe-variable? port))
                  (_ (values balance chunks
                             (cons char acc)
                             maybe-variable?)))))
