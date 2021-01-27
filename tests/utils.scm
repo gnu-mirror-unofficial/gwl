@@ -1,4 +1,4 @@
-;;; Copyright © 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -141,5 +141,76 @@
 (test-equal "files: returns a list"
   '("/hello/world" "/bye/world")
   (files / (list "hello" "bye") / "world"))
+
+
+(test-equal "get: returns an element by string key in a simple alist"
+  "world"
+  (let ((collection
+         `(("hello" . "world")
+           ("bye"   . "nobody"))))
+    (get collection "hello")))
+
+(test-equal "get: returns an element by symbol key in a simple alist"
+  "nobody"
+  (let ((collection
+         `((hello . "world")
+           (bye   . "nobody"))))
+    (get collection 'bye)))
+
+(test-equal "get: returns an element by path in a nested alist"
+  "hi"
+  (let ((collection
+         `((greeting . ((world . "hello")
+                        (friend . "hi")))
+           (bye      . "nobody"))))
+    (get collection 'greeting 'friend)))
+
+(test-assert "get: complains when a path leads nowhere"
+  (condition-has-type?
+   (guard (c ((gwl-error? c) c))
+     (let ((collection
+            `((greeting . ((world . "hello")
+                           (friend . "hi")))
+              (bye      . "nobody"))))
+       (get collection 'greeting 'foe)))
+   &gwl-error))
+
+(test-assert "get: complains when there is no collection 1/2"
+  (condition-has-type?
+   (guard (c ((gwl-error? c) c))
+     (let ((collection
+            `((greeting . ((world . "hello")
+                           (friend . "hi")))
+              (bye      . "nobody"))))
+       (get collection 'greeting 'world 'later)))
+   &gwl-error))
+
+(test-assert "get: complains when there is no collection 2/2"
+  (condition-has-type?
+   (guard (c ((gwl-error? c) c))
+     (let ((collection 102))
+       (get collection 'greeting 'world 'later)))
+   &gwl-error))
+
+(test-equal "get: returns provided default value on not found error"
+  "cheers"
+  (let ((collection
+         `((greeting . ((world . "hello")
+                        (friend . "hi")))
+           (bye      . "nobody"))))
+    (get collection #:default "cheers" 'greeting 'world 'later)))
+
+(test-equal "get: returns provided default value when there is no collection"
+  "cheers"
+  (let ((collection 102))
+    (get collection #:default "cheers" 'greeting 'world 'later)))
+
+(test-equal "get: returns expected value even when provided default value"
+  "hello"
+  (let ((collection
+         `((greeting . ((world . "hello")
+                        (friend . "hi")))
+           (bye      . "nobody"))))
+    (get collection #:default "cheers" 'greeting 'world)))
 
 (test-end "utils")

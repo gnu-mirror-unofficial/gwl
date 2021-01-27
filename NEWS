@@ -26,7 +26,8 @@ Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 - accidental keywords instead of =process= or =workflow= field names now trigger a more specific “invalid field” syntax error instead of generating invalid syntax that throws an unclear error later.
 - errors when loading workflows no longer show the GWL or SRFI modules as the error location; instead they are limited to the source file where they originated.
 - =pick= from =(gwl utils)= now raise error conditions when an item cannot be found.
-
+** Workflow syntax
+- new procedure =get= to access members of nested association lists by path.
 * Changes in 0.2.1 (since 0.2.0)
 ** Documentation
 - additional documentation of the “run-time” field and the “complexity” type

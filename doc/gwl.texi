@@ -750,6 +750,133 @@ you want to extend previously defined workflows.  The argument
 @code{load-workflow}.
 @end deffn
 
+
+@cindex get, helper procedure
+@cindex get elements from a nested association list
+@cindex get elements from a nested collection
+@cindex look up values in dictionaries
+@cindex look up configuration values
+@deffn {Scheme Procedure} get @var{collection} [#:default @var{default}] @var{path}@dots{}
+
+This procedure allows you to select an item from a (potentially
+nested) @var{collection} by traversing the specified @var{path}, a
+sequence of string or symbols that are keys in the collection.  This
+becomes much clearer with an example:
+
+@lisp
+(define config
+  '(("locations"
+     . (("input"  . "/home/rekado/foo")
+        ("output" . "/dev/null")))
+    ("resources"
+     . (("R"
+         . (("memory" . "2GB")
+            ("cores"  . 2)))
+        ("samtools"
+         . (("memory" . "128kB")
+            ("cores"  . 1)))))))
+
+(get config "locations" "output")
+
+; => "/dev/null"
+
+(get config "resources" "R" "cores")
+
+; => 2
+@end lisp
+
+The variable @var{config} here is a so-called association list that
+associates string keys with values.  Some of these values are again
+association lists.  @code{get} simply traverses the provided path of
+keys and ``enters'' each specified collection in turn.
+
+Association lists are very common in Scheme, and they are also used as
+an intermediate representation for many parsed files.  Here is an
+example of using @code{get} on a parsed JSON file (this depends on the
+@code{guile-json} package):
+
+@lisp
+;; Declare packages
+require-packages
+  . "guile-json"
+
+;; Load it
+import
+  json
+
+define config
+  json-string->scm "\
+@{
+  \"locations\": @{
+    \"input\": \"/home/rekado/foo\",
+    \"output\": \"/dev/null\"
+  @},
+  \"resources\": @{
+    \"R\": @{
+      \"memory\": \"2GB\",
+      \"cores\": 2
+    @},
+    \"samtools\": @{
+      \"memory\": \"128kB\",
+      \"cores\": 1
+    @}
+  @}
+@}
+"
+
+get config "locations" "output"
+
+; => "/dev/null"
+
+get config "resources" "R" "cores"
+
+; => 2
+@end lisp
+
+If the provided path cannot be followed because one or more of the
+keys do not exist or the value after looking up an intermediate key
+does not result in a collection, @code{get} will raise an error
+condition.  If you only want to look up an optional value in a
+collection that may or may not exist, you can provide a default value
+to @code{get}.  That value will be returned instead of raising an
+error.
+
+@lisp
+;; Declare packages
+require-packages
+  . "guile-json"
+
+;; Load it
+import
+  json
+
+define config
+  json-string->scm "\
+@{
+  \"locations\": @{
+    \"input\": \"/home/rekado/foo\",
+    \"output\": \"/dev/null\"
+  @},
+  \"resources\": @{
+    \"R\": @{
+      \"memory\": \"2GB\",
+      \"cores\": 2
+    @},
+    \"samtools\": @{
+      \"memory\": \"128kB\",
+      \"cores\": 1
+    @}
+  @}
+@}
+"
+
+get config default: "/tmp" "locations" "temp-directory"
+
+; => "/tmp"
+@end lisp
+@end deffn
+
+
 @c *********************************************************************
 @node Code Snippets
 @chapter Code Snippets

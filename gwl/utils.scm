@@ -22,13 +22,14 @@
   #:use-module ((gwl workflows utils)
                 #:select (load-workflow))
   #:use-module (ice-9 match)
-  #:use-module (ice-9 pretty-print)
+  #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
   #:export (require-packages
             on
             pick
+            get
             file
             files
 
@@ -100,6 +101,53 @@
                  (&gwl-type-error
                   (expected-type (list "<number>" "<procedure>"))
                   (actual-value n))))))))))
+
+;; TODO: perhaps use guile-lens instead?
+(define get
+  (let ((no-default (gensym)))
+    (lambda* (collection #:key (default no-default) #:rest path)
+      "Look up each key from PATH, a list of strings or symbols, in the
+nested COLLECTION, an association list.  Raise a &gwl-error if any of
+the elements of PATH could not be found in the nested collection."
+      (define path*
+        (match path
+          ((#:default value . rest) rest)
+          (_ path)))
+      (define (recurse node breadcrumbs remaining-path)
+        (catch 'escape-get
+          (lambda ()
+            (match remaining-path
+              (() node)
+              ((next . rest)
+               (unless (pair? node)
+                 (throw 'escape-get
+                        (condition
+                         (&gwl-error)
+                         (&formatted-message
+                          (format "Cannot look up element ~a in something that is not a collection:~%  ~y~%")
+                          (arguments (list
+                                      (if (null? breadcrumbs)
+                                          next
+                                          (format #false "`~a' (following ~{~a~^ -> ~})" next (reverse breadcrumbs)))
+                                      node))))))
+               (let ((target (assoc-ref node next)))
+                 (unless target
+                   (throw 'escape-get
+                          (condition
+                           (&gwl-error)
+                           (&formatted-message
+                            (format "No element ~a in collection:~%  ~y~%")
+                            (arguments (list
+                                        (if (null? breadcrumbs)
+                                            next
+                                            (format #false "`~a' (following ~{~a~^ -> ~})" next (reverse breadcrumbs)))
+                                        node))))))
+                 (recurse target (cons next breadcrumbs) rest)))))
+          (lambda (key condition)
+            (if (eq? default no-default)
+                (raise condition)
+                default))))
+      (recurse collection '() path*))))
 
 (define (expand . file-parts)
   "Expand the file name template consisting of strings interspersed
