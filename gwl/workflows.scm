@@ -274,13 +274,14 @@ can be used in a fold over the WORKFLOW's processes."
   "Print scripts to be run for WORKFLOW given ENGINE."
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
+  (define make-script
+    (process->script engine #:containerize? containerize?))
   (for-each (lambda (command)
               (display command) (newline))
             (reverse (fold (workflow-kons
                             workflow
-                            (script-name
-                             (process->script engine #:containerize? containerize?)
-                             #:build? #true))
+                            (compose (cut script-name <> #:build? #true)
+                                     make-script))
                            '() ordered-processes))))
 
 (define (inputs->map inputs)
