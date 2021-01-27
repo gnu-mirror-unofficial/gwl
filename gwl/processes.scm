@@ -532,6 +532,12 @@ the container."
                   (mkdir "/bin"))
                 (symlink #$(file-append (bash-minimal) "/bin/sh") "/bin/sh"))
 
+              ;; Setup directory for temporary files.
+              (mkdir-p "/tmp")
+              (for-each (lambda (var)
+                          (setenv var "/tmp"))
+                        '("TMPDIR" "TEMPDIR"))
+
               ;; Create a dummy /etc/passwd to satisfy applications that demand
               ;; to read it.
               (unless (file-exists? "/etc")
