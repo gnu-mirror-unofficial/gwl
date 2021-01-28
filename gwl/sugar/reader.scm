@@ -40,27 +40,27 @@ variable and process it."
                   ;; Variables may access named
                   ;; values with ":name".
                   (reference
-                   (let-values (((pre: post:)
-                                 (break (cut eq? #\: <>)
-                                        (reverse pre))))
+                   (let*-values (((pre: post:)
+                                  (break (cut eq? #\: <>)
+                                         (reverse pre)))
+                                 ((variable)
+                                  (string->symbol (list->string pre:))))
                      (match post:
                        ;; Simple variable identifier
-                       (() (string->symbol (list->string pre:)))
-                       ;; Complex identifier.
+                       (() variable)
+                       ;; Complex identifier, multiple items
+                       ((_ #\: . kw)
+                        `(and=> (memq ,(symbol->keyword
+                                        (string->symbol (list->string kw)))
+                                      ,variable)
+                                (lambda (sublist)
+                                  (break keyword? (cdr sublist)))))
+                       ;; Complex identifier, single item
                        ((_ . kw)
-                        (if (eq? #\: (car kw))
-                            ;; multiple items
-                            `(and=> (memq ,(symbol->keyword
-                                            (string->symbol
-                                             (list->string (cdr kw))))
-                                          ,(string->symbol (list->string pre:)))
-                                    (lambda (sublist)
-                                      (break keyword? (cdr sublist))))
-                            ;; single item
-                            `(and=> (memq ,(symbol->keyword
-                                            (string->symbol (list->string kw)))
-                                          ,(string->symbol (list->string pre:)))
-                                    cadr)))))))
+                        `(and=> (memq ,(symbol->keyword
+                                        (string->symbol (list->string kw)))
+                                      ,variable)
+                                cadr))))))
               (values
                ;; new-balance
                (- balance 2)
