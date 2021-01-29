@@ -114,4 +114,5 @@ provided by WORKFLOW."
   (process-engine
    (name "grid-engine")
    (wrapper grid-engine-wrapper)
-   (runner '("qsub"))))
+   (runner (lambda (command)
+             (cons "qsub" command)))))

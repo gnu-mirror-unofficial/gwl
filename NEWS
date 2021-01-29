@@ -28,6 +28,9 @@ Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 - =pick= from =(gwl utils)= now raise error conditions when an item cannot be found.
 ** Workflow syntax
 - new procedure =get= to access members of nested association lists by path.
+** Execution engines
+- The =runner= field of all execution engines is now a procedure that takes a list of commands and returns a list of commands.
+
 * Changes in 0.2.1 (since 0.2.0)
 ** Documentation
 - additional documentation of the “run-time” field and the “complexity” type

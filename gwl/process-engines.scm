@@ -1,5 +1,5 @@
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@
    #:init-keyword #:wrapper
    #:accessor process-engine-wrapper)
   (runner
-   #:init-value '("/bin/sh" "-c")
+   #:init-value identity
    #:init-keyword #:runner
    #:accessor process-engine-runner))
 

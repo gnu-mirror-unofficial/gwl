@@ -416,7 +416,7 @@ container."
                                 (map second inputs-map-with-extra-files)
                                 (process-inputs process))))
                  (built-script (script-name script #:build? #true))
-                 (command (append runner (list built-script))))
+                 (command (runner (list built-script))))
             (if dry-run?
                 (format (current-error-port)
                         "Would execute: ~{~a ~}~%" command)

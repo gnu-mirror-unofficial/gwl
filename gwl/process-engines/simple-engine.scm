@@ -25,4 +25,6 @@
 (define simple-engine
   (process-engine
    (name "simple-engine")
-   (runner '("/bin/sh" "-c"))))
+   (runner (lambda (command)
+             (list "/bin/sh" "-c"
+                   (string-join command " "))))))
