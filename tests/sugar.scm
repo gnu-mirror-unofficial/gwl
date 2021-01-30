@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,8 +15,11 @@
 
 (define-module (test-sugar)
   #:use-module (gwl sugar reader)
+  #:use-module (gwl errors)
   #:use-module (gwl processes)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:use-module (srfi srfi-64))
 
 (test-begin "sugar")
@@ -48,13 +51,17 @@
   (code-snippet-code
    (test-read-eval-string "# foo bar baz {print(\"hello {{not a variable}}\")}")))
 
-(test-error "reader complains about unbalanced curlies"
-            '(inline-code-unbalanced-braces 3)
-            (convert "foo { this { is { garbage"))
+(test-equal "reader complains about unbalanced curlies"
+  '(3)
+  (guard (c ((gwl-syntax-error? c)
+             (formatted-message-arguments c)))
+    (convert "foo { this { is { garbage")))
 
-(test-error "reader complains about unbalanced curlies"
-            '(inline-code-unbalanced-braces 1)
-            (convert "foo { this { is { still garbage }}"))
+(test-equal "reader complains about unbalanced curlies"
+  '(1)
+  (guard (c ((gwl-syntax-error? c)
+             (formatted-message-arguments c)))
+    (convert "foo { this { is { still garbage }}")))
 
 (test-assert "reader defaults to /bin/sh"
   (let ((snippet (test-read-eval-string "# { just the default }")))

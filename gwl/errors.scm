@@ -24,12 +24,18 @@
   #:use-module (guix colors)
   #:use-module (gwl ui)
   #:use-module ((oop goops) #:select (class-name class-of))
-  #:export (&formatted-message
+  #:export (location
+
+            &formatted-message
             formatted-message-string
             formatted-message-arguments
 
             &gwl-error
             gwl-error?
+
+            &gwl-syntax-error
+            gwl-syntax-error?
+            gwl-syntax-error-location
 
             &gwl-package-error
             gwl-package-error-package-spec
@@ -116,7 +122,8 @@ a location object."
   (actual-value gwl-type-error-actual-value))
 
 (define-condition-type &gwl-syntax-error &gwl-error
-  gwl-syntax-error?)
+  gwl-syntax-error?
+  (location gwl-syntax-error-location))
 
 (define-condition-type &gwl-package-error &gwl-error
   gwl-package-error?
@@ -285,6 +292,11 @@ ARGS is the list of arguments received by the 'throw' handler."
                 (one
                  (report-error loc (G_ "type error: expected `~a' got `~a' in `~a'~%")
                                one actual-type actual-value)))))
+           ((gwl-syntax-error? c)
+            (let ((loc (gwl-syntax-error-location c)))
+              (apply report-error loc
+                     (formatted-message-string c)
+                     (formatted-message-arguments c))))
            ((message-condition? c)
             (report-error loc (condition-message c)))
            ((formatted-message? c)

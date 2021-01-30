@@ -20,6 +20,9 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-11)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
+  #:use-module (gwl errors)
   #:export (reader-extension-inline-code))
 
 (eval-when (expand load compile eval)
@@ -36,7 +39,7 @@ variable and process it."
                (not (any (cut char-set-contains? char-set:whitespace <>) pre)))
           (begin
             (read-char port)            ; drop the closing "}"
-            (let ((new-balance (- balance 2))
+            (let ((new-balance (cdr (cdr balance)))
                   ;; Variables may access named
                   ;; values with ":name".
                   (reference
@@ -63,7 +66,7 @@ variable and process it."
                                 cadr))))))
               (values
                ;; new-balance
-               (- balance 2)
+               (cdr (cdr balance))
                ;; new-chunks
                (cons* reference
                       ;; Drop the opening "{{"
@@ -76,7 +79,7 @@ variable and process it."
 
           ;; Not a variable
           ;; TODO: should this be an error?
-          (values (1- balance)
+          (values (cdr balance)
                   (cons (list->string (reverse acc))
                         chunks)
                   (list char)
@@ -135,18 +138,38 @@ When no interpreter is provided it uses /bin/sh:
       ((language . arguments)
        (let search-delim ((acc '())
                           (char (read-char port))
-                          (balance 1)
+                          (balance (list (seek port 0 SEEK_CUR)))
                           (chunks '())
                           (maybe-variable? #f))
-         ;; TODO: don't use "throw", raise an exception!
          (when (eof-object? char)
-           (throw 'inline-code-unbalanced-braces balance))
+           (let* ((current-position (car balance))
+                  (where (begin
+                           (seek port 0 SEEK_SET)
+                           (let count-newlines ((lines 1)
+                                                (columns 0)
+                                                (remaining current-position))
+                             (if (zero? remaining)
+                                 (location (port-filename port) lines columns)
+                                 (let-values
+                                     (((new-lines new-columns)
+                                       (match (read-char port)
+                                         (#\newline (values (1+ lines) 0))
+                                         (_ (values lines (1+ columns))))))
+                                   (count-newlines new-lines new-columns
+                                                   (1- remaining))))))))
+             (raise (condition
+                     (&gwl-error)
+                     (&gwl-syntax-error
+                      (location where))
+                     (&formatted-message
+                      (format "Missing ~a closing brace(s).~%")
+                      (arguments (list (length balance))))))))
 
          (let-values
              (((new-balance new-chunks new-acc new-maybe-variable?)
                (match char
                  (#\{
-                  (values (1+ balance)
+                  (values (cons (seek port 0 SEEK_CUR) balance)
                           chunks
                           (cons char acc)
                           ;; If previous char was also #\{ we are
@@ -161,7 +184,7 @@ When no interpreter is provided it uses /bin/sh:
                  (_ (values balance chunks
                             (cons char acc)
                             maybe-variable?)))))
-           (if (zero? new-balance)
+           (if (null? new-balance)
                (let ((last-chunk (list->string (reverse acc))))
                  `(code-snippet ',(match language
                                     ("" 'sh)
