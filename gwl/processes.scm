@@ -352,54 +352,42 @@ of PROCESS."
     ("_GWL_PROCESS_COMPLEXITY_TIME" .
      ,(or (and=> (process-time process) number->string) ""))))
 
+(define-syntax-rule (snippet-caller code-converter command)
+  (lambda (process code)
+    #~(begin
+        (for-each (lambda (pair)
+                    (setenv (car pair) (cdr pair)))
+                  '#$(process->env process))
+        (let ((retval (apply system*
+                             (append command
+                                     (code-converter #$code)))))
+          (or (zero? retval) (exit retval))))))
+
 (define language-python
   (make <language>
     #:name 'python
-    #:call (lambda (process code)
-             #~(begin
-                 (for-each (lambda (pair)
-                             (setenv (car pair) (cdr pair)))
-                           '#$(process->env process))
-                 (let ((retval (system* "python3" "-c" #$code)))
-                   (or (zero? retval) (exit retval)))))))
+    #:call (snippet-caller list '("python3" "-c"))))
 
 (define language-r
   (make <language>
     #:name 'R
-    #:call (lambda (process code)
-             (let ((args (append-map (lambda (line)
-                                       (list "-e" line))
-                                     (filter (negate string-null?)
-                                             (string-split code #\newline)))))
-               #~(begin
-                   (for-each (lambda (pair)
-                               (setenv (car pair) (cdr pair)))
-                             '#$(process->env process))
-                   (let ((retval (apply system* "Rscript" '#$args)))
-                     (or (zero? retval) (exit retval))))))))
+    #:call (snippet-caller
+            (lambda (code)
+              (append-map (lambda (line)
+                            (list "-e" line))
+                          (filter (negate string-null?)
+                                  (string-split code #\newline))))
+            '("Rscript"))))
 
 (define language-bash
   (make <language>
     #:name 'bash
-    #:call (lambda (process code)
-             #~(begin
-                 (for-each (lambda (pair)
-                             (setenv (car pair) (cdr pair)))
-                           '#$(process->env process))
-                 (let ((retval (system* "bash" "-c" #$code)))
-                   (or (zero? retval) (exit retval)))))))
+    #:call (snippet-caller list '("bash" "-c"))))
 
 (define language-sh
   (make <language>
     #:name 'sh
-    #:call (lambda (process code)
-             #~(begin
-                 (for-each (lambda (pair)
-                             (setenv (car pair) (cdr pair)))
-                           '#$(process->env process))
-                 (let ((retval (system* "/bin/sh"
-                                        "-c" #$code)))
-                   (or (zero? retval) (exit retval)))))))
+    #:call (snippet-caller list '("/bin/sh" "-c"))))
 
 (define languages
   (list language-sh
@@ -461,15 +449,10 @@ of PROCESS."
                              language-call)
                       ;; There is no pre-defined way to execute the
                       ;; snippet.  Use generic approach.
-                      (lambda (process code)
-                        #~(begin
-                            (for-each (lambda (pair)
-                                        (setenv (car pair) (cdr pair)))
-                                      '#$(process->env process))
-                            (apply system*
-                                   (string-append (getenv "_GWL_PROFILE")
-                                                  #$(sanitize-path (symbol->string name)))
-                                   '#$(append arguments (list code))))))))
+                      (snippet-caller list
+                                      (list
+                                       (string-append (getenv "_GWL_PROFILE")
+                                                      #$(sanitize-path (symbol->string name))))))))
        (call process code)))
     (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
 
