@@ -1,6 +1,6 @@
 (define (create-file filename)
   (make-process
-   (name (string-append "create-file-" (basename filename)))
+   (name "create-file")
    (outputs (list filename))
    (run-time (complexity
               (space   20 mebibytes)
@@ -12,7 +12,7 @@
 
 (define (compress-file input)
   (make-process
-   (name (string-append "compress-file-" (basename input)))
+   (name "compress-file")
    (packages (list "gzip"))
    (inputs (list input))
    (outputs (list (string-append input ".gz")))

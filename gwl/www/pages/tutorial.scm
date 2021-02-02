@@ -146,9 +146,6 @@ on " (code "input") ":")
           (pre (code (@ (class "gwl"))
                      ,(highlights->sxml (highlight lex-gwl "\
 process compress-file (with input)
-  name
-    string-append \"compress-file-\"
-                  basename input
   packages \"gzip\"
   inputs input
   outputs

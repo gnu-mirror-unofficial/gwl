@@ -1,7 +1,4 @@
 process create-file (with filename)
-  name
-    string-append "create-file-"
-                  basename filename
   outputs filename
   run-time
     complexity
@@ -10,9 +7,6 @@ process create-file (with filename)
   # { echo "Hello, world!" > {{filename}} }
 
 process compress-file (with input)
-  name
-    string-append "compress-file-"
-                  basename input
   packages "gzip"
   inputs input
   outputs
