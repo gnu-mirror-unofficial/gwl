@@ -13,7 +13,7 @@ Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 You can use Guix to set up a development environment:
 
 #+BEGIN_SRC shell
-guix environment --load=.guix.scm
+guix environment -L channel --load=.guix.scm
 #+END_SRC
 
 * Commit access
