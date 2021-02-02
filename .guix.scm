@@ -18,6 +18,7 @@
              (srfi srfi-1)
              (srfi srfi-11)
              (guix packages)
+             (guix transformations)
              (guix utils)
              (gnu packages base)
              (gnu packages package-management)
@@ -150,39 +151,41 @@ returns a boolean to determine whether rewriting should continue."
               (string-prefix? "guile-"
                               (package-name p)))))))
 
+(define p
+  (compose with-guix-guile-instead-of-any-guile
+           with-fixed-commonmark))
+
 (define-public gwl/devel
-  ((compose with-guix-guile-instead-of-any-guile
-            with-fixed-commonmark)
-   (package
-     (inherit gwl)
-     (source #f)
-     (arguments
-      '(#:make-flags
-        '("GUILE_AUTO_COMPILE=0")))
-     (inputs
-      `(("guix" ,guix)
-        ("guile" ,@(assoc-ref (package-native-inputs guix) "guile"))
-        ("guile-commonmark" ,guile-commonmark)
-        ("guile-config" ,guile-config)
-        ("guile-gcrypt" ,guile-gcrypt)
-        ("guile-pfds" ,guile-pfds)
-        ("guile-syntax-highlight" ,guile-syntax-highlight)
-        ("guile-wisp" ,guile-wisp)))
-     (native-inputs
-      `(("texlive" ,texlive-tiny)       ; for make distcheck
-        ("sed" ,sed)
+  (package
+    (inherit gwl)
+    (source #f)
+    (arguments
+     '(#:make-flags
+       '("GUILE_AUTO_COMPILE=0")))
+    (inputs
+     `(("guix" ,guix)
+       ("guile" ,guix-guile)
+       ("guile-commonmark" ,(p guile-commonmark))
+       ("guile-config" ,(p guile-config))
+       ("guile-gcrypt" ,(p guile-gcrypt))
+       ("guile-pfds" ,(p guile-pfds))
+       ("guile-syntax-highlight" ,(p guile-syntax-highlight))
+       ("guile-wisp" ,(p guile-wisp))))
+    (native-inputs
+     `(("texlive" ,texlive-tiny)       ; for make distcheck
+       ("sed" ,sed)
 
-        ;; For "make release"
-        ("perl" ,perl)
-        ("git" ,git-minimal)
+       ;; For "make release"
+       ("perl" ,perl)
+       ("git" ,git-minimal)
 
-        ;; For manual post processing
-        ("guile-lib" ,guile-lib/htmlprag-fixed)
-        ("rsync" ,rsync)
+       ;; For manual post processing
+       ("guile-lib" ,guile-lib/htmlprag-fixed)
+       ("rsync" ,rsync)
 
-        ;; For "git push"
-        ("ssh" ,openssh)
+       ;; For "git push"
+       ("ssh" ,openssh)
 
-        ,@(package-native-inputs gwl))))))
+       ,@(package-native-inputs gwl)))))
 
 gwl/devel
