@@ -163,7 +163,7 @@ process compress-file (with input)
 
      (p "We can now dynamically create compression processes by
 instantiating the " (code "compress-file") " template with specific
-input file names.  We use Scheme's " (code "let") ",
+input file names.  We use Scheme's " (code "define") "
 and " (code "map") " to simplify the work for us:")
 
      (div (@ (class "figure"))
