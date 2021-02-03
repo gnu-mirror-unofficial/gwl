@@ -666,6 +666,7 @@ define SAMPLES
     . "666"
     . "se7en"
     . "who-eight-nine?"
+    . "NEIN!"
     reverse-string "net"
 
 process index-bam (with sample)
