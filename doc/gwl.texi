@@ -496,6 +496,47 @@ When this process is executed by a scheduler that honors resource
 limits, the process will be granted at most 20 MiB of memory and will
 be killed if it has not concluded after 10 seconds.
 
+@cindex values, process field
+@item values
+This field holds a list with keyword-tagged items that can be used in
+code snippets.  Values defined here are passed to the process script
+at execution time (rather than preparation time), so this field can be
+used to avoid embedding literal values in code snippets when
+generating processes from a template.  To learn more about code
+snippets @ref{Code Snippets}.
+
+Here is a simple example of a process template with values:
+
+@lisp
+process greet (with name)
+  packages
+    . "hello"
+    . "coreutils"
+  outputs
+    file name ".txt"
+  values
+    . capitalized:
+    string-upcase name
+  # @{
+    echo "This is a greeting for @{@{values:capitalized@}@}."
+    hello >> @{@{outputs@}@}
+  @}
+
+map greet
+  list "rekado" "civodul" "zimoun"
+@end lisp
+
+The generated script from this process does not embed any specific
+value for @code{name} or even @code{capitalized}.  Instead it looks up
+the value for @code{capitalized} in the arguments passed to the script
+at execution time.  So instead of generating three scripts that only
+differ in one value (the capitalized name), the GWL will only generate
+@emph{one} script and pass it three different values for the three
+processes.
+
+For another example and further discussion of embedding values versus
+referencing them at execution time @ref{Process templates}.
+
 @cindex procedure, process field
 @item procedure
 This field holds an expression of code that should be run when the
@@ -588,6 +629,87 @@ The result is the same: you get a procedure @code{build-me-a-process}
 that you can use to define a number of similar processes.  In the end
 you have the three processes @code{show-fruit}, @code{show-kitchen},
 and @code{show-table}.
+
+@cindex reusing process scripts
+@cindex values, process field (example)
+In a real-life workflow, the above example would not be very
+efficient.  The GWL generates an executable script for every process,
+passing the process properties (such as @code{name}, @code{inputs},
+@code{outputs}, etc) as arguments.  It is a good idea to only generate
+one script per process @emph{template} instead of producing one script
+per process, as this @emph{vastly} reduces preparation work that the
+GWL has to perform.
+
+The GWL can arrange for scripts to be reused as long as you take care
+not to embed arbitrary variables in the process @code{procedure}
+field.  To this end the GWL offers the @code{values} field for
+arbitrary value definitions that should be passed to process scripts
+as arguments.
+
+Another thing to avoid is to make the process name dependent on
+template arguments.  This prevents script reuse as the GWL is forced
+to generate scripts that are virtually identical except for their
+names.  Here's an example with ten processes that all share the same
+process script:
+
+@lisp
+define LOG_DIR
+  file "logs"
+
+define SAMPLES
+  list
+    . "first-sample"
+    . "second"
+    . "third-sample"
+    . "sample-no4"
+    . "take-five"
+    . "666"
+    . "se7en"
+    . "who-eight-nine?"
+    reverse-string "net"
+
+process index-bam (with sample)
+  inputs
+    file "mapped-reads" / sample "_Aligned.sortedByCoord.out.bam"
+  outputs
+    . bai:
+    file "mapped-reads" / sample "_Aligned.sortedByCoord.out.bam.bai"
+    . log:
+    file LOG_DIR / "samtools_index_" sample ".log"
+  packages
+    . "samtools"
+    . "coreutils"
+  values
+    . sample-id: sample
+    . backwards:
+    string-reverse
+      first inputs
+  # @{
+    mkdir -p @{@{LOG_DIR@}@}
+    echo "The sample identifier is @{@{values:sample-id@}@}"
+    samtools index @{@{inputs@}@} @{@{outputs:bai@}@} >> @{@{outputs:log@}@} 2>&1
+    echo "By the way, the sample's file name in reverse is @{@{values:backwards@}@}."
+  @}
+
+workflow test
+  processes
+    map index-bam SAMPLES
+@end lisp
+
+Here the value of the variable @code{LOG_DIR} is embedded in the
+generated script, but that's fine because it is independent of the
+template argument @code{sample}.  While we could have used
+@code{sample} directly, we instead defined it as a value in the
+@code{values} field and tagged it with the keyword @code{sample-id:}.
+For the fun of it we also defined a value with the tag
+@code{backwards:}, which is defined in terms of another process field
+(@code{inputs}).
+
+References to the fields @code{inputs}, @code{outputs}, @code{name},
+and @code{values} are resolved via arguments passed to the process
+script at execution time.  They do not interfere with script reuse as
+their values are not embedded in the generated script.
+
 
 @node Useful procedures and macros
 @section Useful procedures and macros
@@ -1024,6 +1146,7 @@ The following variables may be set:
 @item @code{_GWL_PROCESS_COMPLEXITY_TIME}
 @item @code{_GWL_PROCESS_COMPLEXITY_SPACE}
 @item @code{_GWL_PROCESS_COMPLEXITY_THREADS}
+@item @code{_GWL_PROCESS_VALUES}
 @end itemize
 
 @c *********************************************************************

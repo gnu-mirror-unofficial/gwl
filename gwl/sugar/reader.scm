@@ -50,7 +50,7 @@ variable and process it."
                                   (match (string->symbol (list->string pre:))
                                     ;; Look up process fields in the
                                     ;; script arguments at runtime
-                                    ((and (or 'inputs 'outputs 'name) field)
+                                    ((and (or 'inputs 'outputs 'values 'name) field)
                                      (values `(assoc-ref #{ %gwl process-arguments}# ',field)
                                              identity))
                                     ;; Other values should be unquoted right away

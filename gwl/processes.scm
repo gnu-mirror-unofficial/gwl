@@ -219,6 +219,11 @@
    #:init-keyword #:run-time
    #:init-value #f
    #:validator complexity?)
+  (values
+   #:accessor process-values
+   #:init-keyword #:values
+   #:init-value '()
+   #:implicit-list? #t)
   (procedure
    #:accessor process-procedure
    #:init-keyword #:procedure
@@ -343,6 +348,7 @@ of PROCESS."
     ("_GWL_PROCESS_OUTPUT_PATH" .
      ,(or (process-output-path process) ""))
     ("_GWL_PROCESS_OUTPUTS" . outputs)
+    ("_GWL_PROCESS_VALUES" . values)
     ("_GWL_PROCESS_COMPLEXITY_THREADS" .
      ,(or (and=> (process-threads process) number->string) ""))
     ("_GWL_PROCESS_COMPLEXITY_SPACE" .
@@ -595,6 +601,7 @@ tags if WITH-TAGS? is #FALSE or missing."
 (define (process->script-arguments process)
   `((inputs  . ,(process-inputs process))
     (outputs . ,(process-outputs process))
+    (values  . ,(process-values process))
     (name    . ,(process-name process))))
 
 (define* (process->script engine #:key containerize?)
