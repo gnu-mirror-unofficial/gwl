@@ -114,22 +114,27 @@
          (name . "test-process"))))
   (test-equal "references to elements of process arguments are delayed"
     '("echo "
-      (and=> (memq #:first
-                   (assoc-ref #{ %gwl process-arguments}# (quote inputs)))
-             cadr)
+      (or (and=> (memq #:first (assoc-ref #{ %gwl process-arguments}# (quote inputs))) cadr)
+          (error (format #f "Could not access `~a' in `~a'~%"
+                         "first"
+                         (assoc-ref #{ %gwl process-arguments}# (quote inputs)))))
       " "
       (assoc-ref #{ %gwl process-arguments}# (quote inputs))
       " "
       (assoc-ref #{ %gwl process-arguments}# (quote outputs))
       " "
-      (assoc-ref #{ %gwl process-arguments}# (quote name))
-      "")
+      (assoc-ref #{ %gwl process-arguments}# (quote name)) "")
     (code-snippet-code
      (test-read-eval-string "# {echo {{inputs:first}} {{inputs}} {{outputs}} {{name}}}")))
+
   (test-equal "references to elements of other variables are not delayed"
     '("echo " 1000 " " "Bender" "")
     (code-snippet-code
-     (test-read-eval-string "# {echo {{numbers:boring}} {{who}}}"))))
+     (test-read-eval-string "# {echo {{numbers:boring}} {{who}}}")))
+
+  (test-error "references to unknown elements of variables triggers an error" #true
+              (code-snippet-code
+               (test-read-eval-string "# {echo {{numbers:last}}}"))))
 
 (test-assert "make-process macro allows key-less procedure"
   (let ((proc (make-process

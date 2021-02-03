@@ -64,17 +64,23 @@ variable and process it."
                         (() variable)
                         ;; Complex identifier, multiple items
                         ((_ #\: . kw)
-                         `(and=> (memq ,(symbol->keyword
-                                         (string->symbol (list->string kw)))
-                                       ,variable)
-                                 (lambda (sublist)
-                                   (break keyword? (cdr sublist)))))
+                         (let ((key (list->string kw)))
+                           `(or (and=> (memq ,(symbol->keyword
+                                               (string->symbol key))
+                                             ,variable)
+                                       (lambda (sublist)
+                                         (break keyword? (cdr sublist))))
+                                (error (format #false "Could not access `~a' in `~a'~%"
+                                               ,key ,variable)))))
                         ;; Complex identifier, single item
                         ((_ . kw)
-                         `(and=> (memq ,(symbol->keyword
-                                         (string->symbol (list->string kw)))
-                                       ,variable)
-                                 cadr)))))))
+                         (let ((key (list->string kw)))
+                           `(or (and=> (memq ,(symbol->keyword
+                                               (string->symbol key))
+                                             ,variable)
+                                       cadr)
+                                (error (format #false "Could not access `~a' in `~a'~%"
+                                               ,key ,variable))))))))))
               (values
                ;; new-balance
                (cdr (cdr balance))
