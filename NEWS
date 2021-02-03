@@ -31,6 +31,7 @@ Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 - new procedure =get= to access members of nested association lists by path.
 ** Execution engines
 - The =runner= field of all execution engines is now a procedure that takes a list of commands and returns a list of commands.
+- process properties are now passed as script arguments to allow reuse of generated process scripts.
 
 * Changes in 0.2.1 (since 0.2.0)
 ** Documentation

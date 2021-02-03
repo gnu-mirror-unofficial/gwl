@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 
 (define-module (gwl cache)
   #:use-module ((gwl processes)
-                #:select (process-inputs))
+                #:select (process-inputs process->script-arguments))
   #:use-module ((gwl workflows)
                 #:select (workflow-restrictions))
   #:use-module ((gwl workflows utils)
@@ -46,6 +46,35 @@
 (define %cache-root (make-parameter "/tmp/gwl"))
 (define %cache-delay (make-parameter 0))
 
+(define (process->hash process make-script workflow)
+  "Return a hash of the process.  The name of the script file already
+contains the hash of all its inputs, so we use that instead of the
+contents of the script, which we don't want to compute right now.
+Since the same scripts may be called with different arguments, we
+*also* need to include the process parameters in this computation."
+  (let ((script+arguments
+         (format #false "~a ~a"
+                 (script-name (make-script process #:workflow workflow))
+                 (process->script-arguments process))))
+    (bytevector->u8-list
+     (sha256 (string->utf8 script+arguments)))))
+
+(define (hash-input-file file-name)
+  "Return a hash representing the input file FILE-NAME.  We don't
+actually hash all the file, because that might be very expensive
+--- especially when done *every* time a workflow is supposed to be
+run.  We just hash the file name, the mtime and the file size and hope
+that's enough.
+
+We should probably have a cache for file hashes, so that hashing even
+large files can be acceptable as it only has to be done once."
+  (let ((st (stat file-name)))
+    (bytevector->u8-list
+     (sha256 (string->utf8 (format #f "~a~a~a"
+                                   file-name
+                                   (stat:mtime st)
+                                   (stat:size st)))))))
+
 (define (workflow->data-hashes workflow processes free-inputs-map make-script)
   "Return an alist associating each of the WORKFLOW's ordered list of
 PROCESSES with the hash of all the process scripts used to generate
@@ -56,48 +85,22 @@ names that must be considered when computing the hash."
     (filter-map (lambda (input)
                   (and=> (assoc-ref free-inputs-map input) first))
                 (process-inputs process)))
-  ;; XXX: We don't hash all of the inputs, because that might be very
-  ;; expensive --- especially when done *every* time a workflow is
-  ;; supposed to be run.  We just hash the file name, the mtime and
-  ;; the file size and hope that's enough.
-
-  ;; XXX: We should probably have a cache for file hashes, so that
-  ;; hashing even large files can be acceptable as it only has to be
-  ;; done once.
   (define input-hashes
     (map (match-lambda
            ((name file-name)
-            (let ((st (stat file-name)))
-              (cons file-name
-                    (bytevector->u8-list
-                     (sha256 (string->utf8 (format #f "~a~a~a"
-                                                   file-name
-                                                   (stat:mtime st)
-                                                   (stat:size st)))))))))
+            (cons file-name (hash-input-file file-name))))
          free-inputs-map))
   ;; Compute hashes for chains of scripts.
   (define (kons process acc)
-    ;; The name of the script file already contains the hash of all
-    ;; its inputs, so we use that instead of the contents of the
-    ;; script, which we don't want to compute right now.
-
-    ;; TODO: Going forward we will have one script per process
-    ;; template, so we would *also* need to include the process
-    ;; parameters in this computation.
-    (let* ((script-name
-            (script-name (make-script process #:workflow workflow)))
-           (hash (bytevector->u8-list
-                  (sha256 (string->utf8 script-name)))))
-      (cons
-       (cons process
-             (append hash
-                     ;; Hash of mapped free inputs.
-                     (append-map (cut assoc-ref acc <>)
-                                 (process-free-inputs process))
-                     ;; All outputs of processes this one depends on.
-                     (append-map (cut assoc-ref acc <>)
-                                 (or (assoc-ref graph process) '()))))
-       acc)))
+    (cons (cons process
+                (append (process->hash process make-script workflow)
+                        ;; Hash of mapped free inputs.
+                        (append-map (cut assoc-ref acc <>)
+                                    (process-free-inputs process))
+                        ;; All outputs of processes this one depends on.
+                        (append-map (cut assoc-ref acc <>)
+                                    (or (assoc-ref graph process) '()))))
+          acc))
   (map (match-lambda
          ((process . hashes)
           (cons process

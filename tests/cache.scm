@@ -105,19 +105,8 @@
     (every string? (map cdr hashes))))
 
 
-
-(define (script-hash file)
-  (bytevector->u8-list
-   (sha256
-    (string->utf8 file))))
-
-(define (input-file-hash file-name)
-  (let ((st (stat file-name)))
-    (bytevector->u8-list
-     (sha256 (string->utf8 (format #f "~a~a~a"
-                                   file-name
-                                   (stat:mtime st)
-                                   (stat:size st)))))))
+(define process->hash (@@ (gwl cache) process->hash))
+(define hash-input-file (@@ (gwl cache) hash-input-file))
 
 (define (hashes->hash-string hashes)
   (bytevector->base32-string
@@ -126,7 +115,7 @@
 
 (test-equal "workflow->data-hashes hashes just the script for an independent process"
   (hashes->hash-string
-   (list (script-hash (make-script p1 #:workflow wf))))
+   (list (process->hash p1 make-script wf)))
   (assoc-ref (workflow->data-hashes wf
                                     ordered-processes
                                     '()
@@ -135,8 +124,8 @@
 
 (test-equal "workflow->data-hashes hashes the script and its inputs"
   (hashes->hash-string
-   (list (script-hash (make-script p4 #:workflow wf))
-         (input-file-hash input-file)))
+   (list (process->hash p4 make-script wf)
+         (hash-input-file input-file)))
   (assoc-ref (workflow->data-hashes wf
                                     ordered-processes
                                     (list
@@ -146,9 +135,9 @@
 
 (test-equal "workflow->data-hashes hashes all dependencies of a process"
   (hashes->hash-string
-   (list (script-hash (make-script p3 #:workflow wf))
-         (script-hash (make-script p4 #:workflow wf))
-         (input-file-hash input-file)))
+   (list (process->hash p3 make-script wf)
+         (process->hash p4 make-script wf)
+         (hash-input-file input-file)))
   (assoc-ref (workflow->data-hashes wf
                                     ordered-processes
                                     (list

@@ -106,7 +106,7 @@ provided by WORKFLOW."
                    #$logs-directory
                    #$name)
            (format port "mkdir -p ~a~%" #$logs-directory)
-           (format port "~a~%" #$script)
+           (format port "~a $@~%" #$script)
            (chmod port #o555)))
      #:guile (default-guile))))
 

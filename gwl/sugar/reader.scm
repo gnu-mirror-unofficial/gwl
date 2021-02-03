@@ -46,24 +46,35 @@ variable and process it."
                    (let*-values (((pre: post:)
                                   (break (cut eq? #\: <>)
                                          (reverse pre)))
-                                 ((variable)
-                                  (string->symbol (list->string pre:))))
-                     (match post:
-                       ;; Simple variable identifier
-                       (() variable)
-                       ;; Complex identifier, multiple items
-                       ((_ #\: . kw)
-                        `(and=> (memq ,(symbol->keyword
-                                        (string->symbol (list->string kw)))
-                                      ,variable)
-                                (lambda (sublist)
-                                  (break keyword? (cdr sublist)))))
-                       ;; Complex identifier, single item
-                       ((_ . kw)
-                        `(and=> (memq ,(symbol->keyword
-                                        (string->symbol (list->string kw)))
-                                      ,variable)
-                                cadr))))))
+                                 ((variable maybe-unquoted)
+                                  (match (string->symbol (list->string pre:))
+                                    ;; Look up process fields in the
+                                    ;; script arguments at runtime
+                                    ((and (or 'inputs 'outputs 'name) field)
+                                     (values `(assoc-ref #{ %gwl process-arguments}# ',field)
+                                             identity))
+                                    ;; Other values should be unquoted right away
+                                    (it
+                                     (values it
+                                             (lambda (val)
+                                               (list 'unquote val)))))))
+                     (maybe-unquoted
+                      (match post:
+                        ;; Simple variable identifier
+                        (() variable)
+                        ;; Complex identifier, multiple items
+                        ((_ #\: . kw)
+                         `(and=> (memq ,(symbol->keyword
+                                         (string->symbol (list->string kw)))
+                                       ,variable)
+                                 (lambda (sublist)
+                                   (break keyword? (cdr sublist)))))
+                        ;; Complex identifier, single item
+                        ((_ . kw)
+                         `(and=> (memq ,(symbol->keyword
+                                         (string->symbol (list->string kw)))
+                                       ,variable)
+                                 cadr)))))))
               (values
                ;; new-balance
                (cdr (cdr balance))
@@ -190,7 +201,11 @@ When no interpreter is provided it uses /bin/sh:
                                     ("" 'sh)
                                     (_ (string->symbol language)))
                                 ',arguments
-                                (list ,@(reverse (cons last-chunk chunks)))))
+                                ;; XXX: hack to generate a quasiquoted
+                                ;; expression without quasiquoting the
+                                ;; code here.
+                                (,(symbol-append 'quasi 'quote)
+                                 ,(reverse (cons last-chunk chunks)))))
                (search-delim new-acc
                              (read-char port)
                              new-balance

@@ -66,5 +66,10 @@ process foo
 
 Or rather: let the “resources” field accept an arbitrary list of resource values.
 
+* grid engine: job names should be unique
+Job names in the grid engine wrapper are not unique for all processes (because processes from the same process template may all have the same name) and also not unique for all workflows submitted by the user.
+
+Instead of using user-provided job names we should be using the unique job-script name.
+
 * Documentation
 Only the HTML files have highlighting, not the gzipped  HTML files!

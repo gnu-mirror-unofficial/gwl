@@ -61,6 +61,7 @@
             complexity-threads
 
             process->script
+            process->script-arguments
 
             ;; Convenience functions
             kibibytes
@@ -333,18 +334,15 @@
 (define (process->env process)
   "Return an alist of environment variable names to values of fields
 of PROCESS."
-  `(("_GWL_PROCESS_NAME" .
-     ,(process-name process))
+  `(("_GWL_PROCESS_NAME" . name)
     ("_GWL_PROCESS_SYNOPSIS" .
      ,(or (process-synopsis process) ""))
     ("_GWL_PROCESS_DESCRIPTION" .
      ,(or (process-description process) ""))
-    ("_GWL_PROCESS_INPUTS" .
-     ,(format #f "~{~a~^ ~}" (process-inputs process)))
+    ("_GWL_PROCESS_INPUTS" . inputs)
     ("_GWL_PROCESS_OUTPUT_PATH" .
      ,(or (process-output-path process) ""))
-    ("_GWL_PROCESS_OUTPUTS" .
-     ,(format #f "~{~a~^ ~}" (process-outputs process)))
+    ("_GWL_PROCESS_OUTPUTS" . outputs)
     ("_GWL_PROCESS_COMPLEXITY_THREADS" .
      ,(or (and=> (process-threads process) number->string) ""))
     ("_GWL_PROCESS_COMPLEXITY_SPACE" .
@@ -356,11 +354,21 @@ of PROCESS."
   (lambda (process code)
     #~(begin
         (for-each (lambda (pair)
-                    (setenv (car pair) (cdr pair)))
+                    (setenv (car pair)
+                            (let ((value (cdr pair)))
+                              (if (symbol? value)
+                                  (format #false "~a"
+                                          (assoc-ref #{ %gwl process-arguments}# value))
+                                  value))))
                   '#$(process->env process))
         (let ((retval (apply system*
                              (append command
-                                     (code-converter #$code)))))
+                                     (code-converter (string-join (map (lambda (val)
+                                                                         (if (list? val)
+                                                                             (format #f "~{~a~^ ~}" val)
+                                                                             (format #f "~a" val)))
+                                                                       (list #$@code))
+                                                                  ""))))))
           (or (zero? retval) (exit retval))))))
 
 (define language-python
@@ -404,7 +412,7 @@ of PROCESS."
    #:accessor code-snippet-arguments)
   (code
    #:init-keyword #:code
-   #:accessor code-snippet-code-listing))
+   #:accessor code-snippet-code))
 
 ;; Code snippets should be evaluating to themselves for more
 ;; convenient Wisp use.
@@ -415,15 +423,6 @@ of PROCESS."
 
 (define (code-snippet? thing)
   (is-a? thing <code-snippet>))
-
-(define (code-snippet-code code-snippet)
-  "Return the code listing as a string."
-  (string-join (map (lambda (val)
-                      (if (list? val)
-                          (format #f "~{~a~^ ~}" val)
-                          (format #f "~a" val)))
-                    (code-snippet-code-listing code-snippet))
-               ""))
 
 (define (code-snippet language arguments code)
   (make <code-snippet>
@@ -593,6 +592,11 @@ tags if WITH-TAGS? is #FALSE or missing."
                                  #:references-graphs (("graph" ,item))))
       (plain-file name "()")))
 
+(define (process->script-arguments process)
+  `((inputs  . ,(process-inputs process))
+    (outputs . ,(process-outputs process))
+    (name    . ,(process-name process))))
+
 (define* (process->script engine #:key containerize?)
   "Build a procedure that transforms the process PROCESS into a script
 and returns its location."
@@ -620,7 +624,11 @@ process."
                                                    ',packages))))
                   #$(if out `(setenv "out" ,out) "")
                   (setenv "_GWL_PROFILE" #$profile)
-                  #$(procedure->gexp process))))
+                  (use-modules (ice-9 match))
+                  (match (command-line)
+                    ((_ (= (lambda (s) (call-with-input-string s read))
+                           #{ %gwl process-arguments}#) . rest)
+                     #$(procedure->gexp process))))))
            (script
             (program-file (string-append "gwl-" name ".scm")
                           exp
