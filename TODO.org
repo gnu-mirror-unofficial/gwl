@@ -1,4 +1,4 @@
-#+TYP_TODO: MAYBE DONE TODO
+#+TYP_TODO: MAYBE TODO DONE
 
 * write tests for process->script
 The =process->script= procedure in =(gwl processes)= is important but complicated.  It needs tests.
