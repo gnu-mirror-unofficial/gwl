@@ -4,7 +4,7 @@ process create-file (with filename)
     complexity
       space 20 mebibytes
       time  10 seconds
-  # { echo "Hello, world!" > {{filename}} }
+  # { echo "Hello, world!  This is {{outputs}}." > {{outputs}} }
 
 process compress-file (with input)
   packages "gzip"
