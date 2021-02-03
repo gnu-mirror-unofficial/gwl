@@ -278,11 +278,13 @@ can be used in a fold over the WORKFLOW's processes."
     (process->script engine #:containerize? containerize?))
   (for-each (lambda (command)
               (display command) (newline))
-            (reverse (fold (workflow-kons
-                            workflow
-                            (compose (cut script-name <> #:build? #true)
-                                     make-script))
-                           '() ordered-processes))))
+            (delete-duplicates
+             (reverse (fold (workflow-kons
+                             workflow
+                             (compose (cut script-name <> #:build? #true)
+                                      make-script))
+                            '() ordered-processes))
+             string=?)))
 
 (define (inputs->map inputs)
   "Given a list of strings INPUTS of the format \"a=b\" or just \"a\",
