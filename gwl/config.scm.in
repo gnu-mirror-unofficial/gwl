@@ -240,8 +240,13 @@ servers.")
    (copyright '(2016 2017 2018 2019 2020))
    (author "Guix Workflow Language authors")))
 
+;; This is useful for REPL sessions where %config is not initialized
+;; from the command line.
+(define defaults
+  (getopt-config (list "workflow" "run" "/dev/null") config))
+
 (define %config
-  (let ((codex '()))
+  (let ((codex defaults))
     (match-lambda
       ((? codex? options)
        (set! codex options)
