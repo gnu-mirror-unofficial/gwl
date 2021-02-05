@@ -16,19 +16,17 @@
 (define-module (test-cache)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
+  #:use-module (gwl process-engines simple-engine)
   #:use-module (gwl cache)
   #:use-module ((guix base32)
                 #:select (bytevector->base32-string))
   #:use-module ((gcrypt hash)
                 #:select (sha256))
-  #:use-module ((rnrs io ports)
-                #:select (get-bytevector-all))
   #:use-module ((rnrs bytevectors)
-                #:select (string->utf8
-                          bytevector->u8-list
-                          u8-list->bytevector))
+                #:select (u8-list->bytevector))
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-64))
+  #:use-module (srfi srfi-64)
+  #:use-module (ice-9 match))
 
 (test-begin "cache")
 
@@ -55,29 +53,22 @@
            (p5 -> p2 p3 p4)
            (p6 -> p5)))))
 
+(define computed-workflow
+  (compute-workflow wf
+                    #:engine simple-engine
+                    #:inputs '()
+                    #:parallel? #true
+                    #:containerize? #false))
+
 ;; Flat list of processes
 (define ordered-processes
-  (append-map (lambda (p)
-                (if (list? p) p (list p)))
-              (workflow-run-order wf #:parallel? #t)))
+  (append-map (match-lambda
+                ((? list? l) l)
+                (l (list l)))
+              (computed-workflow-ordered-processes computed-workflow)))
 
-(define* (make-script process #:key workflow)
-  (let ((contents
-         (format #f "~@{~a~^:~}"
-                 (process-name process)
-                 (process-procedure process)))
-        (file-name
-         (string-append (or (getenv "TMPDIR")
-                            "/tmp")
-                        "/"
-                        (workflow-name workflow)
-                        (process-name process)
-                        ".script")))
-    (with-output-to-file file-name
-      (lambda () (display contents)))
-    file-name))
-
-(set! (@@ (gwl workflows utils) script-name) identity)
+(define scripts-table
+  (make-hash-table))
 
 (define workflow->data-hashes
   (@@ (gwl cache) workflow->data-hashes))
@@ -86,13 +77,13 @@
   (list? (workflow->data-hashes wf
                                 ordered-processes
                                 '()
-                                make-script)))
+                                scripts-table)))
 
 (test-assert "workflow->data-hashes returns an alist where all processes are keys"
   (let ((hashes (workflow->data-hashes wf
                                        ordered-processes
                                        '()
-                                       make-script)))
+                                       scripts-table)))
     (every (lambda (process)
              (assoc-ref hashes process))
            ordered-processes)))
@@ -101,7 +92,7 @@
   (let ((hashes (workflow->data-hashes wf
                                        ordered-processes
                                        '()
-                                       make-script)))
+                                       scripts-table)))
     (every string? (map cdr hashes))))
 
 
@@ -111,38 +102,39 @@
 (define (hashes->hash-string hashes)
   (bytevector->base32-string
    (sha256
-    (u8-list->bytevector (apply append hashes)))))
+    (u8-list->bytevector
+     (apply append hashes)))))
 
 (test-equal "workflow->data-hashes hashes just the script for an independent process"
   (hashes->hash-string
-   (list (process->hash p1 make-script wf)))
+   (list (process->hash p1 scripts-table)))
   (assoc-ref (workflow->data-hashes wf
                                     ordered-processes
                                     '()
-                                    make-script)
+                                    scripts-table)
              p1))
 
 (test-equal "workflow->data-hashes hashes the script and its inputs"
   (hashes->hash-string
-   (list (process->hash p4 make-script wf)
+   (list (process->hash p4 scripts-table)
          (hash-input-file input-file)))
   (assoc-ref (workflow->data-hashes wf
                                     ordered-processes
                                     (list
                                      (list input-file input-file))
-                                    make-script)
+                                    scripts-table)
              p4))
 
 (test-equal "workflow->data-hashes hashes all dependencies of a process"
   (hashes->hash-string
-   (list (process->hash p3 make-script wf)
-         (process->hash p4 make-script wf)
+   (list (process->hash p3 scripts-table)
+         (process->hash p4 scripts-table)
          (hash-input-file input-file)))
   (assoc-ref (workflow->data-hashes wf
                                     ordered-processes
                                     (list
                                      (list input-file input-file))
-                                    make-script)
+                                    scripts-table)
              p3))
 
 (test-assert "cache! creates directories as needed"

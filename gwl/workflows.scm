@@ -15,12 +15,26 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl workflows)
+  #:use-module (gwl config)
   #:use-module (gwl cache)
   #:use-module (gwl oop)
+  #:use-module (gwl packages)
   #:use-module (gwl processes)
   #:use-module (gwl process-engines)
   #:use-module (gwl workflows execution-order)
   #:use-module (gwl workflows utils)
+  #:use-module (guix monads)
+  #:use-module (guix store)
+  #:use-module (guix gexp)
+  #:use-module ((guix derivations)
+                #:select (built-derivations
+                          derivation-outputs
+                          derivation-output-path))
+  #:use-module ((guix ui)
+                #:select (build-notifier))
+  #:use-module ((guix status)
+                #:select (with-status-verbosity))
+
   #:use-module (ice-9 match)
   #:use-module (ice-9 format)
   #:use-module (srfi srfi-1)
@@ -41,6 +55,13 @@
             workflow-description
 
             print-workflow-record
+
+            compute-workflow
+            computed-workflow?
+            computed-workflow-workflow
+            computed-workflow-script-proc
+            computed-workflow-ordered-processes
+            computed-workflow-cache-prefix-proc
 
             workflow-free-inputs
             workflow-run-order
@@ -165,6 +186,95 @@ Use \"processes\" to specify process dependencies.~%"))
                                  #`((symbol->keyword 'name) name))))
                             #'(fields ...))))))))
 
+
+(define-immutable-record-type <computed-workflow>
+  (make-computed-workflow workflow
+                          script-proc
+                          ordered-processes
+                          cache-prefix-proc)
+  computed-workflow?
+  (workflow           computed-workflow-workflow)           ; <workflow>
+  (script-proc        computed-workflow-script-proc)        ; procedure taking a <process>
+  (ordered-processes  computed-workflow-ordered-processes)  ; list (of lists) of <process>
+  (cache-prefix-proc  computed-workflow-cache-prefix-proc)) ; procedure taking a <process>
+
+(define* (compute-workflow workflow
+                           #:key
+                           engine
+                           (inputs '())
+                           (parallel? #true)
+                           containerize?)
+  "Return a <computed-workflow> record value."
+  (define inputs-map (inputs->map inputs))
+  (define inputs-map-with-extra-files
+    (prepare-inputs workflow inputs-map))
+  (define ordered-processes
+    (workflow-run-order workflow #:parallel? parallel?))
+
+  (define* (scripts-by-process #:optional plain-script-file-names-table)
+    (let ((h (make-hash-table)))
+      (for-each (lambda (process)
+                  (hash-set! h process
+                             (process->script process
+                                              #:engine engine
+                                              #:containerize? containerize?
+                                              #:workflow workflow
+                                              #:input-files
+                                              (lset-intersection
+                                               string=?
+                                               (map second inputs-map-with-extra-files)
+                                               (process-inputs process))
+                                              #:scripts-table
+                                              plain-script-file-names-table)))
+                (workflow-processes workflow))
+      h))
+  (define (script-files-by-process scripts-table)
+    (let* ((h (make-hash-table))
+           (processes (workflow-processes workflow))
+           (scripts (map-in-order (lambda (process)
+                                    (hash-ref scripts-table process))
+                                  processes))
+           (file-names
+            (parameterize ((%guile-for-build default-guile-derivation))
+              (with-status-verbosity (%config 'verbosity)
+                (with-build-handler (build-notifier #:verbosity (%config 'verbosity))
+                  (run-with-store (inferior-store)
+                    (mlet* %store-monad
+                        ((drvs (mapm/accumulate-builds lower-object scripts))
+                         (%    (built-derivations drvs)))
+                      (return
+                       (map (match-lambda
+                              (((_ . output) . rest)
+                               (derivation-output-path output)))
+                            (map derivation-outputs drvs))))))))))
+      (for-each (lambda (process script-file)
+                  (hash-set! h process script-file))
+                processes
+                file-names)
+      h))
+  (define plain-scripts-table
+    (scripts-by-process))
+  (define plain-script-files-table
+    (script-files-by-process plain-scripts-table))
+  (define wrapper-scripts-table
+    (scripts-by-process plain-script-files-table))
+  (define wrapper-script-files-table
+    (script-files-by-process wrapper-scripts-table))
+  (define (script-for-process process)
+    (hash-ref wrapper-script-files-table process))
+
+  (define process->cache-prefix
+    (make-process->cache-prefix workflow
+                                inputs-map-with-extra-files
+                                ordered-processes
+                                wrapper-script-files-table))
+
+  (make-computed-workflow workflow
+                          script-for-process
+                          ordered-processes
+                          process->cache-prefix))
+
+
 (define-syntax graph
   (lambda (x)
     (syntax-case x (->)
@@ -252,14 +362,14 @@ contains lists of processes that can be executed in parallel."
         (error (format (current-error-port)
                        "error: Cannot determine process execution order.~%")))))
 
-(define (workflow-kons workflow proc)
+(define (workflow-kons proc)
   "Construct a procedure from the single-argument procedure PROC that
-can be used in a fold over the WORKFLOW's processes."
+can be used in a fold over a WORKFLOW's processes."
   (lambda (item acc)
     (match item
       ((? list?)
        (fold (lambda (process res)
-               (cons (proc process #:workflow workflow) res))
+               (cons (proc process) res))
              acc
              ;; By reversing the order of the processes
              ;; in STEP we keep the output order the same
@@ -269,21 +379,30 @@ can be used in a fold over the WORKFLOW's processes."
 
 (define* (workflow-prepare workflow engine
                            #:key
+                           (inputs '())
                            (parallel? #t)
                            containerize?)
   "Print scripts to be run for WORKFLOW given ENGINE."
-  (define ordered-processes
-    (workflow-run-order workflow #:parallel? parallel?))
-  (define make-script
-    (process->script engine #:containerize? containerize?))
+  (define computed-workflow
+    (guard (condition
+            ((missing-inputs-condition? condition)
+             (format (current-error-port)
+                     "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
+                     (missing-inputs-files condition))
+             (exit 1)))
+      (compute-workflow workflow
+                        #:engine engine
+                        #:inputs inputs
+                        #:parallel? parallel?
+                        #:containerize? containerize?)))
+  (define script-for-process
+    (computed-workflow-script-proc computed-workflow))
   (for-each (lambda (command)
               (display command) (newline))
             (delete-duplicates
-             (reverse (fold (workflow-kons
-                             workflow
-                             (compose (cut script-name <> #:build? #true)
-                                      make-script))
-                            '() ordered-processes))
+             (reverse (fold (workflow-kons script-for-process)
+                            '()
+                            (computed-workflow-ordered-processes computed-workflow)))
              string=?)))
 
 (define (inputs->map inputs)
@@ -360,25 +479,21 @@ to existing files.
 
 When CONTAINERIZE? is #T build a process script that spawns a
 container."
-  (define inputs-map (inputs->map inputs))
-  (define inputs-map-with-extra-files
+  (define computed-workflow
     (guard (condition
             ((missing-inputs-condition? condition)
              (format (current-error-port)
                      "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
                      (missing-inputs-files condition))
              (exit 1)))
-      (prepare-inputs workflow inputs-map)))
-  (define ordered-processes
-    (workflow-run-order workflow #:parallel? parallel?))
-  (define make-script
-    (process->script engine #:containerize? containerize?))
+      (compute-workflow workflow
+                        #:engine engine
+                        #:inputs inputs
+                        #:parallel? parallel?
+                        #:containerize? containerize?)))
   (define runner (process-engine-runner engine))
   (define process->cache-prefix
-    (make-process->cache-prefix workflow
-                                inputs-map-with-extra-files
-                                ordered-processes
-                                make-script))
+    (computed-workflow-cache-prefix-proc computed-workflow))
   (define cached?
     (if force?
         (const #f)
@@ -389,7 +504,9 @@ container."
                           (file-exists?
                            (string-append cache-prefix out)))
                         (process-outputs process)))))))
-  (define* (run process #:key workflow)
+  (define script-for-process
+    (computed-workflow-script-proc computed-workflow))
+  (define (run process)
     (let ((cache-prefix (process->cache-prefix process)))
       (if (cached? process)
           (if dry-run?
@@ -409,15 +526,7 @@ container."
                           (process-outputs process))))
 
           ;; Not cached: execute the process!
-          (let* ((script
-                  (make-script process
-                               #:workflow workflow
-                               #:input-files
-                               (lset-intersection
-                                string=?
-                                (map second inputs-map-with-extra-files)
-                                (process-inputs process))))
-                 (built-script (script-name script #:build? #true))
+          (let* ((built-script (script-for-process process))
                  (command (runner (list built-script
                                         (format #false "'~S'"
                                                 (process->script-arguments process))))))
@@ -455,5 +564,6 @@ container."
                   ;; Link files to the cache.
                   (for-each (cut cache! <> cache-prefix)
                             (process-outputs process))))))))
-  (fold (workflow-kons workflow run)
-        '() ordered-processes))
+  (fold (workflow-kons run)
+        '()
+        (computed-workflow-ordered-processes computed-workflow)))

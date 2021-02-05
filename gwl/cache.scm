@@ -19,7 +19,7 @@
   #:use-module ((gwl workflows)
                 #:select (workflow-restrictions))
   #:use-module ((gwl workflows utils)
-                #:select (mkdir-p script-name))
+                #:select (mkdir-p))
   #:use-module ((guix base32)
                 #:select (bytevector->base32-string))
   #:use-module ((rnrs bytevectors)
@@ -36,6 +36,9 @@
   #:export (%cache-root
             %cache-delay
 
+            process->hash
+            process->hash-string
+
             make-process->cache-prefix
             cache!
             restore!))
@@ -46,18 +49,26 @@
 (define %cache-root (make-parameter "/tmp/gwl"))
 (define %cache-delay (make-parameter 0))
 
-(define (process->hash process make-script workflow)
+(define (process->hash process scripts-table)
   "Return a hash of the process.  The name of the script file already
 contains the hash of all its inputs, so we use that instead of the
 contents of the script, which we don't want to compute right now.
 Since the same scripts may be called with different arguments, we
-*also* need to include the process parameters in this computation."
+*also* need to include the process parameters in this computation.
+
+SCRIPTS-TABLE is a hash table of script file names for any given
+process."
   (let ((script+arguments
          (format #false "~a ~a"
-                 (script-name (make-script process #:workflow workflow))
+                 (hash-ref scripts-table process)
                  (process->script-arguments process))))
     (bytevector->u8-list
      (sha256 (string->utf8 script+arguments)))))
+
+(define process->hash-string
+  (compose bytevector->base32-string
+           u8-list->bytevector
+           process->hash))
 
 (define (hash-input-file file-name)
   "Return a hash representing the input file FILE-NAME.  We don't
@@ -75,7 +86,7 @@ large files can be acceptable as it only has to be done once."
                                    (stat:mtime st)
                                    (stat:size st)))))))
 
-(define (workflow->data-hashes workflow processes free-inputs-map make-script)
+(define (workflow->data-hashes workflow processes free-inputs-map scripts-table)
   "Return an alist associating each of the WORKFLOW's ordered list of
 PROCESSES with the hash of all the process scripts used to generate
 their outputs.  FREE-INPUTS-MAP is an alist of input names to file
@@ -93,7 +104,7 @@ names that must be considered when computing the hash."
   ;; Compute hashes for chains of scripts.
   (define (kons process acc)
     (cons (cons process
-                (append (process->hash process make-script workflow)
+                (append (process->hash process scripts-table)
                         ;; Hash of mapped free inputs.
                         (append-map (cut assoc-ref acc <>)
                                     (process-free-inputs process))
@@ -110,7 +121,7 @@ names that must be considered when computing the hash."
        (fold kons input-hashes processes)))
 
 (define (make-process->cache-prefix workflow free-inputs-map ordered-processes
-                                    make-script)
+                                    scripts-table)
   "Return a procedure that takes a process and returns the cache
 prefix for its outputs."
   (let ((hashes (workflow->data-hashes workflow
@@ -120,7 +131,7 @@ prefix for its outputs."
                                                      (l (list l)))
                                                    ordered-processes)
                                        free-inputs-map
-                                       make-script)))
+                                       scripts-table)))
     (lambda (process)
       (and=> (assoc-ref hashes process)
              (cut string-append (%cache-root) "/" <> "/")))))

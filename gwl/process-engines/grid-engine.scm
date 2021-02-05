@@ -18,6 +18,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl process-engines grid-engine)
+  #:use-module ((gwl cache) #:select (process->hash-string))
   #:use-module (gwl packages)
   #:use-module (gwl process-engines)
   #:use-module (gwl processes)
@@ -33,23 +34,26 @@
        (lambda (x)
          (if (char-set-contains? bad-chars x) #\- x)) name))))
 
-(define (process-job-name process)
+(define (process-job-name process scripts-table)
   "Returns a valid job name for PROCESS."
   (string-append "gwl-"
                  (sanitize-sge-job-name
-                  (process-full-name process))))
+                  (format #false "~a-~a"
+                          (process-full-name process)
+                          (process->hash-string process
+                                                scripts-table)))))
 
-(define (process->grid-engine-restrictions-string process workflow)
+(define (process->grid-engine-restrictions-string process workflow scripts-table)
   "Return a grid engine option string to specify the process name for
 PROCESS alongside all jobs that it depends on according to WORKFLOW."
   (let ((restrictions
          (and (workflow? workflow)
               (or (assoc-ref (workflow-restrictions workflow) process)
                   '()))))
-    (string-join (cons* "-N" (process-job-name process)
+    (string-join (cons* "-N" (process-job-name process scripts-table)
                         (map (lambda (job)
                                (format #f "-hold_jid ~a"
-                                       (process-job-name job)))
+                                       (process-job-name job scripts-table)))
                              restrictions)))))
 
 (define (process->grid-engine-time-limit process)
@@ -71,13 +75,13 @@ requirements of PROCESS."
                (format #f "-l h_vmem=~a" space)))
       ""))
 
-(define* (grid-engine-wrapper process script #:key workflow)
+(define* (grid-engine-wrapper process script #:key workflow scripts-table)
   "Return a computed file for an executable wrapper script that sets
 up an environment in which to call the PROCESS SCRIPT with constraints
 provided by WORKFLOW."
   (let* ((bash               (bash-minimal))
          (name               (process-full-name process))
-         (restrictions       (process->grid-engine-restrictions-string process workflow))
+         (restrictions       (process->grid-engine-restrictions-string process workflow scripts-table))
          (time-str           (process->grid-engine-time-limit process))
          (space-str          (process->grid-engine-space-limit process))
          (threads-str        (or (and=> (process-threads process)

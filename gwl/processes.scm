@@ -604,61 +604,66 @@ tags if WITH-TAGS? is #FALSE or missing."
     (values  . ,(process-values process))
     (name    . ,(process-name process))))
 
-(define* (process->script engine #:key containerize?)
-  "Build a procedure that transforms the process PROCESS into a script
-and returns its location."
-  (lambda* (process #:key workflow (input-files '()))
-    "Return a lowerable object for the script that will execute the
-process."
-    (let* ((name         (process-full-name process))
-           (make-wrapper (process-engine-wrapper engine))
-           (packages     (cons (bash-minimal)
-                               (process-packages process)))
-           (manifest     (packages->manifest packages))
-           (profile      (profile (content manifest)))
-           (search-paths (delete-duplicates
-                          (map search-path-specification->sexp
-                               (manifest-search-paths manifest))))
-           (out          (process-output-path process))
-           (exp
-            (with-imported-modules (source-module-closure (script-modules))
-              #~(begin
-                  #$@(if (null? packages) '()
-                         `((use-modules (guix search-paths))
-                           (set-search-paths (map sexp->search-path-specification
-                                                  ',search-paths)
-                                             (cons ,profile
-                                                   ',packages))))
-                  #$(if out `(setenv "out" ,out) "")
-                  (setenv "_GWL_PROFILE" #$profile)
-                  (use-modules (ice-9 match))
-                  (match (command-line)
-                    ((_ (= (lambda (s) (call-with-input-string s read))
-                           #{ %gwl process-arguments}#) . rest)
-                     #$(procedure->gexp process))))))
-           (script
-            (program-file (string-append "gwl-" name ".scm")
-                          exp
-                          #:guile (default-guile)))
-           (computed-script
-            (if containerize?
-                (program-file (string-append "gwl-" name "-container.scm")
-                              (containerize script
-                                            #:inputs
-                                            (append
-                                             ;; Data inputs
-                                             (process-inputs process)
-                                             ;; Files mapped to free inputs
-                                             input-files)
-                                            #:outputs
-                                            (process-outputs process))
-                              #:guile (default-guile))
-                script)))
-      (if make-wrapper
-          (make-wrapper process
-                        computed-script
-                        #:workflow workflow)
-          computed-script))))
+(define* (process->script process
+                          #:key
+                          engine
+                          containerize?
+                          workflow
+                          (input-files '())
+                          scripts-table)
+  "Return a lowerable object for the script that will execute the
+PROCESS.  Wrappers may need to access the names of all scripts, so to
+build wrappers the hash table SCRIPTS-TABLE must be provided."
+  (let* ((name         (process-full-name process))
+         (make-wrapper (process-engine-wrapper engine))
+         (packages     (cons (bash-minimal)
+                             (process-packages process)))
+         (manifest     (packages->manifest packages))
+         (profile      (profile (content manifest)))
+         (search-paths (delete-duplicates
+                        (map search-path-specification->sexp
+                             (manifest-search-paths manifest))))
+         (out          (process-output-path process))
+         (exp
+          (with-imported-modules (source-module-closure (script-modules))
+            #~(begin
+                #$@(if (null? packages) '()
+                       `((use-modules (guix search-paths))
+                         (set-search-paths (map sexp->search-path-specification
+                                                ',search-paths)
+                                           (cons ,profile
+                                                 ',packages))))
+                #$(if out `(setenv "out" ,out) "")
+                (setenv "_GWL_PROFILE" #$profile)
+                (use-modules (ice-9 match))
+                (match (command-line)
+                  ((_ (= (lambda (s) (call-with-input-string s read))
+                         #{ %gwl process-arguments}#) . rest)
+                   #$(procedure->gexp process))))))
+         (script
+          (program-file (string-append "gwl-" name ".scm")
+                        exp
+                        #:guile (default-guile)))
+         (computed-script
+          (if containerize?
+              (program-file (string-append "gwl-" name "-container.scm")
+                            (containerize script
+                                          #:inputs
+                                          (append
+                                           ;; Data inputs
+                                           (process-inputs process)
+                                           ;; Files mapped to free inputs
+                                           input-files)
+                                          #:outputs
+                                          (process-outputs process))
+                            #:guile (default-guile))
+              script)))
+    (if (and make-wrapper scripts-table)
+        (make-wrapper process
+                      computed-script
+                      #:workflow workflow
+                      #:scripts-table scripts-table)
+        computed-script)))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS

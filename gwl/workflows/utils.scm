@@ -55,9 +55,7 @@
             %greyscale-color-scheme
 
             wisp-suffix
-            load-workflow
-
-            script-name))
+            load-workflow))
 
 ;; Catch the return value of a call to (system* ...) and return #t when
 ;; it executed normally, and #f otherwise.
@@ -322,20 +320,3 @@ where all the basic GWL modules are available."
                 (frame (last-frame-with-source stack
                                                (basename (canonicalize-path file)))))
            (report-load-error file args frame)))))
-
-;; TODO: this is not a great location
-(define* (script-name script #:key build?)
-  "Compute the file name of the program-file object SCRIPT.  When
-BUILD? is provided, build the script derivations."
-  (pk 'script-name (program-file-name script) (if build? "build" "just name"))
-  (parameterize ((%guile-for-build default-guile-derivation))
-    (with-status-verbosity (%config 'verbosity)
-      (with-build-handler (build-notifier #:verbosity (%config 'verbosity))
-        (run-with-store (inferior-store)
-          (mlet* %store-monad
-              ((drv (lower-object script))
-               (_   (mwhen build?
-                      (built-derivations (list drv)))))
-            (match (derivation-outputs drv)
-              (((_ . output) . rest)
-               (return (derivation-output-path output))))))))))
