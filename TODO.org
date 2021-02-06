@@ -6,6 +6,10 @@ The =process->script= procedure in =(gwl processes)= is important but complicate
 * documentation
 - document the cache
 - add a procedure reference
+-  Only the HTML files have highlighting, not the gzipped  HTML files!
+
+* display errors
+- missing-inputs-error should be a &gwl-error
 
 * containerization
 - mount the GWL cache directories for inputs and outputs (not the full cache)
@@ -71,5 +75,17 @@ Job names in the grid engine wrapper are not unique for all processes (because p
 
 Instead of using user-provided job names we should be using the unique job-script name.
 
-* Documentation
-Only the HTML files have highlighting, not the gzipped  HTML files!
+* “workflow” macro breaks when no name is provided
+When a name is not provided but other fields are then the first field is assumed to be the name … and this goes horribly wrong as =symbol->string= fails.
+
+* remapping inputs doesn’t work
+=report2= has an input =logo: LOGO=, which is an absolute file name.  On the command line I override it like this:
+
+#+begin_example
+../pre-inst-env /home/rekado/.config/guix/current/bin/guix workflow run pigx-rnaseq.w --input=/home/rekado/dev/gx/gwl/pigx-rnaseq/Logo_PiGx.png=/home/rekado/dev/pigx/pigx_rnaseq/images/Logo_PiGx.png
+#+end_example
+
+But this doesn’t cause =/home/rekado/dev/gx/gwl/pigx-rnaseq/Logo_PiGx.png= to become available during the run of the workflow.  It will still look up that location at runtime and fail.  It should instead look for the new location.
+
+* pigx-rnaseq: use relative names
+For pigx-rnaseq some directories seem to only be usable when they are absolute file names (like the work directory).
