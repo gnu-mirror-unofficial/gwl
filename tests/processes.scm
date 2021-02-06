@@ -17,6 +17,7 @@
   #:use-module (gwl processes)
   #:use-module (gwl sugar reader)
   #:use-module (guix gexp)
+  #:use-module (srfi srfi-1) ; this is available at run time
   #:use-module (srfi srfi-64))
 
 (test-begin "processes")
@@ -138,7 +139,7 @@
              (time 10 seconds)
              (hot-dogs 20)))
 
-(test-assert "procedure->gexp supports Python code"
+(test-assert "compile-procedure supports Python code"
   (let* ((proc (make-process
                 (name "python")
                 (procedure
@@ -148,9 +149,9 @@ print "hello from python 2"
          (snippet (process-procedure proc)))
     (and (code-snippet? snippet)
          (eq? 'python (code-snippet-language snippet))
-         (gexp? (procedure->gexp proc)))))
+         (pair? (compile-procedure proc)))))
 
-(test-assert "procedure->gexp supports R code"
+(test-assert "compile-procedure supports R code"
   (let* ((proc (make-process
                 (name "r")
                 (procedure
@@ -161,9 +162,9 @@ cat("hello from R")
          (snippet (process-procedure proc)))
     (and (code-snippet? snippet)
          (eq? 'R (code-snippet-language snippet))
-         (gexp? (procedure->gexp proc)))))
+         (pair? (compile-procedure proc)))))
 
-(test-assert "procedure->gexp supports any kind of code"
+(test-assert "compile-procedure supports any kind of code"
   (let* ((proc (make-process
                 (name "bash")
                 (procedure # /bin/bash -c { echo "hello from bash" })))
@@ -171,6 +172,6 @@ cat("hello from R")
     (and (code-snippet? snippet)
          (eq? '/bin/bash (code-snippet-language snippet))
          (equal? '("-c") (code-snippet-arguments snippet))
-         (gexp? (procedure->gexp proc)))))
+         (pair? (compile-procedure proc)))))
 
 (test-end "processes")

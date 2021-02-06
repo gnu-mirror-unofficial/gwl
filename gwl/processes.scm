@@ -89,7 +89,7 @@
             code-snippet-arguments
             code-snippet-code
 
-            procedure->gexp
+            compile-procedure
             containerize))
 
 ;;; Commentary:
@@ -358,24 +358,25 @@ of PROCESS."
 
 (define-syntax-rule (snippet-caller code-converter command)
   (lambda (process code)
-    #~(begin
-        (for-each (lambda (pair)
-                    (setenv (car pair)
-                            (let ((value (cdr pair)))
-                              (if (symbol? value)
-                                  (format #false "~a"
-                                          (assoc-ref #{ %gwl process-arguments}# value))
-                                  value))))
-                  '#$(process->env process))
-        (let ((retval (apply system*
-                             (append command
-                                     (code-converter (string-join (map (lambda (val)
-                                                                         (if (list? val)
-                                                                             (format #f "~{~a~^ ~}" val)
-                                                                             (format #f "~a" val)))
-                                                                       (list #$@code))
-                                                                  ""))))))
-          (or (zero? retval) (exit retval))))))
+    `(begin
+       (use-modules (srfi srfi-1))
+       (for-each (lambda (pair)
+                   (setenv (car pair)
+                           (let ((value (cdr pair)))
+                             (if (symbol? value)
+                                 (format #false "~a"
+                                         (assoc-ref #{ %gwl process-arguments}# value))
+                                 value))))
+                 ',(process->env process))
+       (let ((retval (apply system*
+                            (append command
+                                    (code-converter (string-join (map (lambda (val)
+                                                                        (if (list? val)
+                                                                            (format #f "~{~a~^ ~}" val)
+                                                                            (format #f "~a" val)))
+                                                                      (list ,@code))
+                                                                 ""))))))
+         (or (zero? retval) (exit retval))))))
 
 (define language-python
   (make <language>
@@ -436,8 +437,10 @@ of PROCESS."
     #:arguments arguments
     #:code code))
 
-(define (procedure->gexp process)
-  "Transform the procedure of PROCESS to a G-expression."
+(define (compile-procedure process)
+  "Transform the procedure of PROCESS to an expression that can be
+written to a file."
+  ;; TODO: replace with normalize-file-name in utils?
   (define (sanitize-path path)
     (string-join (delete ".." (string-split path #\/))
                  "/"))
@@ -639,7 +642,7 @@ build wrappers the hash table SCRIPTS-TABLE must be provided."
                 (match (command-line)
                   ((_ (= (lambda (s) (call-with-input-string s read))
                          #{ %gwl process-arguments}#) . rest)
-                   #$(procedure->gexp process))))))
+                   #$(compile-procedure process))))))
          (script
           (program-file (string-append "gwl-" name ".scm")
                         exp
