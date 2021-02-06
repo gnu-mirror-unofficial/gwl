@@ -61,7 +61,11 @@ variable and process it."
                      (maybe-unquoted
                       (match post:
                         ;; Simple variable identifier
-                        (() variable)
+                        (()
+                         `(let ((val ,variable))
+                            (if (list? val)
+                                (remove keyword? val)
+                                val)))
                         ;; Complex identifier, multiple items
                         ((_ #\: . kw)
                          (let ((key (list->string kw)))

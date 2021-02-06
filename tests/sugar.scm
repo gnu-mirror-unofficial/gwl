@@ -115,15 +115,14 @@
   (test-equal "references to elements of process arguments are delayed"
     '("echo "
       (or (and=> (memq #:first (assoc-ref #{ %gwl process-arguments}# (quote inputs))) cadr)
-          (error (format #f "Could not access `~a' in `~a'~%"
-                         "first"
-                         (assoc-ref #{ %gwl process-arguments}# (quote inputs)))))
+          (error (format #f "Could not access `~a' in `~a'~%" "first" (assoc-ref #{ %gwl process-arguments}# (quote inputs)))))
       " "
-      (assoc-ref #{ %gwl process-arguments}# (quote inputs))
+      (let ((val (assoc-ref #{ %gwl process-arguments}# (quote inputs)))) (if (list? val) (remove keyword? val) val))
       " "
-      (assoc-ref #{ %gwl process-arguments}# (quote outputs))
+      (let ((val (assoc-ref #{ %gwl process-arguments}# (quote outputs)))) (if (list? val) (remove keyword? val) val))
       " "
-      (assoc-ref #{ %gwl process-arguments}# (quote name)) "")
+      (let ((val (assoc-ref #{ %gwl process-arguments}# (quote name)))) (if (list? val) (remove keyword? val) val))
+      "")
     (code-snippet-code
      (test-read-eval-string "# {echo {{inputs:first}} {{inputs}} {{outputs}} {{name}}}")))
 

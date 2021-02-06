@@ -599,8 +599,8 @@ tags if WITH-TAGS? is #FALSE or missing."
       (plain-file name "()")))
 
 (define (process->script-arguments process)
-  `((inputs  . ,(process-inputs process))
-    (outputs . ,(process-outputs process))
+  `((inputs  . ,(process-inputs process #:with-tags))
+    (outputs . ,(process-outputs process #:with-tags))
     (values  . ,(process-values process))
     (name    . ,(process-name process))))
 
