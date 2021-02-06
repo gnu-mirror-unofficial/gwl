@@ -449,7 +449,6 @@ written to a file."
     ((? list? s) s)
     ((? code-snippet? snippet)
      (let* ((name (code-snippet-language snippet))
-            (arguments (code-snippet-arguments snippet))
             (code (code-snippet-code snippet))
             (call (or (and=> (find (lambda (lang)
                                      (eq? name (language-name lang)))
