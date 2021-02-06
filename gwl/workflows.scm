@@ -215,6 +215,9 @@ Use \"processes\" to specify process dependencies.~%"))
   (define* (scripts-by-process #:optional plain-script-file-names-table)
     (let ((h (make-hash-table)))
       (for-each (lambda (process)
+                  (log-event 'debug
+                             (G_ "Computing script for process `~a'~%")
+                             (process-name process))
                   (hash-set! h process
                              (process->script process
                                               #:engine engine
@@ -249,6 +252,9 @@ Use \"processes\" to specify process dependencies.~%"))
                                (derivation-output-path output)))
                             (map derivation-outputs drvs))))))))))
       (for-each (lambda (process script-file)
+                  (log-event 'debug
+                             (G_ "Recording script file for process `~a'~%")
+                             (process-name process))
                   (hash-set! h process script-file))
                 processes
                 file-names)
