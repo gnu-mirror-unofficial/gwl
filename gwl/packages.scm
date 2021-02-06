@@ -111,7 +111,7 @@ this Guile to run scripts."
     (and=> (assoc-ref (inferior-package-native-inputs (build-time-guix))
                       "guile") first)))
 
-(define default-guile-derivation
+(define (default-guile-derivation)
   (inferior-package-derivation
    (inferior-store)
    (default-guile)))

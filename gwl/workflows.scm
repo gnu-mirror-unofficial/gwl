@@ -252,7 +252,7 @@ Use \"processes\" to specify process dependencies.~%"))
                                     (hash-ref scripts-table process))
                                   processes))
            (file-names
-            (parameterize ((%guile-for-build default-guile-derivation))
+            (parameterize ((%guile-for-build (default-guile-derivation)))
               (with-status-verbosity (%config 'verbosity)
                 (with-build-handler (build-notifier #:verbosity (%config 'verbosity))
                   (run-with-store (inferior-store)
