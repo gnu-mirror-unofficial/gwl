@@ -14,6 +14,7 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (test-workflows)
+  #:use-module (gwl errors)
   #:use-module (gwl processes)
   #:use-module (gwl workflows)
   #:use-module (gwl workflows utils)
@@ -22,6 +23,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:use-module (srfi srfi-64))
 
 (test-begin "workflows")
@@ -248,16 +250,13 @@ make-workflow
                     incomplete-inputs-map)))
 
 (test-equal "make-workflow rejects invalid field names 1/3"
-  '("workflow: extraneous fields: garbage \n")
-  (catch 'misc-error
-    (lambda ()
-      (test-read-eval-string (format #false "~s"
-                                     '(make-workflow
-                                       (name "anything")
-                                       (processes '())
-                                       (garbage 'this-is)))))
-    (lambda (key _ format-string message . rest)
-      message)))
+  '("workflow" (garbage))
+  (guard (c ((gwl-error? c)
+             (formatted-message-arguments c)))
+    (make-workflow
+     (name "anything")
+     (processes '())
+     (garbage 'this-is))))
 
 (test-equal "make-workflow rejects invalid field names 2/3"
   "workflow: Invalid field name"

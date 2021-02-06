@@ -15,9 +15,12 @@
 
 (define-module (test-processes)
   #:use-module (gwl processes)
+  #:use-module (gwl errors)
   #:use-module (gwl sugar reader)
   #:use-module (guix gexp)
   #:use-module (srfi srfi-1) ; this is available at run time
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:use-module (srfi srfi-64))
 
 (test-begin "processes")
@@ -82,16 +85,13 @@
              (run-time (complexity (threads 2))))))
 
 (test-equal "make-process rejects invalid field names 1/3"
-  '("process: extraneous fields: garbage \n")
-  (catch 'misc-error
-    (lambda ()
-      (test-read-eval-string (format #false "~s"
-                                     '(make-process
-                                       (name "anything")
-                                       (procedure '(const #t))
-                                       (garbage 'this-is)))))
-    (lambda (key _ format-string message . rest)
-      message)))
+  '("process" (garbage))
+  (guard (c ((gwl-error? c)
+             (formatted-message-arguments c)))
+    (make-process
+     (name "anything")
+     (procedure '(const #t))
+     (garbage 'this-is))))
 
 (test-equal "make-process rejects invalid field names 2/3"
   "process: Invalid field name"
