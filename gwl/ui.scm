@@ -14,8 +14,62 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl ui)
-  #:use-module (gwl ui)
-  #:export (G_))
+  #:use-module (gwl config)
+  #:use-module (gwl errors)
+  #:use-module (guix colors)
+  #:use-module (srfi srfi-26)
+  #:export (G_
+            log-event
+
+            print-diagnostic-prefix
+
+            %error-color
+            %hint-color
+            %info-color
+            %execute-color))
 
 ;; TODO: add gettext support
 (define (G_ msg) msg)
+
+(define %hint-color (color BOLD CYAN))
+(define %error-color (color BOLD RED))
+(define %info-color (color BOLD BLUE))
+(define %execute-color (color BOLD YELLOW))
+
+(define* (print-diagnostic-prefix prefix #:optional location
+                                  #:key (colors (color)))
+  "Print PREFIX as a diagnostic line prefix."
+  (define color?
+    (color-output? (current-error-port)))
+
+  (define location-color
+    (if color?
+        (cut colorize-string <> (color BOLD))
+        identity))
+
+  (define prefix-color
+    (if color?
+        (lambda (prefix)
+          (colorize-string prefix colors))
+        identity))
+
+  (if (location? location)
+      (format (current-error-port) "~a: ~a"
+              (location-color (location->string location))
+              (prefix-color prefix))
+      (format (current-error-port) "~a"
+              (prefix-color prefix))))
+
+(define (log-event type . message)
+  (define print?
+    (member type (%config 'log-events)))
+  (when print?
+    (case type
+      ((error)
+       (print-diagnostic-prefix (G_ "error: ") #:colors %error-color))
+      ((info)
+       (print-diagnostic-prefix (G_ "info: ") #:colors %info-color))
+      ((execute)
+       (print-diagnostic-prefix (G_ "run: ") #:colors %execute-color))
+      (else #true))
+    (apply format (current-error-port) message)))

@@ -1342,6 +1342,13 @@ Generate the process scripts and build or download all dependencies,
 but do not run the workflow process scripts corresponding to the
 workflow defined in @var{file}.
 
+@item --log-events=@var{event},@dots{}
+@itemx -l @var{events},@dots{}
+Print messages for the comma-separated list of events.  This defaults
+to logging the events @code{error}, @code{execute} (for fatal errors)
+(for processes that are run), and @code{info} (for status
+information).
+
 @item --dry-run
 @itemx -n
 Prepare the scripts and the environments but don't actually run the

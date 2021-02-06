@@ -131,33 +131,6 @@ a location object."
   gwl-package-error?
   (package-spec gwl-package-error-package-spec))
 
-(define* (print-diagnostic-prefix prefix #:optional location
-                                  #:key (colors (color)))
-  "Print PREFIX as a diagnostic line prefix."
-  (define color?
-    (color-output? (current-error-port)))
-
-  (define location-color
-    (if color?
-        (cut colorize-string <> (color BOLD))
-        identity))
-
-  (define prefix-color
-    (if color?
-        (lambda (prefix)
-          (colorize-string prefix colors))
-        identity))
-
-  (if (location? location)
-      (format (current-error-port) "~a: ~a"
-              (location-color (location->string location))
-              (prefix-color prefix))
-      (format (current-error-port) "~a"
-              (prefix-color prefix))))
-
-(define %hint-color (color BOLD CYAN))
-(define %error-color (color BOLD RED))
-
 (define (report-error location fmt . args)
   (print-diagnostic-prefix (G_ "error: ") location #:colors %error-color)
   (apply format (current-error-port) fmt args))

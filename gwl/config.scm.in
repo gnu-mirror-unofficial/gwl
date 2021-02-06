@@ -79,6 +79,17 @@ workflow.")
          (test integer?)
          (handler string->number))
         (switch
+         (name 'log-events)
+         (character #\l)
+         (synopsis "Events to log")
+         (default '(execute error info))
+         (example "error,info,execute")
+         (test list?)
+         (handler
+          (lambda (value)
+            (map string->symbol
+                 (string-split value #\,)))))
+        (switch
          (name 'input)
          (character #\i)
          (synopsis "Specify workflow input NAME, optionally mapped to FILE")
