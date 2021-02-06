@@ -83,7 +83,7 @@ workflow.")
          (character #\l)
          (synopsis "Events to log")
          (default '(execute error info))
-         (example "error,info,execute")
+         (example "error,info,execute,cache,debug")
          (test list?)
          (handler
           (lambda (value)
