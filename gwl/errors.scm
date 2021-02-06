@@ -25,6 +25,8 @@
   #:use-module (gwl ui)
   #:use-module ((oop goops) #:select (class-name class-of))
   #:export (location
+            location?
+            location->string
 
             &formatted-message
             formatted-message-string
