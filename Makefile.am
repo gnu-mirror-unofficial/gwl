@@ -47,6 +47,7 @@ SOURCES =                                                 \
   gwl/www/pages.scm                                       \
   gwl/www/pages/tutorial.scm                              \
   gwl/www/pages/community.scm                             \
+  gwl/www/pages/publications.scm                          \
   gwl/www/pages/error.scm                                 \
   gwl/www/pages/welcome.scm                               \
   gwl/www/pages/workflow-viewer.scm                       \

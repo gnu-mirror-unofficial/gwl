@@ -160,6 +160,25 @@ h1 {
     text-align: center;
 }
 
+ul.publications li {
+    list-style: none;
+}
+ul.publications li div.title {
+    font-weight: bold;
+}
+ul.publications li {
+    margin-bottom: 2rem;
+}
+ul.publications li.year:before {
+    color: #93a1a1;
+    content: attr(data-year);
+    position: absolute;
+    margin-left: -4em;
+    display: block;
+    text-align: right;
+    padding-left: .5em;
+}
+
 div.figure {
     text-align: center;
     font-style: italic;

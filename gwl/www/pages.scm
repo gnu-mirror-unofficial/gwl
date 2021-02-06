@@ -25,10 +25,11 @@
 (define page-title-prefix "Guix Workflow Language | ")
 
 (define pages
-  '(("/"           "Home")
-    ("/tutorial"   "Tutorial")
-    ("/manual"     "Manual")
-    ("/community"  "Community")))
+  '(("/"             "Home")
+    ("/tutorial"     "Tutorial")
+    ("/manual"       "Manual")
+    ("/publications" "Publications")
+    ("/community"    "Community")))
 
 (define (page-partial-main-menu request-path)
   `(ul ,@(map (match-lambda
