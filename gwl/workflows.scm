@@ -23,6 +23,7 @@
   #:use-module (gwl process-engines)
   #:use-module (gwl workflows execution-order)
   #:use-module (gwl workflows utils)
+  #:use-module (gwl ui)
   #:use-module (guix monads)
   #:use-module (guix store)
   #:use-module (guix gexp)
@@ -386,9 +387,9 @@ can be used in a fold over a WORKFLOW's processes."
   (define computed-workflow
     (guard (condition
             ((missing-inputs-condition? condition)
-             (format (current-error-port)
-                     "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
-                     (missing-inputs-files condition))
+             (log-event 'error
+                        (G_ "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%")
+                        (missing-inputs-files condition))
              (exit 1)))
       (compute-workflow workflow
                         #:engine engine
@@ -482,9 +483,9 @@ container."
   (define computed-workflow
     (guard (condition
             ((missing-inputs-condition? condition)
-             (format (current-error-port)
-                     "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%"
-                     (missing-inputs-files condition))
+             (log-event 'error
+                        (G_ "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%")
+                        (missing-inputs-files condition))
              (exit 1)))
       (compute-workflow workflow
                         #:engine engine
@@ -510,15 +511,15 @@ container."
     (let ((cache-prefix (process->cache-prefix process)))
       (if (cached? process)
           (if dry-run?
-              (format (current-error-port)
-                      "Would skip process \"~a\" (cached at ~a).~%"
-                      (process-name process)
-                      cache-prefix)
+              (log-event 'execute
+                         (G_ "Would skip process \"~a\" (cached at ~a).~%")
+                         (process-name process)
+                         cache-prefix)
               (begin
-                (format (current-error-port)
-                        "Skipping process \"~a\" (cached at ~a).~%"
-                        (process-name process)
-                        cache-prefix)
+                (log-event 'execute
+                           (G_ "Skipping process \"~a\" (cached at ~a).~%")
+                           (process-name process)
+                           cache-prefix)
                 ;; TODO: mount the cache directory in the container
                 ;; if containerized.  Otherwise link files from
                 ;; cache to expected location.
@@ -531,17 +532,17 @@ container."
                                         (format #false "'~S'"
                                                 (process->script-arguments process))))))
             (if dry-run?
-                (format (current-error-port)
-                        "Would execute: ~{~a ~}~%" command)
+                (log-event 'execute
+                           (G_ "Would execute: ~{~a ~}~%") command)
                 (begin
-                  (format (current-error-port)
-                          "Executing: ~{~a ~}~%" command)
+                  (log-event 'execute
+                             (G_ "Executing: ~{~a ~}~%") command)
                   (let ((retval (apply system* command)))
                     (unless (zero? retval)
-                      (format (current-error-port)
-                              "error: process `~a' failed with return value ~a.~%"
-                              (process-name process)
-                              retval)
+                      (log-event 'error
+                                 (G_ "error: process `~a' failed with return value ~a.~%")
+                                 (process-name process)
+                                 retval)
                       (exit retval)))
                   ;; Wait before generated files are accessed.
                   ;; This may be needed for distributed file
@@ -554,10 +555,10 @@ container."
                                                         output
                                                         (string-append (getcwd) "/" output))))
                                 (unless (file-exists? canonical-name)
-                                  (format (current-error-port)
-                                          "error: process `~a' failed to produce output ~a.~%"
-                                          (process-name process)
-                                          output)
+                                  (log-event 'error
+                                             (G_ "process `~a' failed to produce output ~a.~%")
+                                             (process-name process)
+                                             output)
                                   (exit 1))))
                             (process-outputs process))
 
