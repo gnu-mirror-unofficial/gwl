@@ -29,20 +29,17 @@
     (lambda (port)
       (reader-extension-inline-code #\# port))))
 
-;; This is what snippet-caller does internally.
-(define (code-as-string code)
-  (string-join (map (lambda (val)
-                      (if (list? val)
-                          (format #f "~{~a~^ ~}" val)
-                          (format #f "~a" val)))
-                    code)
-               ""))
-
 (test-equal "reader supports embedding variables"
   '(code-snippet (quote foo)
                  (quote ("bar" "baz"))
-                 `(" print(\"hello " ,world "\") "))
+                 `(" print(\"hello " (quote ,(let ((val world)) (if (list? val) (remove keyword? val) val))) "\") "))
   (convert "foo bar baz { print(\"hello {{world}}\") }"))
+
+(define world (list "THE" #:real "WORLD"))
+(test-equal "reader supports embedding variables (2)"
+  '(" print(\"hello " '("THE" "WORLD") "\") ")
+  (code-snippet-code
+   (test-read-eval-string "# foo bar baz { print(\"hello {{world}}\") }")))
 
 (test-assert "reader ignores leading spaces"
   (let ((snippet (test-read-eval-string "# \n    \n /bin/bash -c {}")))
@@ -51,16 +48,16 @@
 
 (define some-list '("Bender" "Leela" "Fry"))
 (test-equal "reader supports embedding of lists"
-  "echo Bender Leela Fry are great"
-  (code-as-string
-   (code-snippet-code
-    (test-read-eval-string "# /bin/bash -c {echo {{some-list}} are great}"))))
+  '("echo " '("Bender" "Leela" "Fry")" are great")
+  (code-snippet-code
+   (test-read-eval-string "# /bin/bash -c {echo {{some-list}} are great}")))
 
 (test-equal "reader will not interpolate values with spaces"
   "print(\"hello {{not a variable}}\")"
-  (code-as-string
+  (string-join
    (code-snippet-code
-    (test-read-eval-string "# foo bar baz {print(\"hello {{not a variable}}\")}"))))
+    (test-read-eval-string "# foo bar baz {print(\"hello {{not a variable}}\")}"))
+   ""))
 
 (test-equal "reader complains about unbalanced curlies"
   '(3)
@@ -81,30 +78,30 @@
 
 (define who "Bender")
 (test-equal "string interpolation works"
-  "echo Bender is great"
-  (code-as-string
-   (code-snippet-code
-    (test-read-eval-string "# /bin/bash -c {echo {{who}} is great}"))))
+  '("echo " '"Bender" " is great")
+  (code-snippet-code
+   (test-read-eval-string "# /bin/bash -c {echo {{who}} is great}")))
 (test-equal "string interpolation does not kill bash variable access"
   "echo ${who} is great"
-  (code-as-string
+  (string-join
    (code-snippet-code
-    (test-read-eval-string "# /bin/bash -c {echo ${who} is great}"))))
+    (test-read-eval-string "# /bin/bash -c {echo ${who} is great}"))
+   ""))
 
 (define numbers
   (list 100 200 #:my-number 300 400 500 #:boring 1000))
 (test-equal "placeholders can refer to named items in lists"
-  '("echo my number is " 300 ", not " 1000 "")
+  '("echo my number is " '300 ", not " '1000 "")
   (code-snippet-code
    (test-read-eval-string "# /bin/bash -c {echo my number is {{numbers:my-number}}, not {{numbers:boring}}}")))
 
 (test-equal "placeholders can refer to tagged consecutive items in lists"
-  '("echo my numbers are " (300 400 500) ", not " 1000 "")
+  '("echo my numbers are " '(300 400 500) ", not " '1000 "")
   (code-snippet-code
    (test-read-eval-string "# /bin/bash -c {echo my numbers are {{numbers::my-number}}, not {{numbers:boring}}}")))
 
 (test-equal "references to process arguments are delayed"
-  '("echo " (assoc-ref #{ %gwl process-arguments}# 'inputs) "")
+  '("echo " (let ((val (assoc-ref #{ %gwl process-arguments}# (quote inputs)))) (if (list? val) (remove keyword? val) val)) "")
   (code-snippet-code
    (test-read-eval-string "# {echo {{inputs}}}")))
 
@@ -127,7 +124,7 @@
      (test-read-eval-string "# {echo {{inputs:first}} {{inputs}} {{outputs}} {{name}}}")))
 
   (test-equal "references to elements of other variables are not delayed"
-    '("echo " 1000 " " "Bender" "")
+    '("echo " '1000 " " '"Bender" "")
     (code-snippet-code
      (test-read-eval-string "# {echo {{numbers:boring}} {{who}}}")))
 

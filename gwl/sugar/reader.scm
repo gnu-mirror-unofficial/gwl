@@ -57,7 +57,9 @@ variable and process it."
                                     (it
                                      (values it
                                              (lambda (val)
-                                               (list 'unquote val)))))))
+                                               ;; Quote values once unquoted
+                                               (list 'quote
+                                                     (list 'unquote val))))))))
                      (maybe-unquoted
                       (match post:
                         ;; Simple variable identifier
