@@ -28,6 +28,7 @@
   #:use-module (gwl errors)
   #:use-module (gwl packages)
   #:use-module (gwl workflows)
+  #:use-module (gwl ui)
 
   #:use-module (guix profiles)
   #:use-module (guix gexp)
@@ -287,6 +288,7 @@ where all the basic GWL modules are available."
 
   (catch #t
     (lambda ()
+      (log-event 'info (G_ "Loading workflow file `~a'...~%") file)
 
       ;; Force re-compilation to avoid ABI issues
       (set! %fresh-auto-compile #t)
