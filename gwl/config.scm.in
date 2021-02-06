@@ -87,8 +87,9 @@ workflow.")
          (test list?)
          (handler
           (lambda (value)
-            (map string->symbol
-                 (string-split value #\,)))))
+            (when (string? value)
+              (map string->symbol
+                   (string-split value #\,))))))
         (switch
          (name 'input)
          (character #\i)
