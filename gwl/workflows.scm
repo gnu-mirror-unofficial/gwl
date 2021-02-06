@@ -212,7 +212,7 @@ Use \"processes\" to specify process dependencies.~%"))
   (define ordered-processes
     (workflow-run-order workflow #:parallel? parallel?))
 
-  (define* (scripts-by-process #:optional plain-script-file-names-table)
+  (define (scripts-by-process)
     (let ((h (make-hash-table)))
       (for-each (lambda (process)
                   (log-event 'debug
@@ -220,18 +220,31 @@ Use \"processes\" to specify process dependencies.~%"))
                              (process-name process))
                   (hash-set! h process
                              (process->script process
-                                              #:engine engine
                                               #:containerize? containerize?
                                               #:workflow workflow
                                               #:input-files
                                               (lset-intersection
                                                string=?
                                                (map second inputs-map-with-extra-files)
-                                               (process-inputs process))
-                                              #:scripts-table
-                                              plain-script-file-names-table)))
+                                               (process-inputs process)))))
                 (workflow-processes workflow))
       h))
+  (define (wrapper-scripts-by-process scripts-table)
+    (let ((make-wrapper (process-engine-wrapper engine)))
+      (if make-wrapper
+          (let ((h (make-hash-table)))
+            (for-each (lambda (process)
+                        (log-event 'debug
+                                   (G_ "Computing wrapper script for process `~a'~%")
+                                   (process-name process))
+                        (hash-set! h process
+                                   (process->script-wrapper process
+                                                            #:make-wrapper make-wrapper
+                                                            #:workflow workflow
+                                                            #:scripts-table scripts-table)))
+                      (workflow-processes workflow))
+            h)
+          scripts-table)))
   (define (script-files-by-process scripts-table)
     (let* ((h (make-hash-table))
            (processes (workflow-processes workflow))
@@ -264,7 +277,7 @@ Use \"processes\" to specify process dependencies.~%"))
   (define plain-script-files-table
     (script-files-by-process plain-scripts-table))
   (define wrapper-scripts-table
-    (scripts-by-process plain-script-files-table))
+    (wrapper-scripts-by-process plain-scripts-table))
   (define wrapper-script-files-table
     (script-files-by-process wrapper-scripts-table))
   (define (script-for-process process)

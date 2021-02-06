@@ -62,6 +62,7 @@
 
             process->script
             process->script-arguments
+            process->script-wrapper
 
             ;; Convenience functions
             kibibytes
@@ -608,16 +609,12 @@ tags if WITH-TAGS? is #FALSE or missing."
 
 (define* (process->script process
                           #:key
-                          engine
                           containerize?
                           workflow
-                          (input-files '())
-                          scripts-table)
+                          (input-files '()))
   "Return a lowerable object for the script that will execute the
-PROCESS.  Wrappers may need to access the names of all scripts, so to
-build wrappers the hash table SCRIPTS-TABLE must be provided."
+PROCESS."
   (let* ((name         (process-full-name process))
-         (make-wrapper (process-engine-wrapper engine))
          (packages     (cons (bash-minimal)
                              (process-packages process)))
          (manifest     (packages->manifest packages))
@@ -660,12 +657,14 @@ build wrappers the hash table SCRIPTS-TABLE must be provided."
                                           (process-outputs process))
                             #:guile (default-guile))
               script)))
-    (if (and make-wrapper scripts-table)
-        (make-wrapper process
-                      computed-script
-                      #:workflow workflow
-                      #:scripts-table scripts-table)
-        computed-script)))
+    computed-script))
+
+(define* (process->script-wrapper process
+                                  #:key make-wrapper workflow scripts-table)
+  (make-wrapper process
+                (hash-ref scripts-table process)
+                #:workflow workflow
+                #:scripts-table scripts-table))
 
 ;;; ---------------------------------------------------------------------------
 ;;; CONVENIENCE FUNCTIONS
