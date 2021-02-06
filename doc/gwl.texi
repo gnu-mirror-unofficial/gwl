@@ -549,19 +549,7 @@ Here's an example of a process with a procedure that writes a haiku to
 a file:
 
 @lisp
-process haiku
-  outputs "haiku.txt"
-  synopsis "Write a haiku to a file"
-  description
-    . "This process writes a haiku by Gary Hotham \
-to the file \"haiku.txt\"."
-  procedure
-    ` with-output-to-file ,outputs
-        lambda ()
-          display "\
-the library book
-overdue?
-slow falling snow"
+@verbatiminclude examples/haiku.w
 @end lisp
 
 The Scheme expression here is quasiquoted (with a leading @code{`}) to

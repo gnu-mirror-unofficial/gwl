@@ -71,6 +71,7 @@ nobase_dist_assets_DATA =                                 \
 
 examplesdir = $(prefix)/share/$(PACKAGE)/doc/examples
 dist_examples_DATA =                                      \
+  doc/examples/haiku.w                                    \
   doc/examples/simple.scm                                 \
   doc/examples/simple-wisp.w                              \
   doc/examples/example-workflow1.scm                      \
@@ -86,6 +87,7 @@ TEST_EXTENSIONS = .scm
 
 SCM_TESTS = \
   tests/cache.scm \
+  tests/examples.scm \
   tests/processes.scm \
   tests/workflows.scm \
   tests/sugar.scm \
