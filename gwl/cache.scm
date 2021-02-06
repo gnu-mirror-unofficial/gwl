@@ -14,6 +14,7 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl cache)
+  #:use-module (gwl ui)
   #:use-module ((gwl processes)
                 #:select (process-inputs process->script-arguments))
   #:use-module ((gwl workflows)
@@ -160,6 +161,8 @@ prefix for its outputs."
     (let ((cached-file (string-append cache-prefix file)))
       (when (file-exists? cached-file)
         (delete-file cached-file))
+      (log-event 'cache (G_ "Caching `~a' as `~a'~%")
+                 file cached-file)
       (link-or-symlink file cached-file))))
 
 (define (restore! file cache-prefix)
@@ -168,4 +171,6 @@ prefix for its outputs."
     (mkdir-p (dirname file))
     (when (file-exists? file)
       (delete-file file))
+    (log-event 'cache (G_ "Restoring `~a' to `~a'~%")
+               (string-append cache-prefix file) file)
     (link-or-symlink (string-append cache-prefix file) file)))

@@ -73,6 +73,8 @@
        (print-diagnostic-prefix (G_ "info: ") #:colors %info-color))
       ((execute)
        (print-diagnostic-prefix (G_ "run: ") #:colors %execute-color))
+      ((cache)
+       (print-diagnostic-prefix (G_ "cache: ") #:colors %debug-color))
       ((debug)
        (print-diagnostic-prefix (G_ "debug: ") #:colors %debug-color))
       (else #true))
