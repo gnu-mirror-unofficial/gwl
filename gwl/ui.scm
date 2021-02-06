@@ -26,6 +26,7 @@
             %error-color
             %hint-color
             %info-color
+            %debug-color
             %execute-color))
 
 ;; TODO: add gettext support
@@ -34,6 +35,7 @@
 (define %hint-color (color BOLD CYAN))
 (define %error-color (color BOLD RED))
 (define %info-color (color BOLD BLUE))
+(define %debug-color (color BOLD MAGENTA))
 (define %execute-color (color BOLD YELLOW))
 
 (define* (print-diagnostic-prefix prefix #:optional location
@@ -71,5 +73,7 @@
        (print-diagnostic-prefix (G_ "info: ") #:colors %info-color))
       ((execute)
        (print-diagnostic-prefix (G_ "run: ") #:colors %execute-color))
+      ((debug)
+       (print-diagnostic-prefix (G_ "debug: ") #:colors %debug-color))
       (else #true))
     (apply format (current-error-port) message)))
