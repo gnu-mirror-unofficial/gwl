@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2020 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -14,10 +14,13 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl oop)
+  #:use-module (gwl errors)
   #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:use-module (oop goops)
   #:export (<gwl-class>))
 
@@ -95,7 +98,10 @@
     (match (lset-difference eq? provided allowed)
       (() #t)
       (extraneous
-       (error (format #f "~a: extraneous fields: ~{~a ~}~%"
-                      (class-name klass)
-                      (map keyword->symbol extraneous))))))
+       (raise (condition
+               (&gwl-error)
+               (&formatted-message
+                (format "~a: extraneous fields: ~{~a ~}~%")
+                (arguments (list (class-name klass)
+                                 (map keyword->symbol extraneous)))))))))
   (next-method))
