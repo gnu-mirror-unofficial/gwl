@@ -140,6 +140,17 @@ prefix for its outputs."
   (and=> (stat file #f)
          (lambda (st) (eq? 'directory (stat:type st)))))
 
+(define (link-or-symlink source target)
+  ;; Cross-device links don't work, of course, so we try symlinking
+  ;; on error.
+  (catch 'system-error
+    (lambda ()
+      (link source target))
+    (lambda (key . args)
+      (if (string=? "link" (car args))
+          (symlink source target)
+          (throw key args)))))
+
 (define (cache! file cache-prefix)
   "Cache FILE by linking it to the directory CACHE-PREFIX."
   (unless (directory? file)
@@ -149,7 +160,7 @@ prefix for its outputs."
     (let ((cached-file (string-append cache-prefix file)))
       (when (file-exists? cached-file)
         (delete-file cached-file))
-      (link file cached-file))))
+      (link-or-symlink file cached-file))))
 
 (define (restore! file cache-prefix)
   "Restore FILE from the cache at CACHE-PREFIX."
@@ -157,6 +168,4 @@ prefix for its outputs."
     (mkdir-p (dirname file))
     (when (file-exists? file)
       (delete-file file))
-    ;; TODO: cross-device links don't work, of course.  Copy?  Symlink?
-    ;; Make this configurable?
-    (link (string-append cache-prefix file) file)))
+    (link-or-symlink (string-append cache-prefix file) file)))
