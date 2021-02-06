@@ -12,6 +12,7 @@ _header='\
           <li><a href=\"/\">Home</a></li>\
           <li><a href=\"/tutorial\">Tutorial</a></li>\
           <li class=active>Manual</li>\
+          <li><a href=\"/publications\">Publications</a></li>\
           <li><a href=\"/community\">Community</a></li>\
         </ul>\
       </div>\
