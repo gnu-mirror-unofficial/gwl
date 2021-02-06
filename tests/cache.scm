@@ -53,12 +53,15 @@
            (p5 -> p2 p3 p4)
            (p6 -> p5)))))
 
+(define %cache-prefix
+  (format #false "~a/foo/bar/baz/"
+          (or (getenv "TMPDIR") "/tmp")))
+
 (define computed-workflow
-  (compute-workflow wf
-                    #:engine simple-engine
-                    #:inputs '()
-                    #:parallel? #true
-                    #:containerize? #false))
+  ((@@ (gwl workflows) make-computed-workflow) wf
+   (const #false)
+   (workflow-run-order wf #:parallel? #true)
+   (const %cache-prefix)))
 
 ;; Flat list of processes
 (define ordered-processes
@@ -138,9 +141,8 @@
              p3))
 
 (test-assert "cache! creates directories as needed"
-  (let ((cache-prefix (format #f "~a/foo/bar/baz/"
-                              (or (getenv "TMPDIR") "/tmp"))))
-    (cache! input-file cache-prefix)
-    (file-exists? (string-append cache-prefix input-file))))
+  (begin
+    (cache! input-file %cache-prefix)
+    (file-exists? (string-append %cache-prefix input-file))))
 
 (test-end "cache")
