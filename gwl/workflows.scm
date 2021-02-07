@@ -99,6 +99,7 @@
    #:accessor workflow-processes*
    #:init-keyword #:processes
    #:init-value '()
+   #:required? #true
    #:implicit-list? #t
    #:validator? (lambda (value)
                   (and (list? value)
