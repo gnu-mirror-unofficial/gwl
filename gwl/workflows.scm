@@ -559,7 +559,7 @@ container."
                   (let ((retval (apply system* command)))
                     (unless (zero? retval)
                       (log-event 'error
-                                 (G_ "error: process `~a' failed with return value ~a.~%")
+                                 (G_ "process `~a' failed with return value ~a.~%")
                                  (process-name process)
                                  retval)
                       (exit retval)))
