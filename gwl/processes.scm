@@ -228,7 +228,16 @@
   (procedure
    #:accessor process-procedure
    #:init-keyword #:procedure
-   #:required? #t)
+   #:required? #t
+   #:validator (lambda (value)
+                 (or (code-snippet? value)
+                     (list? value)
+                     (gexp? value)
+                     (raise (condition
+                             (&gwl-error)
+                             (&formatted-message
+                              (format "unsupported procedure: ~a~%")
+                              (arguments (list value))))))))
   ;; Class options
   #:name "process")
 
@@ -461,8 +470,7 @@ written to a file."
                                       (list
                                        (string-append (getenv "_GWL_PROFILE")
                                                       #$(sanitize-path (symbol->string name))))))))
-       (call process code)))
-    (whatever (error (format #f "unsupported procedure: ~a\n" whatever)))))
+       (call process code)))))
 
 
 (define* (script-modules #:optional containerize?)
