@@ -17,6 +17,7 @@
 (define-module (gwl workflows)
   #:use-module (gwl config)
   #:use-module (gwl cache)
+  #:use-module (gwl errors)
   #:use-module (gwl oop)
   #:use-module (gwl packages)
   #:use-module (gwl processes)
@@ -437,10 +438,6 @@ return a normalized mapping as a list of two element lists containing
              (string-split value #\=)
              (list value value)))
        inputs))
-
-(define-condition-type &missing-inputs &condition
-  missing-inputs-condition?
-  (files missing-inputs-files))
 
 (define (prepare-inputs workflow inputs-map)
   "Ensure that all files in the INPUTS-MAP alist exist and are linked

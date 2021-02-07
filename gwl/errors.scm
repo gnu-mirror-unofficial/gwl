@@ -47,6 +47,10 @@
             gwl-type-error-expected-type
             gwl-type-error-actual-value
 
+            &missing-inputs
+            missing-inputs-condition?
+            missing-inputs-files
+
             last-frame-with-source
             report-load-error
             report-error
@@ -130,6 +134,10 @@ a location object."
 (define-condition-type &gwl-package-error &gwl-error
   gwl-package-error?
   (package-spec gwl-package-error-package-spec))
+
+(define-condition-type &missing-inputs &condition
+  missing-inputs-condition?
+  (files missing-inputs-files))
 
 (define (report-error location fmt . args)
   (print-diagnostic-prefix (G_ "error: ") location #:colors %error-color)
