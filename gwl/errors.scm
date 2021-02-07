@@ -54,7 +54,9 @@
             last-frame-with-source
             report-load-error
             report-error
-            leave))
+            leave
+
+            with-error-handling))
 
 
 (define-record-type <location>
@@ -142,6 +144,28 @@ a location object."
 (define (report-error location fmt . args)
   (print-diagnostic-prefix (G_ "error: ") location #:colors %error-color)
   (apply format (current-error-port) fmt args))
+
+(define (call-with-error-handling proc)
+  (guard (c
+          ((message-condition? c)
+           (log-event 'error
+                      (string-append (condition-message c) "\n"))
+           (exit 1))
+          ((formatted-message? c)
+           (apply log-event 'error
+                  (formatted-message-string c)
+                  (formatted-message-arguments c))
+           (exit 1))
+          ((missing-inputs-condition? c)
+           (log-event 'error
+                      (G_ "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%")
+                      (missing-inputs-files c))
+           (exit 1)))
+    (proc)))
+
+(define-syntax-rule (with-error-handling body)
+  (call-with-error-handling
+    (lambda () body)))
 
 (define (leave . args)
   (match args
