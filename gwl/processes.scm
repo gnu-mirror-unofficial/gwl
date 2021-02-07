@@ -181,8 +181,8 @@
    #:init-keyword #:packages
    #:init-value '()
    #:implicit-list? #t
-   #:validator? (lambda (value)
-                  (every valid-package? value))
+   #:validator (lambda (value)
+                 (every valid-package? value))
    #:transformer
    ;; TODO: the instance name is not be available at this point, so we
    ;; can't report the process name here.  We should move the
