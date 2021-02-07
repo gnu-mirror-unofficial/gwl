@@ -45,10 +45,12 @@
        ;; Ensure required slots are filled.
        (and (memq #:required? options)
             (or (member keyword initargs)
-                (error (format #f
-                               "~a: Required field `~a' missing.~%"
-                               (class-name klass)
-                               (slot-definition-name slot)))))
+                (raise (condition
+                        (&gwl-error)
+                        (&formatted-message
+                         (format "~a: required field `~a' missing.~%")
+                         (arguments (list (class-name klass)
+                                          (slot-definition-name slot))))))))
 
        ;; Only perform these checks if a value is provided.
        (and=> (member keyword initargs)
