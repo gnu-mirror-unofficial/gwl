@@ -1,0 +1,210 @@
+#+Title: Guix Workflow Language
+#+Author: Ricardo Wurmus
+
+* Abstract
+There are dozens of domain specific languages that allow scientists to describe complex workflows.  From the humble generic GNU Make to large scale platforms like Apache Airflow you would think that there is something there to satisfy everyone.  All of these systems have one thing in common: they have a strong focus on partitioning large computations and scheduling work units, but when it comes to managing the software environments that are the context of each of the planned computations, they are often remarkably shy to offer opinionated solutions.
+
+Software management and deployment often seems like an afterthought.  Workflow language designers increasingly seem to be following the devops trend of resorting to opaque application bundles to satisfy application and library needs.  While this strategy has some advantages it also comes with downsides that rarely seem to be weighed carefully.
+
+We present the Guix Workflow Language --- not as a solution to the question of software deployment in HPC workflows, but as an instance of convergent evolution: growing a workflow language out of a generic reproducible software management and deployment system (GNU Guix) instead of sprucing up a workflow language with software deployment features.  We hope to encourage a discussion about the current state of workflow languages in HPC: when it comes to software and distributed computations, are we approaching the peak or do we circle a local maximum?
+
+* Introduction
+[video]
+Hello!  This presentation is about the Guix Workflow Language.
+I’ll begin with a disclaimer: the available time for this talk is too short for hedging, for carefully tuned statements and counter-examples to whatever points I’m trying to make.  That’s okay, though. I’ll readily admit that I intend to spin a narrative to lead you astray, to stroll off the road and get very lost.
+
+[map]
+Too often we are unaware of the territory and rely on incomplete maps.  It can’t hurt to look around for a bit.  Maybe there is more than one way to reach the summit, or perhaps we realize that actually we would much rather go to the beach.  Or maybe we end up right where we started and the real treasure was the friends we made along the way.
+
+With that out of the way: let’s get on with it, shall we?
+
+What are workflow languages and why would anyone need them?
+
+[pipeline1]
+Let’s look at an easy but complex task that no single program can do for us: download a compressed archive, unpack it, take the first ten lines, sort them, and compress the results.
+
+[pipeline1a]
+The easiest way to accomplish this task is to compose generic tools that each perform part of the work, passing intermediate results from one program to the next.
+
+[pipeline1b]
+Pipes allow us to glue these independent tools together and form an uninterrupted pipeline from input data to the desired output.  Once we have such a pipeline we can name it and use it repeatedly on different inputs to get uniformly processed outputs.
+
+[hpc]
+Many scientific computations are just like that: compositions of smaller tasks, each implemented by a collection of task-specific programs.  Unlike the example task, however, each step may take a very long time to compute.  An important optimization is thus to execute independent computations in parallel, possibly even on different computers.  Another optimization for repeated runs of a computation is to reuse the results of previous computations.
+
+[pipeline2]
+Expressing all this with only pipes can be very tedious.  A workflow language allows people to declare the parts of their composite workflows, and to have them executed in the correct order or at the same time.
+
+There are countless workflow languages out there: some emphasize the concept of data flowing from one node to the next, some are modeled after familiar but unrelated tools, others focus on syntax, and yet others try to integrate with existing platforms.  Some offer graphical user interfaces, some are command line tools, while others are a collection of classes and procedures embedded in a programming language.
+
+But all of them have this in common: they offer the means to name work units and to connect them.
+
+* The environment
+The idea of connected processes that are executed on a distributed system like an HPC cluster is compelling, but it ignores a crucial complication.
+
+[lab book]
+Reproducible science demands that we take into account *all* ingredients of our experiments — no matter if the experiment involves chemicals in a lab or bits on a computer.  For scientific workflows the ingredients are not just input data that we process, but must also include the processing tools themselves.
+
+[environment1]
+If this red dot here is a process in our workflow…
+
+[environment2]
+…then this might be the associated environment.
+
+For every process, every step in our workflow, there is an associated environment that influences the behavior of that process.
+In programming language terms: the names of our tools are bound to specific programs in the compute environment.  Change the environment and you change the mapping of tool name to observable behavior.
+
+[reproduce1]
+Before we can claim that a scientific workflow is reproducible, we must be able to reproduce its complete software environment — on the same computer a year from now, on an HPC cluster in the same institute, or on rented virtual machines in the cloud.
+
+[reproduce2]
+How hard could this possibly be?
+It turns out that the answer is: very.
+
+[show tangled mess]
+
+Software is much more complex than we like to think.
+
+A real-life genomics analysis pipeline can consist of hundreds of applications and libraries that affect its behavior.
+
+What you see here are dozens of interconnected software packages.  A package could be a software library or an application.  Changes to any of these packages could be significant.  We don’t know if all of them are relevant for the subset of the behaviors we care about, but we can’t easily dismiss them either.
+
+Only *one* of these nodes corresponds to the code of the application itself — if all you know is the application name and its version you are missing a very large number of other  ingredients that potentially influence the behavior of the application.
+
+For workflow authors, it is *not* feasible to record every version and configuration manually.  Likewise, for users it would not be feasible to follow manual instructions for hundreds of applications and libraries.
+
+* Containers
+[containers to the rescue?]
+  
+Some workflow languages address the problem of software environments by letting workflow authors specify application bundles, such as Docker images, that provide the required tools as shrink-wrapped binary blobs.
+
+Docker and tools like it popularized the Linux kernel features of process isolation and file system virtualization by making them accessible to a wider range of users.  While containers make it much easier to *install* an application, they don’t help us *recreate* the environment independently, exactly, or with deliberate fine-grain modifications that are necessary requirements for the interactive  exploratory process of computational science.
+
+We don’t only want to recreate an environment, but we may want to have the option of implementing *specific* changes without having anything else in the environment change.
+
+[smoothie]
+Containers lack transparency.  Looking at the binary image you cannot tell what ingredients really went into it.  You have no guarantee that the binary you *received* really corresponds to the source code you *reviewed*.
+
+When container images are built, they modify or extend existing third-party images by fetching network resources that are not guaranteed to be fixed as time passes.  When building a container image from a Dockerfile on one day and again a month later it is not unusual to get two very different containers.
+
+This lack of transparency and fine-grain control really bothers me.  Although containers are certainly convenient, especially when running computations on remote, rented virtual machines, I think that they cannot quite satisfy the requirements of reproducible science.
+ 
+This got me thinking.
+
+Why is the state of the art not enough for me, but apparently sufficient for many other people?
+
+What lead to this difference in perspective?
+
+Perhaps we can’t see any other solution than containers simply because of past decisions.
+
+This reminded me of one of my favorite topics in the world: evolution.
+
+[giraffe]
+Evolution is descent with modification.  All modification is subject to the cumulative constraints of past modifications; this means that backtracking is often prohibitively expensive.  Giraffes, for example, are stuck with their ridiculously long laryngeal nerve that takes a detour from the head down the neck, around the aortic arch, all the way back up to the head.
+
+[convergent]
+This doesn’t mean that certain configurations are impossible to achieve.  Species that are only distantly related have arrived at strikingly similar solutions to problems posed by their environments, in spite of vastly different starting conditions.  This is known as convergent evolution.  An example is the independent evolution of a body plan adapted to high speed swimming in fish, reptiles, and mammals.
+
+Fortunately, when developing software we can iterate several orders of magnitude more quickly than biological evolution, but the trajectories of our projects are strongly influenced by where they have come from.  The communities that have gathered around them act to keep them on track, providing stability but also conserving the effects of past decisions.
+
+Most workflow languages started with a concept of connecting processes and only later acquired features to specify software environments.  What if we turned this around: what if our starting point on the journey towards reproducible scientific workflows was instead a tool for reproducible software deployment?
+
+* Guix
+[guix]
+This was the situation some time in 2016 when Roel Janssen started working on the Guix Workflow Language, an extension to GNU Guix.  What is  Guix?
+
+[guix:package]
+It is often called a “package manager”, but that barely even scratches the surface of what it can do.  Yes, it allows you to install software packages.  It builds them in strict isolation to ensure that operating system state or file system contents do not affect the resulting binary.  It is designed to build software reproducibly: given the same recipe it will produce the same binary, no matter where or when you run it.
+
+[guix:environments]
+It also lets you create and manage environments — that is collections of packages.
+
+[guix:containers]
+It lets you create containers — pure environments with partial virtualization of user accounts, the process tree, the file system, and so on.  It does so by using the kernel features directly without delegating these tasks to Docker or similar tools, notably without having to create a bundle of binaries.
+
+[guix:systems]
+Going beyond containers, Guix enables you to declare complete operating systems, build them reproducibly, and deploy them locally or remotely, to bare metal or as virtual machines.
+
+[guix repro deploy]
+All of this can be summarized as “reproducible deployment”.  Guix, then, is a tool dedicated to declarative and reproducible software deployment at any scale.
+
+The value of reproducibility in combination with package-level granularity cannot be overstated:
+
+- Guix deployments are fully transparent. The binaries that Guix produces correspond *exactly* to the declarative, stateless descriptions that generated them.  You can independently verify this correspondence.
+
+ - You can reproduce the deployed environment at a later point or at a different site.  You can do this without having to maintain an archive of old binary artifacts.
+
+- You can also trivially modify selected parts of  the environment and keep all other variables unchanged.  You can program complex package transformations with the Scheme API or use the handy command line to apply changes to the software dependency graph recursively.
+
+To me this ticks off all of the requirements I have for practical reproducibility in the context of scientific computing.
+
+* The Guix Workflow Language
+[gwl as an extension]
+The Guix Workflow Language is a small extension to Guix itself, providing just enough features to declare processes and combine them to workflows, and to execute them.  Any process can declare software packages as inputs, and Guix takes care of preparing a suitable environment before the process is executed.
+
+[gwl1]
+The workflow language models two concepts: processes (i.e. units of work with their environment) and workflows (i.e. the compositions of processes).
+
+[command-line]
+It adds a sub-command to Guix itself, letting it use whatever channels or time-traveling options the user provides.
+
+[pipe]
+Here comes the moment I have been dreading: I suppose I need to show you examples.  I don’t want to because examples are too often confused for the thing they are meant to represent.  Examples of programming languages in particular often trigger discussions about the least interesting thing: syntax.  That’s sad for two reasons:
+
+  1. we all know that there is only one correct syntax: Lisp’s symbolic expressions; and more importantly:
+  2. syntax without familiar context has a tendency to obscure ideas rather than clarifying them
+
+The Guix Workflow Language is written in Scheme, a language that is often used for writing languages.
+
+[scheme]
+If you are fond of Lisp you can write workflows in plain Scheme.
+
+[wisp]
+Or you can write them in a parenthesis-deprived syntax called Wisp that resembles YAML or Python.
+
+[code-snippet]
+You can execute Scheme code directly, or invoke scripts, but you can also embed actual code snippets from foreign languages such as Python, R, Bash, or any other language with an interpreter.  Process variables or values defined outside of the process definition can be referenced in those code snippets.  The language also provides lots of handy little macros to reduce boilerplate.
+
+[connect1]
+Workflows are compositions of processes. You can combine processes to a workflow by specifying the inter-process dependencies manually.
+
+[connect2]
+…or you can let it derive the execution order by mating up the inputs and outputs that have been declared for each process.
+
+But really: workflow languages are not all that interesting.  They all provide the means to describe units of work and the means to combine them.  The Guix Workflow Language is no different.  What *is* interesting and different about the GWL is that all the interesting features are inherited from Guix.
+
+[inherited-features]
+- In the Guix Workflow Language work units are defined together with their execution environments; they are inseparably linked.
+- these execution contexts are fully transparent and bit-reproducible
+- runtime isolation is available via containerization features or ad-hoc virtual machines – all without resorting to third-party application bundles or the need for container registries
+- the execution contexts can be assembled from any of the thousands of reproducibly built packages, that Guix will install on the fly
+- complete workflows can also be exported as binary bundles including all the packages they need
+
+* Parting words
+[video]
+It may not seem this way but I’m not actually trying to make you switch to the Guix Workflow Language just yet.  While we have shown that convergent evolution in the field of workflow languages is possible, it is not clear yet if this path is really viable.
+
+Considering its origins and trajectory it should not be surprising that the Guix Workflow Language is pretty good at deployment but still somewhat lacking when it comes to actually executing workflows.  So far it can execute workflows locally or submit jobs to a Grid Engine scheduler, but generalized DRMAA support and submission of jobs to Amazon’s hosted servers is still incomplete.
+
+In spite of deep integration with Guix, not all of the features that Guix provides are immediately available in the workflow language.  For example, Guix can deploy systems to DigitalOcean droplets, but to make most efficient use of this feature in workflows, decisions must be made about how to group work units and distribute them across VMs.
+
+Finally, it is unclear what the *long-term* costs and benefits of
+/extending/ Guix are, compared to merely *using* Guix in an existing
+workflow language.  So if you are involved in the development of workflow languages, please consider integrating support for environment management via Guix, so that we can collect empirical evidence to answer this question.
+
+[end]
+And if you happen to find this evolutionary path intriguing, I invite you to join us in contributing to this experiment!
+
+* Credits
+** map.jpg
+Matrakçı Nasuh, map of Istanbul (1536)
+** giraffe.jpg
+Pander, C. H., d’Alton, E. “Die vergleichende Osteologie”(1821-1838)
+https://doi.org/10.5962/bhl.title.61021
+Public domain (with changes by Ricardo Wurmus)
+** convergent.jpg
+Rand, H. W, "The chordates" (1950), page 388
+urn:oclc:record:1041802847
+Public domain
+** pipe.jpg
+Magritte, R, “La Trahison des Images” (1928).
