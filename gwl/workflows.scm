@@ -380,8 +380,10 @@ contains lists of processes that can be executed in parallel."
                             sequential-execution-order)))
     (or (order-function (workflow-processes workflow)
                         (workflow-restrictions workflow))
-        (error (format (current-error-port)
-                       "error: Cannot determine process execution order.~%")))))
+        (raise (condition
+                (&gwl-error)
+                (&message
+                 (message "Cannot determine process execution order.")))))))
 
 (define (workflow-kons proc)
   "Construct a procedure from the single-argument procedure PROC that
