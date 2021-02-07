@@ -87,10 +87,12 @@
                      ((_ value . rest)
                       ;; TODO: allow for better error messages
                       (or (validate value)
-                          (error (format #f
-                                         "~a: field `~a' has the wrong type.~%"
-                                         (class-name klass)
-                                         (slot-definition-name slot)))))))
+                          (raise (condition
+                                  (&gwl-error)
+                                  (&formatted-message
+                                   (format "~a: field `~a' has the wrong type.~%")
+                                   (arguments (list (class-name klass)
+                                                    (slot-definition-name slot))))))))))
                   (_ #t))))))
    (class-slots klass))
 
