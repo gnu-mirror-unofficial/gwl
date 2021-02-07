@@ -101,9 +101,15 @@
    #:init-value '()
    #:required? #true
    #:implicit-list? #t
-   #:validator? (lambda (value)
-                  (and (list? value)
-                       (every process? value))))
+   #:validator (lambda (value)
+                 (let loop ((remaining value))
+                   (match remaining
+                     ((head . tail)
+                      (and (if (list? head)
+                               (every process? head)
+                               (process? head))
+                           (loop tail)))
+                     (() #true)))))
   (_restrictions)
   (restrictions
    #:accessor workflow-restrictions
