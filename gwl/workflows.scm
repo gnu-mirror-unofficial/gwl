@@ -405,12 +405,7 @@ can be used in a fold over a WORKFLOW's processes."
                            containerize?)
   "Print scripts to be run for WORKFLOW given ENGINE."
   (define computed-workflow
-    (guard (condition
-            ((missing-inputs-condition? condition)
-             (log-event 'error
-                        (G_ "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%")
-                        (missing-inputs-files condition))
-             (exit 1)))
+    (begin
       (log-event 'info (G_ "Computing workflow `~a'...~%")
                  (workflow-name workflow))
       (compute-workflow workflow
@@ -499,12 +494,7 @@ to existing files.
 When CONTAINERIZE? is #T build a process script that spawns a
 container."
   (define computed-workflow
-    (guard (condition
-            ((missing-inputs-condition? condition)
-             (log-event 'error
-                        (G_ "Missing inputs: ~{~%  * ~a~}.~%Provide them with --input=NAME=FILE.~%")
-                        (missing-inputs-files condition))
-             (exit 1)))
+    (begin
       (log-event 'info (G_ "Computing workflow `~a'...~%")
                  (workflow-name workflow))
       (compute-workflow workflow

@@ -42,58 +42,59 @@
     ;; Initialize %config
     (%config opts)
 
-    (match (full-command opts)
-      ((_)
-       (format (current-error-port)
-               "guix workflow: missing or unknown command name~%")
-       (emit-help opts))
-      ((_ "web")
-       (let ((host (%config 'host))
-             (port (%config 'port)))
-         (run-web-interface host port)))
-      ;; Handle running or preparing workflows.
-      ((_ "run")
-       (let* ((file-name (option-ref opts '(file)))
-              (wf (parameterize ((*current-filename* file-name))
-                    (load-workflow file-name)))
-              (engine-name (option-ref opts 'engine)))
-         (let ((engine (find-engine-by-name engine-name)))
-           (unless engine
-             (leave (G_ "The engine ~s is not available.~%") engine-name))
-           (if (option-ref opts 'prepare)
-               ;; Only prepare the workflow
-               (workflow-prepare
-                wf engine
-                #:containerize?
-                (option-ref opts 'container))
+    (with-error-handling
+      (match (full-command opts)
+        ((_)
+         (format (current-error-port)
+                 "guix workflow: missing or unknown command name~%")
+         (emit-help opts))
+        ((_ "web")
+         (let ((host (%config 'host))
+               (port (%config 'port)))
+           (run-web-interface host port)))
+        ;; Handle running or preparing workflows.
+        ((_ "run")
+         (let* ((file-name (option-ref opts '(file)))
+                (wf (parameterize ((*current-filename* file-name))
+                      (load-workflow file-name)))
+                (engine-name (option-ref opts 'engine)))
+           (let ((engine (find-engine-by-name engine-name)))
+             (unless engine
+               (leave (G_ "The engine ~s is not available.~%") engine-name))
+             (if (option-ref opts 'prepare)
+                 ;; Only prepare the workflow
+                 (workflow-prepare
+                  wf engine
+                  #:containerize?
+                  (option-ref opts 'container))
 
-               ;; Run the workflow
-               ;; TODO: see https://gitlab.com/a-sassmannshausen/guile-config/-/issues/15
-               (let* ((options (or (s37:args-fold (cdr (command-line))
-                                                  (list (s37:option '(#\i "input") #t #f
-                                                                    (lambda (opt name arg result . rest)
-                                                                      (apply values
-                                                                             (alist-cons 'input arg result)
-                                                                             rest))))
-                                                  (lambda (opt name arg result) '()) ; ignore
-                                                  (lambda (op loads) (cons op loads))
-                                                  '())
-                                   '()))
-                      (inputs (filter-map (match-lambda
-                                            (('input . val) val)
-                                            (_ #f))
-                                          options)))
-                 (workflow-run wf engine
-                               #:inputs inputs
-                               #:dry-run? (option-ref opts 'dry-run)
-                               #:force? (option-ref opts 'force)
-                               #:containerize?
-                               (option-ref opts 'container)))))))
-      ;; Handle workflow visualization
-      ((_ "graph")
-       (let* ((file-name (option-ref opts '(file))))
-         (parameterize ((*current-filename* file-name))
-           (match (load-workflow file-name)
-             ((? workflow? wf)
-              (format #t "~a\n" (workflow->dot wf)))
-             (_ (leave (G_ "Failed to process the workflow.~%"))))))))))
+                 ;; Run the workflow
+                 ;; TODO: see https://gitlab.com/a-sassmannshausen/guile-config/-/issues/15
+                 (let* ((options (or (s37:args-fold (cdr (command-line))
+                                                    (list (s37:option '(#\i "input") #t #f
+                                                                      (lambda (opt name arg result . rest)
+                                                                        (apply values
+                                                                               (alist-cons 'input arg result)
+                                                                               rest))))
+                                                    (lambda (opt name arg result) '()) ; ignore
+                                                    (lambda (op loads) (cons op loads))
+                                                    '())
+                                     '()))
+                        (inputs (filter-map (match-lambda
+                                              (('input . val) val)
+                                              (_ #f))
+                                            options)))
+                   (workflow-run wf engine
+                                 #:inputs inputs
+                                 #:dry-run? (option-ref opts 'dry-run)
+                                 #:force? (option-ref opts 'force)
+                                 #:containerize?
+                                 (option-ref opts 'container)))))))
+        ;; Handle workflow visualization
+        ((_ "graph")
+         (let* ((file-name (option-ref opts '(file))))
+           (parameterize ((*current-filename* file-name))
+             (match (load-workflow file-name)
+               ((? workflow? wf)
+                (format #t "~a\n" (workflow->dot wf)))
+               (_ (leave (G_ "Failed to process the workflow.~%")))))))))))
