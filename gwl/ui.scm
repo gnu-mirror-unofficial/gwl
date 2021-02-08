@@ -77,5 +77,8 @@
        (print-diagnostic-prefix (G_ "cache: ") #:colors %debug-color))
       ((debug)
        (print-diagnostic-prefix (G_ "debug: ") #:colors %debug-color))
+      ((process)
+       (print-diagnostic-prefix (G_ "process: ") #:colors %execute-color))
       (else #true))
+    (force-output (current-error-port))
     (apply format (current-error-port) message)))

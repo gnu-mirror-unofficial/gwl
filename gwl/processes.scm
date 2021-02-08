@@ -20,6 +20,7 @@
   #:use-module (gwl oop)
   #:use-module (gwl process-engines)
   #:use-module (gwl packages)
+  #:use-module (gwl ui)
   #:use-module ((guix profiles)
                 #:select
                 (profile
@@ -37,6 +38,8 @@
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim)
   #:export (make-process
             process?
             process-name
@@ -91,6 +94,8 @@
             code-snippet-code
 
             compile-procedure
+            run-process-command
+
             containerize))
 
 ;;; Commentary:
@@ -471,6 +476,18 @@ written to a file."
                                        (string-append (getenv "_GWL_PROFILE")
                                                       #$(sanitize-path (symbol->string name))))))))
        (call process code)))))
+
+(define (run-process-command command)
+  "Run the COMMAND, a list consisting of an executable and its
+arguments."
+  (let ((port (apply open-pipe* OPEN_READ command)))
+    (let loop ()
+      (let ((line (read-line port 'concat)))
+        (if (eof-object? line)
+            (close-pipe port)
+            (begin
+              (log-event 'process line)
+              (loop)))))))
 
 
 (define* (script-modules #:optional containerize?)
