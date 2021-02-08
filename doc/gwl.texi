@@ -1250,6 +1250,125 @@ define : load-config file
 @end deffn
 
 
+@node @code{workflow} Fields
+@section @code{workflow} Fields
+@cindex workflow, valid fields
+Both @code{make-workflow} and @code{workflow} accept the same fields,
+which we describe below.  Of all these fields only @code{name} and
+@code{processes} are required.
+
+@table @code
+@cindex name, workflow field
+@item name
+The readable name of the workflow as a string.  This is used for
+display purposes.  When the @code{workflow} constructor is used, the
+@code{name} field need not be provided explicitly.
+
+@cindex version, workflow field
+@item version
+A version string to distinguish different releases of the workflow.
+
+@cindex synopsis, workflow field
+@item synopsis
+A short summary of what this workflow is about.
+
+@cindex description, workflow field
+@item description
+A description of what the workflow is supposed to accomplish.
+
+@cindex processes, workflow field
+@item processes
+This field contains a list of processes that should be scheduled when
+the workflow is executed.  A plain list of processes specifies
+processes that may run in parallel.  A list of process lists is used
+to specify process dependencies.  This is best done with the
+@code{graph} macro:
+
+The following workflow definition lets the process @code{combine} run
+after @code{generate-A} and @code{generate-B}, which will both run in
+parallel.  The process @code{compress} will run after @code{combine},
+and thus at the very end.
+
+@lisp
+workflow frobnicate
+  processes
+    graph
+      combine -> generate-A generate-B
+      compress -> combine
+@end lisp
+
+This can be expressed just as well with lists of process lists, but it
+looks a little dense.  Here is the same thing in Scheme without the
+@code{graph} macro:
+
+@lisp
+(workflow frobnicate
+  (processes
+    (list (list combine generate-A generate-B)
+          (compress combine))))
+@end lisp
+
+If the processes all declare inputs and outputs, the GWL can connect
+the processes and ensure that only independent processes are run
+simultaneously.  Use the @code{auto-connect} procedure on your
+processes:
+
+@lisp
+workflow do-stuff
+  processes
+    auto-connect
+      . this
+      . that
+      . something-else
+@end lisp
+
+@cindex before, workflow field
+@item before
+This field holds a Scheme procedure that will be executed before the
+workflow processes are scheduled.  This can be useful for printing
+introduction banners or logos.
+
+@lisp
+workflow fancy-hello
+  before
+    lambda _
+      display "\
+ _          _ _         .
+| |        | | |        .
+| |__   ___| | | ___    .
+| '_ \\ / _ \\ | |/ _ \\   .
+| | | |  __/ | | (_) |  .
+|_| |_|\\___|_|_|\\___/   .
+"
+      newline
+      display "Now that I've got your attention, let's compute!"
+      newline
+      newline
+  processes
+    list hello
+@end lisp
+
+@cindex after, workflow field
+@item after
+This field holds a Scheme procedure that will be executed after all
+workflow processes have been executed.  This can be useful for
+printing further instructions or hints as to where the user may find
+important output files.
+
+@lisp
+workflow fancy-bye
+  after
+    lambda _
+      newline
+      display "The main report file is called `report2021_final_really_approved.html'."
+      newline
+      newline
+  processes
+    list generate-report
+@end lisp
+@end table
+
+
 @c *********************************************************************
 @node Process Engines
 @chapter Process Engines
