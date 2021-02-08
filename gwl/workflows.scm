@@ -556,13 +556,15 @@ container."
                 (begin
                   (log-event 'execute
                              (G_ "Executing: ~{~a ~}~%") command)
-                  (let ((retval (apply system* command)))
-                    (unless (zero? retval)
+
+                  (let* ((status   (run-process-command command))
+                         (exit-val (status:exit-val status)))
+                    (unless (zero? exit-val)
                       (log-event 'error
                                  (G_ "process `~a' failed with return value ~a.~%")
                                  (process-name process)
-                                 retval)
-                      (exit retval)))
+                                 exit-val)
+                      (exit exit-val)))
                   ;; Wait before generated files are accessed.
                   ;; This may be needed for distributed file
                   ;; systems.
