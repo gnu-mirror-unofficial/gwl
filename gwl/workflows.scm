@@ -95,6 +95,16 @@
    #:accessor workflow-description
    #:init-keyword #:description
    #:init-value "")
+  (before
+   #:accessor workflow-before
+   #:init-keyword #:before
+   #:init-value (const #true)
+   #:validator procedure?)
+  (after
+   #:accessor workflow-after
+   #:init-keyword #:after
+   #:init-value (const #true)
+   #:validator procedure?)
   (processes
    #:accessor workflow-processes*
    #:init-keyword #:processes
@@ -586,6 +596,8 @@ container."
                   ;; Link files to the cache.
                   (for-each (cut cache! <> cache-prefix)
                             (process-outputs process))))))))
+  ((workflow-before workflow))
   (fold (workflow-kons run)
         '()
-        (computed-workflow-ordered-processes computed-workflow)))
+        (computed-workflow-ordered-processes computed-workflow))
+  ((workflow-after workflow)))
