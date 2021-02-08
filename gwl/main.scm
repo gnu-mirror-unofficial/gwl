@@ -37,6 +37,8 @@
 ;;;
 
 (define (guix-workflow-main . args)
+  (setenv "_GWL_INVOKING_GUIX"
+          (dirname (dirname (car (command-line)))))
   ;; We use the cdr here, because the first word will always be "guix"
   (let ((opts (getopt-config-auto (cdr (command-line)) config)))
     ;; Initialize %config
