@@ -28,6 +28,8 @@
              (ice-9 match)
              (ice-9 ftw))
 
+(%strict-tokenizer? #true)
+
 (define (syntax-highlighted-html %input %output)
   "Process all the HTML files in INPUT by highlighting the syntax of all its
 <pre class=\"lisp\"> blocks (as produced by 'makeinfo --html').  Write

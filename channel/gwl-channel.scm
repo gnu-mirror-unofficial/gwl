@@ -116,32 +116,6 @@ returns a boolean to determine whether rewriting should continue."
                (("\\(exit.*") ""))
              #t)))))))
 
-(define guile-lib/htmlprag-fixed
-  ;; Guile-Lib with a hotfix for (htmlprag).
-  (package
-    (inherit guile-lib)
-    (arguments
-     (substitute-keyword-arguments (package-arguments guile-lib)
-       ((#:phases phases '%standard-phases)
-        `(modify-phases ,phases
-           (add-before 'build 'fix-htmlprag
-             (lambda _
-               ;; When parsing
-               ;; "<body><blockquote><p>foo</p>\n</blockquote></body>",
-               ;; 'html->shtml' would mistakenly close 'blockquote' right
-               ;; before <p>.  This patch removes 'p' from the
-               ;; 'parent-constraints' alist to fix that.
-               (substitute* "src/htmlprag.scm"
-                 (("^[[:blank:]]*\\(p[[:blank:]]+\\. \\(body td th\\)\\).*")
-                  ""))
-               #t))
-           (add-before 'check 'skip-known-failure
-             (lambda _
-               ;; XXX: The above change causes one test failure among
-               ;; the htmlprag tests.
-               (setenv "XFAIL_TESTS" "htmlprag.scm")
-               #t))))))))
-
 ;; It's not just the GWL that uses guile-commonmark, so we need to
 ;; change it throughout the input graph.
 (define with-fixed-commonmark
@@ -183,7 +157,7 @@ returns a boolean to determine whether rewriting should continue."
        ("git" ,git-minimal)
 
        ;; For manual post processing
-       ("guile-lib" ,guile-lib/htmlprag-fixed)
+       ("guile-lib" ,guile-lib)
        ("rsync" ,rsync)
 
        ;; For "git push"
