@@ -1454,7 +1454,9 @@ workflow defined in @var{file}.
 Print messages for the comma-separated list of events.  This defaults
 to logging the events @code{error}, @code{execute} (for fatal errors)
 (for processes that are run), and @code{info} (for status
-information).
+information).  The following log events exist: @code{error},
+@code{info}, @code{execute}, @code{cache}, @code{debug}, and
+@code{guix}.
 
 @item --dry-run
 @itemx -n

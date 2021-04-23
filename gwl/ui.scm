@@ -79,6 +79,8 @@
        (print-diagnostic-prefix (G_ "debug: ") #:colors %debug-color))
       ((process)
        (print-diagnostic-prefix (G_ "process: ") #:colors %execute-color))
+      ((guix)
+       (print-diagnostic-prefix (G_ "guix: ") #:colors %execute-color))
       (else #true))
     (force-output (current-error-port))
     (apply format (current-error-port) message)))

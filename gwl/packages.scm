@@ -15,6 +15,7 @@
 
 (define-module (gwl packages)
   #:use-module (gwl errors)
+  #:use-module (gwl ui)
   #:use-module ((guix memoization)
                 #:select (mlambda))
   #:use-module ((guix store)
@@ -56,6 +57,9 @@
                                    (format #false "~a/.config/guix/current"
                                            (getenv "HOME"))))
                  (location (canonicalize-path default-guix)))
+            (log-event 'guix
+                       (G_ "Opening inferior Guix at `~a'~%")
+                       location)
             (set! current-guix-inferior (open-inferior location))
             current-guix-inferior)))))
 
@@ -68,6 +72,7 @@
             connection)))))
 
 (define (lookup-package specification)
+  (log-event 'guix (G_ "Looking up package `~a'~%") specification)
   (match (lookup-inferior-packages (current-guix) specification)
     ((first . rest) first)
     (_ (raise (condition
