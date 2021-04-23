@@ -51,14 +51,13 @@
 (define current-guix
   (let ((current-guix-inferior #false))
     (lambda ()
-      (let ((default-guix (or (getenv "_GWL_INVOKING_GUIX")
-                              (format #false "~a/.config/guix/current"
-                                      (getenv "HOME")))))
-        (or current-guix-inferior
-            (begin
-              (set! current-guix-inferior (open-inferior
-                                           (canonicalize-path default-guix)))
-              current-guix-inferior))))))
+      (or current-guix-inferior
+          (let* ((default-guix (or (getenv "_GWL_INVOKING_GUIX")
+                                   (format #false "~a/.config/guix/current"
+                                           (getenv "HOME"))))
+                 (location (canonicalize-path default-guix)))
+            (set! current-guix-inferior (open-inferior location))
+            current-guix-inferior)))))
 
 (define inferior-store
   (let ((connection #false))
