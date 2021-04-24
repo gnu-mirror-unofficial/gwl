@@ -231,20 +231,33 @@ Use \"processes\" to specify process dependencies.~%"))
     (workflow-run-order workflow #:parallel? parallel?))
 
   (define (scripts-by-process)
-    (let ((h (make-hash-table)))
+    (let ((h (make-hash-table))
+          (procedure-table (make-hash-table)))
       (for-each (lambda (process)
-                  (log-event 'debug
-                             (G_ "Computing script for process `~a'~%")
-                             (process-name process))
-                  (hash-set! h process
-                             (process->script process
-                                              #:containerize? containerize?
-                                              #:workflow workflow
-                                              #:input-files
-                                              (lset-intersection
-                                               string=?
-                                               (map second inputs-map-with-extra-files)
-                                               (process-inputs process)))))
+                  (let* ((input-files (lset-intersection
+                                       string=?
+                                       (map second inputs-map-with-extra-files)
+                                       (process-inputs process)))
+                         (key (compile-procedure process)))
+
+                    ;; Skip unnecessary work by looking up existing
+                    ;; scripts by procedure.
+                    (or (and=> (hash-ref procedure-table key)
+                               (lambda (script)
+                                 (hash-set! h process script)))
+
+                        ;; Otherwise compute the script object and
+                        ;; record it for later.
+                        (begin
+                          (log-event 'debug
+                                     (G_ "Computing script for process `~a'~%")
+                                     (process-name process))
+                          (let ((script (process->script process
+                                                         #:containerize? containerize?
+                                                         #:workflow workflow
+                                                         #:input-files input-files)))
+                            (hash-set! h process script)
+                            (hash-set! procedure-table key script))))))
                 (workflow-processes workflow))
       h))
   (define (wrapper-scripts-by-process scripts-table)
