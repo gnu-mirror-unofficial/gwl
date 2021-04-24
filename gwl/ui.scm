@@ -64,7 +64,8 @@
 
 (define (log-event type . message)
   (define print?
-    (member type (%config 'log-events)))
+    (or (member 'all (%config 'log-events))
+        (member type (%config 'log-events))))
   (when print?
     (case type
       ((error)
