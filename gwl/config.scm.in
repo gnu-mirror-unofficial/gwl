@@ -75,7 +75,7 @@ workflow.")
          (name 'verbosity)
          (character #\v)
          (synopsis "Verbosity level")
-         (default 1)
+         (default 2)
          (test integer?)
          (handler string->number))
         (switch
