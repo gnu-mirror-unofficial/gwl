@@ -284,6 +284,8 @@ Use \"processes\" to specify process dependencies.~%"))
                                   processes))
            (file-names
             (parameterize ((%guile-for-build (default-guile-derivation)))
+              (log-event 'debug
+                         (G_ "Generating all scripts and their dependencies.~%"))
               (with-status-verbosity (%config 'verbosity)
                 (with-build-handler (build-notifier #:verbosity (%config 'verbosity))
                   (run-with-store (inferior-store)
