@@ -34,6 +34,10 @@
                           derivation-output-path))
   #:use-module ((guix ui)
                 #:select (build-notifier))
+  #:use-module ((guix scripts package)
+                #:select (%package-default-options))
+  #:use-module ((guix scripts build)
+                #:select (set-build-options-from-command-line))
   #:use-module ((guix status)
                 #:select (with-status-verbosity))
 
@@ -287,6 +291,8 @@ Use \"processes\" to specify process dependencies.~%"))
               (log-event 'debug
                          (G_ "Generating all scripts and their dependencies.~%"))
               (with-status-verbosity (%config 'verbosity)
+                (set-build-options-from-command-line
+                 (inferior-store) %package-default-options)
                 (with-build-handler (build-notifier #:verbosity (%config 'verbosity))
                   (run-with-store (inferior-store)
                     (mlet* %store-monad
