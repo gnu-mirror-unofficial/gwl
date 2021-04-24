@@ -137,22 +137,8 @@
         ((string-suffix? ".gwl" file) ".gwl")
         (else #f)))
 
-(define wisp-reader
-  ;; XXX We'd like to use language-reader here, but (language wisp
-  ;; spec) triggers a very annoying setlocale warning because it
-  ;; evaluates (setlocale LC_ALL "foo").
-  #;
-  (language-reader (lookup-language 'wisp))
-  (lambda (port env)
-    ;; allow using "# foo" as #(foo).
-    (read-hash-extend #\# (λ (chr port) #\#))
-    (cond
-     ((eof-object? (peek-char port))
-      (read-char port)) ; return eof: we’re done
-     (else
-      (match (wisp-scheme-read-chunk port)
-        (() #false)
-        ((chunk . _) chunk))))))
+(define wisp (lookup-language 'wisp))
+(define wisp-reader (language-reader wisp))
 
 
 ;;; Workflow profile and environment
