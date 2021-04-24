@@ -296,9 +296,6 @@ Use \"processes\" to specify process dependencies.~%"))
                                (derivation-output-path output)))
                             (map derivation-outputs drvs))))))))))
       (for-each (lambda (process script-file)
-                  (log-event 'debug
-                             (G_ "Recording script file for process `~a'~%")
-                             (process-name process))
                   (hash-set! h process script-file))
                 processes
                 file-names)
