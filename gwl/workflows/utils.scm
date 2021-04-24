@@ -284,8 +284,10 @@ where all the basic GWL modules are available."
        (lambda ()
          (set-current-module user-module)
 
-         ;; Hide the "auto-compiling" messages.
-         (parameterize ((current-warning-port (%make-void-port "w")))
+         (parameterize ((current-language (if (wisp-suffix file)
+                                              wisp (current-language)))
+                        ;; Hide the "auto-compiling" messages.
+                        (current-warning-port (%make-void-port "w")))
            (call-with-prompt tag
              (lambda ()
                ;; XXX: The Wisp reader fails to set source properties in all
@@ -294,10 +296,7 @@ where all the basic GWL modules are available."
                                (make-parameter file))
                ;; Give 'load' an absolute file name so that it doesn't
                ;; try to search for FILE in %LOAD-COMPILED-PATH.
-               (load (canonicalize-path file)
-                     (and (wisp-suffix file)
-                          (lambda (port)
-                            (wisp-reader port user-module)))))
+               (load (canonicalize-path file)))
              (const #f))))))
     (lambda _
       (exit 1))
