@@ -23,6 +23,8 @@
   #:use-module (ice-9 match)
   #:use-module (language wisp)
   #:use-module (system base language)
+  #:use-module ((system base compile)
+                #:select (default-optimization-level))
 
   #:use-module (gwl config)
   #:use-module (gwl errors)
@@ -284,7 +286,8 @@ where all the basic GWL modules are available."
        (lambda ()
          (set-current-module user-module)
 
-         (parameterize ((current-language (if (wisp-suffix file)
+         (parameterize ((default-optimization-level 0) ; make compilation fast
+                        (current-language (if (wisp-suffix file)
                                               wisp (current-language)))
                         ;; Hide the "auto-compiling" messages.
                         (current-warning-port (%make-void-port "w")))
