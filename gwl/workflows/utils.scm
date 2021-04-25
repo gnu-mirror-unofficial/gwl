@@ -183,7 +183,7 @@ modify the load path of the current process."
                        (map lookup-package package-names)))
        (profile       (profile (content manifest)))
        (profile-directory
-        (begin
+        (parameterize ((%guile-for-build (default-guile-derivation)))
           (log-event 'info (G_ "Building workflow profile.~%"))
           (with-status-verbosity (%config 'verbosity)
             (set-build-options-from-command-line
