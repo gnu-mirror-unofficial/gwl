@@ -23,6 +23,7 @@
                 #:select (load-workflow))
   #:use-module (ice-9 match)
   #:use-module (ice-9 format)
+  #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
@@ -32,6 +33,8 @@
             get
             file
             files
+
+            display-file
 
             normalize-file-name)
   #:re-export (load-workflow))
@@ -192,6 +195,20 @@ combinations."
        #`(map normalize-file-name
               (expand
                #,@(slash-transformer #'(rest ...))))))))
+
+(define* (display-file file-name #:optional max-lines)
+  "Print the contents of the text file FILE-NAME to the current output
+port, line by line.  When MAX-LINES is given, stop printing after
+MAX-LINES lines."
+  (call-with-input-file file-name
+    (lambda (port)
+      (let loop ((count 1))
+        (if (and max-lines (>= count max-lines)) #true
+            (let ((line (read-line port)))
+              (if (eof-object? line) #true
+                  (begin (display line)
+                         (newline)
+                         (loop (1+ count))))))))))
 
 
 ;; This is a marker at the top of a workflow file.  It is a list of

@@ -861,6 +861,13 @@ you want to extend previously defined workflows.  The argument
 @code{load-workflow}.
 @end deffn
 
+@cindex display-file
+@cindex displaying a file
+@deffn {Scheme Procedure} display-file @var{file} [@var{max-lines}]
+This procedure lets you display a @var{file}, or the first
+@var{max-lines} lines of a file.  This can be used to display a banner
+when the workflow starts, or to display a text report upon completion.
+@end deffn
 
 @cindex get, helper procedure
 @cindex get elements from a nested association list

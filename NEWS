@@ -12,6 +12,7 @@ Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 * Changes since 0.3.0
 ** Workflow syntax
 - the new =workflow= fields =before= and =after= can be used to specify procedures that are run before and after the workflow runs.  This can be useful for printing banners or further instructions.
+- new procedure =display-file= to print the content of files
 * Changes in 0.3.0 (since 0.2.1)
 ** Command line interface
 - Add sub-commands “run”, “graph”, and “web”; remove options from the main command.
