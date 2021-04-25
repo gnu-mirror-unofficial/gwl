@@ -20,6 +20,8 @@
   #:use-module (srfi srfi-35)
   #:use-module (pfds sets)
   #:use-module (ice-9 match)
+  #:use-module ((rnrs conditions)
+                #:select (irritants-condition? condition-irritants))
   #:use-module (guix gexp)
   #:use-module (guix colors)
   #:use-module (gwl ui)
@@ -147,6 +149,12 @@ a location object."
 
 (define (call-with-error-handling proc)
   (guard (c
+          ((and (irritants-condition? c)
+                (message-condition? c))
+           (log-event 'error
+                      (apply format #false
+                             (string-append (condition-message c) "\n")
+                             (condition-irritants c))))
           ((message-condition? c)
            (log-event 'error
                       (string-append (condition-message c) "\n"))
