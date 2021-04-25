@@ -183,17 +183,19 @@ modify the load path of the current process."
                        (map lookup-package package-names)))
        (profile       (profile (content manifest)))
        (profile-directory
-        (with-status-verbosity (%config 'verbosity)
-          (set-build-options-from-command-line
-           (inferior-store) %package-default-options)
-          (with-build-handler (build-notifier #:verbosity (%config 'verbosity))
-            (run-with-store (inferior-store)
-              (mlet* %store-monad
-                  ((drv (lower-object profile))
-                   (_ (built-derivations (list drv))))
-                (match (derivation-outputs drv)
-                  (((_ . output) . rest)
-                   (return (derivation-output-path output))))))))))
+        (begin
+          (log-event 'info (G_ "Building workflow profile.~%"))
+          (with-status-verbosity (%config 'verbosity)
+            (set-build-options-from-command-line
+             (inferior-store) %package-default-options)
+            (with-build-handler (build-notifier #:verbosity (%config 'verbosity))
+              (run-with-store (inferior-store)
+                (mlet* %store-monad
+                    ((drv (lower-object profile))
+                     (_ (built-derivations (list drv))))
+                  (match (derivation-outputs drv)
+                    (((_ . output) . rest)
+                     (return (derivation-output-path output)))))))))))
     (for-each (match-lambda
                 ((($ <search-path-specification>
                      "GUILE_LOAD_PATH" _ separator) . value)
