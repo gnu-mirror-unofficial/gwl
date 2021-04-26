@@ -40,6 +40,7 @@ AC_SUBST([guileobjectdir])
 GUILE_MODULE_REQUIRED(language wisp spec)
 GUILE_MODULE_REQUIRED(gcrypt hash)
 GUILE_MODULE_REQUIRED(pfds sets)
+GUILE_MODULE_REQUIRED(drmaa v1 high)
 GUILE_MODULE_REQUIRED(config)
 AC_PATH_PROG([DOT], [dot])
 if test "x$DOT" = "x"; then
