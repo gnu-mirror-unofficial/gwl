@@ -141,29 +141,28 @@ prefix for its outputs."
   (and=> (stat file #f)
          (lambda (st) (eq? 'directory (stat:type st)))))
 
-(define (link-or-symlink source target)
-  ;; Cross-device links don't work, of course, so we try symlinking
-  ;; on error.
+(define (link-or-copy source target)
+  ;; Cross-device links don't work, of course, so we copy on error.
   (catch 'system-error
     (lambda ()
       (link source target))
     (lambda (key . args)
       (if (string=? "link" (car args))
-          (symlink source target)
+          (copy-file source target)
           (throw key args)))))
 
 (define (cache! file cache-prefix)
   "Cache FILE by linking it to the directory CACHE-PREFIX."
   (unless (directory? file)
     (mkdir-p (string-append cache-prefix (dirname file)))
-    ;; TODO: cross-device links don't work, of course.  Copy?  Symlink?
+    ;; TODO: cross-device links don't work, of course.  Copy?
     ;; Make this configurable?
     (let ((cached-file (string-append cache-prefix file)))
       (when (file-exists? cached-file)
         (delete-file cached-file))
       (log-event 'cache (G_ "Caching `~a' as `~a'~%")
                  file cached-file)
-      (link-or-symlink file cached-file))))
+      (link-or-copy file cached-file))))
 
 (define (restore! file cache-prefix)
   "Restore FILE from the cache at CACHE-PREFIX."
@@ -173,4 +172,4 @@ prefix for its outputs."
       (delete-file file))
     (log-event 'cache (G_ "Restoring `~a' to `~a'~%")
                (string-append cache-prefix file) file)
-    (link-or-symlink (string-append cache-prefix file) file)))
+    (link-or-copy (string-append cache-prefix file) file)))
