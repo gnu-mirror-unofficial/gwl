@@ -67,4 +67,4 @@
                 ,content-tree)
            (div (@ (id "footer"))
                 (p (a (@ (href ,%gwl-git-browse-url))
-                      "Download the source code of this page") ".")))))))
+                      "Download the source code of this web site") ".")))))))

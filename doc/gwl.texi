@@ -255,7 +255,7 @@ use to invoke @command{guix workflow}.
 @cindex packages, from channels
 Package variables are useful for one-off ad-hoc packages that are not
 contained in any channel and are defined in the workflow file itself.
-You suggest you use the procedure @code{lookup-package} from the
+We suggest you use the procedure @code{lookup-package} from the
 @code{(gwl packages)} module to look up inputs in the context of the
 current Guix.  To ensure reproducibility, however, we urge you to
 publish packages in a version-controlled channel.  See the Guix
