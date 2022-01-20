@@ -2,7 +2,7 @@
 
 #+TITLE: Hacking on the Guix Workflow Language
 
-Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
+Copyright © 2018-2022 Ricardo Wurmus <rekado@elephly.net>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -13,7 +13,7 @@ Copyright © 2018 Ricardo Wurmus <rekado@elephly.net>
 You can use Guix to set up a development environment:
 
 #+BEGIN_SRC shell
-guix environment -L channel --load=.guix.scm
+guix shell
 #+END_SRC
 
 * Commit access
@@ -31,5 +31,5 @@ git config user.signingkey CABBA6EA1DC0FF33
 
 When pushing a commit on behalf of somebody else, please add a
 Signed-off-by line at the end of the commit log message (e.g. with
-‘git am --signoff’).  This improves tracking of who did what.
+git am --signoff’).  This improves tracking of who did what.
 
