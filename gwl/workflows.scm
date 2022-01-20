@@ -586,7 +586,14 @@ container."
                              (G_ "Executing: ~{~a ~}~%") command)
 
                   (let* ((status   (run-process-command command))
+                         (signal   (status:term-sig status))
                          (exit-val (status:exit-val status)))
+                    (when signal
+                      (log-event 'error
+                                 (G_ "process `~a' termined with signal ~a.~%")
+                                 (process-name process)
+                                 signal)
+                      (exit exit-val))
                     (unless (zero? exit-val)
                       (log-event 'error
                                  (G_ "process `~a' failed with return value ~a.~%")
