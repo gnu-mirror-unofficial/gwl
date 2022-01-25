@@ -212,11 +212,13 @@ Use \"processes\" to specify process dependencies.~%"))
 
 (define-immutable-record-type <computed-workflow>
   (make-computed-workflow workflow
+                          name-proc
                           script-proc
                           ordered-processes
                           cache-prefix-proc)
   computed-workflow?
   (workflow           computed-workflow-workflow)           ; <workflow>
+  (name-proc          computed-workflow-name-proc)          ; procedure taking a <process>
   (script-proc        computed-workflow-script-proc)        ; procedure taking a <process>
   (ordered-processes  computed-workflow-ordered-processes)  ; list (of lists) of <process>
   (cache-prefix-proc  computed-workflow-cache-prefix-proc)) ; procedure taking a <process>
@@ -325,7 +327,24 @@ Use \"processes\" to specify process dependencies.~%"))
                                 ordered-processes
                                 wrapper-script-files-table))
 
+  (define (process->job-name process)
+    "Returns a valid job name for PROCESS."
+    (define sanitize-job-name
+      ;; These characters are not okay for SGE job names.
+      (let ((bad-chars (char-set #\/ #\: #\@ #\\ #\* #\?)))
+        (lambda (name)
+          (string-map
+           (lambda (x)
+             (if (char-set-contains? bad-chars x) #\- x)) name))))
+    (string-append "gwl-"
+                   (sanitize-job-name
+                    (format #false "~a-~a"
+                            (process-full-name process)
+                            (process->hash-string process
+                                                  plain-scripts-table)))))
+
   (make-computed-workflow workflow
+                          process->job-name
                           script-for-process
                           ordered-processes
                           process->cache-prefix))
@@ -555,7 +574,10 @@ container."
   (define script-for-process
     (computed-workflow-script-proc computed-workflow))
 
-  (define* (run-local #:key built-script process command cache-prefix)
+  (define process->job-name
+    (computed-workflow-name-proc computed-workflow))
+
+  (define* (run-local #:key built-script process command cache-prefix job-name)
     (let* ((status   (run-process-command command))
            (signal   (status:term-sig status))
            (exit-val (status:exit-val status)))
@@ -631,7 +653,8 @@ container."
                   (run* #:built-script built-script
                         #:process process
                         #:command command
-                        #:cache-prefix cache-prefix)))))))
+                        #:cache-prefix cache-prefix
+                        #:job-name (process->job-name process))))))))
 
   ((workflow-before workflow))
   (fold (workflow-kons run)

@@ -59,6 +59,7 @@
 
 (define computed-workflow
   ((@@ (gwl workflows) make-computed-workflow) wf
+   (const "name")
    (const #false)
    (workflow-run-order wf #:parallel? #true)
    (const %cache-prefix)))
