@@ -113,8 +113,9 @@ bootstrap the build system first.  Run @code{autoreconf -vif} first and
 then perform the above steps.
 
 Note that in order for Guix to learn about the ``workflow''
-sub-command provided by the GWL, the Guile module @code{(guix scripts
-workflow)} must be found in a directory on the @code{GUIX_EXTENSIONS_PATH}.
+sub-command provided by the GWL, the @file{guix/extensions} directory
+provided by the GWL must be added to the list of directories in the
+@code{GUIX_EXTENSIONS_PATH} environment variable.
 
 @c *********************************************************************
 @node A Simple Workflow
