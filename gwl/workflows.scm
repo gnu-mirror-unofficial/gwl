@@ -28,6 +28,7 @@
   #:use-module (guix monads)
   #:use-module (guix store)
   #:use-module (guix gexp)
+  #:use-module (drmaa v1 high)
   #:use-module ((guix derivations)
                 #:select (built-derivations
                           derivation-outputs
@@ -614,6 +615,35 @@ container."
     ;; Link files to the cache.
     (for-each (cut cache! <> cache-prefix)
               (process-outputs process)))
+
+  (define* (run-drmaa #:key built-script process command cache-prefix job-name)
+    (let ((jid
+           (run-job
+            (job-template #:job-name job-name
+                          #:remote-command built-script
+                          #:arguments
+                          (list
+                           (format #false "'~S'"
+                                   (process->script-arguments process))))))
+          (continuation
+           (lambda ()
+             ;; Abort if declared outputs are missing.
+             (for-each (lambda (output)
+                         (let ((canonical-name (if (absolute-file-name? output)
+                                                   output
+                                                   (string-append (getcwd) "/" output))))
+                           (unless (file-exists? canonical-name)
+                             (log-event 'error
+                                        (G_ "process `~a' failed to produce output ~a.~%")
+                                        (process-name process)
+                                        output)
+                             (exit 1))))
+                       (process-outputs process))
+
+             ;; Link files to the cache.
+             (for-each (cut cache! <> cache-prefix)
+                       (process-outputs process)))))
+      (list jid continuation)))
 
   (define* (run process #:optional (run* run-local))
     (let ((cache-prefix (process->cache-prefix process)))
