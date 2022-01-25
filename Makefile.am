@@ -1,6 +1,6 @@
 # gwl - Workflow management extension for GNU Guix
 # Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-# Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+# Copyright © 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Affero General Public License
@@ -31,6 +31,7 @@ SOURCES =                                                 \
   gwl/process-engines.scm                                 \
   gwl/process-engines/simple-engine.scm                   \
   gwl/process-engines/bash-engine.scm                     \
+  gwl/process-engines/drmaa-engine.scm                    \
   gwl/process-engines/grid-engine.scm                     \
   gwl/utils.scm                                           \
   gwl/ui.scm                                              \

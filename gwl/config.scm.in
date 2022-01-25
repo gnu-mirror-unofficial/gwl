@@ -110,6 +110,7 @@ workflow.")
          (test (lambda (value)
                  (member value '("simple-engine"
                                  "bash-engine"
+                                 "drmaa-engine"
                                  "grid-engine")))))
         (switch
          (name 'force)
