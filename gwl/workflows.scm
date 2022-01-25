@@ -689,7 +689,7 @@ container."
                         #:job-name (process->job-name process))))))))
 
   ((workflow-before workflow))
-  (fold (workflow-kons run)
-        '()
-        (computed-workflow-ordered-processes computed-workflow))
+  ((process-engine-run engine)
+   #:wrap run
+   #:processes (computed-workflow-ordered-processes computed-workflow))
   ((workflow-after workflow)))
