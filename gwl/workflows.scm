@@ -647,7 +647,9 @@ container."
                        (process-outputs process)))))
       (list jid continuation)))
 
-  (define* (run process #:optional (run* run-local))
+  (define* (execution-wrapper process #:optional (run run-local))
+    "Use the procedure RUN to launch the script for PROCESS.  This
+procedure wraps the actual runner by adding logging and cache checks."
     (let ((cache-prefix (process->cache-prefix process)))
       (if (cached? process)
           (if dry-run?
@@ -682,14 +684,14 @@ container."
                 (begin
                   (log-event 'execute
                              (G_ "Executing: ~{~a ~}~%") command)
-                  (run* #:built-script built-script
-                        #:process process
-                        #:command command
-                        #:cache-prefix cache-prefix
-                        #:job-name (process->job-name process))))))))
+                  (run #:built-script built-script
+                       #:process process
+                       #:command command
+                       #:cache-prefix cache-prefix
+                       #:job-name (process->job-name process))))))))
 
   ((workflow-before workflow))
   ((process-engine-run engine)
-   #:wrap run
+   #:wrap execution-wrapper
    #:processes (computed-workflow-ordered-processes computed-workflow))
   ((workflow-after workflow)))
