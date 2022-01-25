@@ -1,5 +1,5 @@
 ;;; Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -558,10 +558,12 @@ container."
     (let ((cache-prefix (process->cache-prefix process)))
       (if (cached? process)
           (if dry-run?
-              (log-event 'execute
-                         (G_ "Would skip process \"~a\" (cached at ~a).~%")
-                         (process-name process)
-                         cache-prefix)
+              (begin
+                (log-event 'execute
+                           (G_ "Would skip process \"~a\" (cached at ~a).~%")
+                           (process-name process)
+                           cache-prefix)
+                #false)
               (begin
                 (log-event 'execute
                            (G_ "Skipping process \"~a\" (cached at ~a).~%")
@@ -571,7 +573,8 @@ container."
                 ;; if containerized.  Otherwise link files from
                 ;; cache to expected location.
                 (for-each (cut restore! <> cache-prefix)
-                          (process-outputs process))))
+                          (process-outputs process))
+                #false))
 
           ;; Not cached: execute the process!
           (let* ((built-script (script-for-process process))
@@ -579,8 +582,10 @@ container."
                                         (format #false "'~S'"
                                                 (process->script-arguments process))))))
             (if dry-run?
-                (log-event 'execute
-                           (G_ "Would execute: ~{~a ~}~%") command)
+                (begin
+                  (log-event 'execute
+                             (G_ "Would execute: ~{~a ~}~%") command)
+                  #false)
                 (begin
                   (log-event 'execute
                              (G_ "Executing: ~{~a ~}~%") command)
