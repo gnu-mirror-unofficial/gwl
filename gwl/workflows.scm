@@ -554,7 +554,46 @@ container."
                         (process-outputs process)))))))
   (define script-for-process
     (computed-workflow-script-proc computed-workflow))
-  (define (run process)
+
+  (define* (run-local #:key built-script process command cache-prefix)
+    (let* ((status   (run-process-command command))
+           (signal   (status:term-sig status))
+           (exit-val (status:exit-val status)))
+      (when signal
+        (log-event 'error
+                   (G_ "process `~a' termined with signal ~a.~%")
+                   (process-name process)
+                   signal)
+        (exit exit-val))
+      (unless (zero? exit-val)
+        (log-event 'error
+                   (G_ "process `~a' failed with return value ~a.~%")
+                   (process-name process)
+                   exit-val)
+        (exit exit-val)))
+    ;; Wait before generated files are accessed.
+    ;; This may be needed for distributed file
+    ;; systems.
+    (usleep (%cache-delay))
+
+    ;; Abort if declared outputs are missing.
+    (for-each (lambda (output)
+                (let ((canonical-name (if (absolute-file-name? output)
+                                          output
+                                          (string-append (getcwd) "/" output))))
+                  (unless (file-exists? canonical-name)
+                    (log-event 'error
+                               (G_ "process `~a' failed to produce output ~a.~%")
+                               (process-name process)
+                               output)
+                    (exit 1))))
+              (process-outputs process))
+
+    ;; Link files to the cache.
+    (for-each (cut cache! <> cache-prefix)
+              (process-outputs process)))
+
+  (define* (run process #:optional (run* run-local))
     (let ((cache-prefix (process->cache-prefix process)))
       (if (cached? process)
           (if dry-run?
@@ -589,43 +628,11 @@ container."
                 (begin
                   (log-event 'execute
                              (G_ "Executing: ~{~a ~}~%") command)
+                  (run* #:built-script built-script
+                        #:process process
+                        #:command command
+                        #:cache-prefix cache-prefix)))))))
 
-                  (let* ((status   (run-process-command command))
-                         (signal   (status:term-sig status))
-                         (exit-val (status:exit-val status)))
-                    (when signal
-                      (log-event 'error
-                                 (G_ "process `~a' termined with signal ~a.~%")
-                                 (process-name process)
-                                 signal)
-                      (exit exit-val))
-                    (unless (zero? exit-val)
-                      (log-event 'error
-                                 (G_ "process `~a' failed with return value ~a.~%")
-                                 (process-name process)
-                                 exit-val)
-                      (exit exit-val)))
-                  ;; Wait before generated files are accessed.
-                  ;; This may be needed for distributed file
-                  ;; systems.
-                  (usleep (%cache-delay))
-
-                  ;; Abort if declared outputs are missing.
-                  (for-each (lambda (output)
-                              (let ((canonical-name (if (absolute-file-name? output)
-                                                        output
-                                                        (string-append (getcwd) "/" output))))
-                                (unless (file-exists? canonical-name)
-                                  (log-event 'error
-                                             (G_ "process `~a' failed to produce output ~a.~%")
-                                             (process-name process)
-                                             output)
-                                  (exit 1))))
-                            (process-outputs process))
-
-                  ;; Link files to the cache.
-                  (for-each (cut cache! <> cache-prefix)
-                            (process-outputs process))))))))
   ((workflow-before workflow))
   (fold (workflow-kons run)
         '()
