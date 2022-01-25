@@ -1,5 +1,5 @@
 ;;; Copyright © 2017, 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2018-2022 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (gwl process-engines)
+  #:use-module ((gwl workflows) #:select (workflow-kons))
   #:use-module (oop goops)
   #:use-module (srfi srfi-1)
   #:export (process-engine
@@ -22,6 +23,7 @@
             process-engine-name
             process-engine-wrapper
             process-engine-runner
+            process-engine-run
             find-engine-by-name))
 
 ;;; ---------------------------------------------------------------------------
@@ -42,7 +44,13 @@
   (runner
    #:init-value identity
    #:init-keyword #:runner
-   #:accessor process-engine-runner))
+   #:accessor process-engine-runner)
+  (run
+   #:init-value
+   (lambda* (#:key wrap processes)
+     (fold (workflow-kons wrap) '() processes))
+   #:init-keyword #:run
+   #:accessor process-engine-run))
 
 ;; Convenient DSL-like constructor.
 (define-syntax process-engine

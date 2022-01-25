@@ -61,6 +61,8 @@
             workflow-synopsis
             workflow-description
 
+            workflow-kons
+
             print-workflow-record
 
             compute-workflow
