@@ -660,6 +660,10 @@ procedure wraps the actual runner by adding logging and cache checks."
                        #:cache-prefix cache-prefix
                        #:job-name (process->job-name process))))))))
 
+  ;; Ensure that the environment for the selected process engine is
+  ;; fine before doing any work.
+  ((process-engine-check engine))
+
   ((workflow-before workflow))
   ((process-engine-run engine)
    #:wrap execution-wrapper

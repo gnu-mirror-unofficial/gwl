@@ -24,6 +24,7 @@
             process-engine-wrapper
             process-engine-runner
             process-engine-run
+            process-engine-check
             find-engine-by-name))
 
 ;;; ---------------------------------------------------------------------------
@@ -50,7 +51,11 @@
    (lambda* (#:key wrap processes)
      (fold (workflow-kons wrap) '() processes))
    #:init-keyword #:run
-   #:accessor process-engine-run))
+   #:accessor process-engine-run)
+  (check
+   #:init-value (const #true)
+   #:init-keyword #:check
+   #:accessor process-engine-check))
 
 ;; Convenient DSL-like constructor.
 (define-syntax process-engine
