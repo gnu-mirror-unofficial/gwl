@@ -3,7 +3,7 @@
 #+STARTUP: content hidestars
 
 Copyright © 2016, 2017, 2018 Roel Janssen <roel@gnu.org>
-Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+Copyright © 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -13,6 +13,11 @@ Copyright © 2018, 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
 ** Workflow syntax
 - the new =workflow= fields =before= and =after= can be used to specify procedures that are run before and after the workflow runs.  This can be useful for printing banners or further instructions.
 - new procedure =display-file= to print the content of files
+** Execution engines
+- Process engines can now specify a procedure in the =check= field to validate the execution environment before running the workflow.
+- Process engines have a new =run= field specifying how ordered processes should be iterated over.
+- The new =drmaa-engine= supports job submission to schedulers implementing DRMAA version 1.
+- The =grid-engine= is deprecated and will be removed in future releases.  Use the =drmaa-engine= instead.
 ** Bug fixes
 - the cache feature would symlink if hardlinking was not possible.  This was incorrect and now it falls back to copying files to and from the cache when hardlinking fails.
 * Changes in 0.3.0 (since 0.2.1)
