@@ -1,4 +1,4 @@
-;;; Copyright © 2019, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
   #:use-module (gwl errors)
   #:use-module (guix colors)
   #:use-module (srfi srfi-26)
+  #:use-module (ice-9 format)
   #:export (G_
             log-event
 
@@ -84,4 +85,7 @@
        (print-diagnostic-prefix (G_ "guix: ") #:colors %execute-color))
       (else #true))
     (force-output (current-error-port))
+    (format (current-error-port) "~2,2f "
+            (/ (get-internal-real-time)
+               internal-time-units-per-second))
     (apply format (current-error-port) message)))
