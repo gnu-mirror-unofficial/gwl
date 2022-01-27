@@ -18,6 +18,7 @@
 
 (define-module (gwl process-engines drmaa-engine)
   #:use-module (gwl cache)
+  #:use-module (gwl errors)
   #:use-module (gwl process-engines)
   #:use-module (gwl processes)
   #:use-module (gwl ui)
@@ -26,6 +27,8 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34)
+  #:use-module (srfi srfi-35)
   #:export (drmaa-engine))
 
 (define* (run! #:key wrap processes)
@@ -89,4 +92,15 @@ execution with the logger/cacher procedure WRAP."
 (define drmaa-engine
   (process-engine
    (name "drmaa-engine")
-   (run run!)))
+   (run run!)
+   (check
+    (lambda ()
+      (let ((libdrmaa (getenv "GUILE_DRMAA_LIBRARY")))
+        (unless (and libdrmaa
+                     (file-exists? libdrmaa))
+          (raise
+           (condition
+            (&gwl-error)
+            (&message
+             (message
+              "To use DRMAA set the GUILE_DRMAA_LIBRARY environment variable to the absolute file name of libdrmaa.so.~%"))))))))))
