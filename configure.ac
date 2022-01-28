@@ -1,6 +1,6 @@
 dnl gwl - Workflow management extension for GNU Guix
 dnl Copyright © 2017 Roel Janssen <roel@gnu.org>
-dnl Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+dnl Copyright © 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ dnl along with this program. If not, see <http://www.gnu.org/licenses/>.
 dnl -*- Autoconf -*-
 
 AC_INIT([GNU GWL],
-  [0.3.0],
+  [0.4.0],
   [gwl-devel@gnu.org], [gwl],
   [https://www.gnu.org/software/gwl/])
 AC_CONFIG_AUX_DIR([build-aux])
