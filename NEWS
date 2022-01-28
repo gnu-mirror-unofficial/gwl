@@ -9,7 +9,7 @@ Copyright © 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.
 
-* Changes since 0.3.0
+* Changes in 0.4.0 (since 0.3.0)
 ** Workflow syntax
 - the new =workflow= fields =before= and =after= can be used to specify procedures that are run before and after the workflow runs.  This can be useful for printing banners or further instructions.
 - new procedure =display-file= to print the content of files
