@@ -1389,12 +1389,29 @@ a Guile script that sets up the desired environment and then executes
 the workflow processes on the current machine.  This is what the
 @code{simple-engine} does.
 
+@cindex drmaa-engine, Process Engine
+The @code{drmaa-engine} submits generated process scripts to an HPC
+cluster scheduler implementing
+@url{https://en.wikipedia.org/wiki/DRMAA, DRMAA version 1}, such as
+the various incarnations of
+@url{https://en.wikipedia.org/wiki/Oracle_Grid_Engine, Grid Engine} or
+@url{https://slurm.schedmd.com/, Slurm}.  To use this engine you must
+first set the environment variable @code{GUILE_DRMAA_LIBRARY} to the
+location of the @file{libdrmaa.so} shared library provided by your HPC
+scheduler.  Here is an example command from a system using Altair Grid
+Engine:
+
+@example
+export GUILE_DRMAA_LIBRARY=/opt/age-8.7.0/drmaa/lib/lx-amd64/libdrmaa.so
+@end example
+
 @cindex grid-engine, Process Engine
 The @code{grid-engine} is similar to the @code{simple-engine} in that
 it generates a shell script, with the difference that it also includes
 resource variable definitions for submission to a Grid Engine
 scheduling system.  The resource variables are derived from the
-process @code{run-time} field.
+process @code{run-time} field.  This process engine is deprecated in
+favor of @code{drmaa-engine}.
 
 @c *********************************************************************
 @node Invoking guix workflow
