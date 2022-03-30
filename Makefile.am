@@ -117,8 +117,9 @@ EXTRA_DIST +=      \
 
 # Handle substitution of fully-expanded Autoconf variables.
 do_subst = $(SED)					\
-  -e 's,[@]GUILE_LOAD_COMPILED_PATH[@],$(GUILE_LOAD_COMPILED_PATH),g'				\
-  -e 's,[@]GUILE_LOAD_PATH[@],$(GUILE_LOAD_PATH),g'				\
+  -e 's,[@]GUILE[@],$(GUILE),g'											\
+  -e 's,[@]GUILE_LOAD_COMPILED_PATH[@],$(GUILE_LOAD_COMPILED_PATH),g'	\
+  -e 's,[@]GUILE_LOAD_PATH[@],$(GUILE_LOAD_PATH),g'						\
   -e 's,[@]guilemoduledir[@],$(guilemoduledir),g'	\
   -e 's,[@]guileobjectdir[@],$(guileobjectdir),g'	\
   -e 's,[@]abs_top_srcdir[@],$(abs_top_srcdir),g'	\

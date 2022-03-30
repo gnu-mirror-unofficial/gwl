@@ -1,4 +1,4 @@
-;;; Copyright © 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 
 (define-module (guix extensions workflow)
   #:use-module (guix scripts)
+  #:use-module (ice-9 match)
   #:export (guix-workflow))
 
 ;; IMPORTANT: We must avoid loading any modules from the GWL here,
@@ -70,7 +71,14 @@
   (synopsis "execute or visualize workflows")
 
   (replace-load-paths!)
-  (let ((main (module-ref (resolve-interface '(gwl main))
-                          'guix-workflow-main)))
-    ;;(bindtextdomain "guix-workflow" "@localedir@")
-    (apply main args)))
+  (match (command-line)
+    ((guix workflow . args)
+     (setenv "GUILE_LOAD_PATH"
+             (string-join %load-path ":"))
+     (setenv "GUILE_LOAD_COMPILED_PATH"
+             (string-join %load-compiled-path ":"))
+     (setenv "_GWL_INVOKING_GUIX"
+             (dirname (dirname guix)))
+     (apply system* "@GUILE@" "-q"
+            "-c" "(apply (@ (gwl main) guix-workflow-main) (command-line))"
+            "--" args))))

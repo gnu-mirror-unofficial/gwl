@@ -37,10 +37,7 @@
 ;;;
 
 (define (guix-workflow-main . args)
-  (setenv "_GWL_INVOKING_GUIX"
-          (dirname (dirname (car (command-line)))))
-  ;; We use the cdr here, because the first word will always be "guix"
-  (let ((opts (getopt-config-auto (cdr (command-line)) config)))
+  (let ((opts (getopt-config-auto (cdr args) config)))
     ;; Initialize %config
     (%config opts)
 
@@ -72,7 +69,7 @@
 
                  ;; Run the workflow
                  ;; TODO: see https://gitlab.com/a-sassmannshausen/guile-config/-/issues/15
-                 (let* ((options (or (s37:args-fold (cdr (command-line))
+                 (let* ((options (or (s37:args-fold (cdr args)
                                                     (list (s37:option '(#\i "input") #t #f
                                                                       (lambda (opt name arg result . rest)
                                                                         (apply values
