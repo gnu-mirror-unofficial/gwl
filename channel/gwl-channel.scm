@@ -24,10 +24,14 @@
              (guix transformations)
              (guix utils)
              (gnu packages base)
+             (gnu packages autotools)
              (gnu packages package-management)
+             (gnu packages pkg-config)
              (gnu packages gnupg)
              (gnu packages guile-xyz)
+             (gnu packages graphviz)
              (gnu packages tex)
+             (gnu packages texinfo)
              (gnu packages perl)
              (gnu packages rsync)
              (gnu packages ssh)
@@ -123,19 +127,26 @@ returns a boolean to determine whether rewriting should continue."
            (p guile-syntax-highlight)
            (p guile-wisp)))
     (native-inputs
-     (modify-inputs (package-native-inputs gwl)
-       (append (list
-                ;; for make distcheck
-                texlive-tiny
-                sed
+     (append
+         (list autoconf automake pkg-config texinfo graphviz)
+         (list
+          coreutils
+          ;; for make distcheck
+          (texlive-updmap.cfg
+           (list texlive-base
+                 texlive-amsfonts))
 
-                ;; For "make release"
-                perl
-                git-minimal
+          sed
 
-                ;; For manual post processing
-                guile-lib
-                rsync
+          ;; For "make release"
+          perl
+          git-minimal
 
-                ;; For "git push"
-                openssh))))))
+          ;; For manual post processing
+          guile-lib
+          rsync
+
+          ;; For "git push"
+          openssh)))))
+
+gwl/devel
