@@ -132,9 +132,8 @@ returns a boolean to determine whether rewriting should continue."
          (list
           coreutils
           ;; for make distcheck
-          (texlive-updmap.cfg
-           (list texlive-base
-                 texlive-amsfonts))
+          texlive-base
+          texlive-amsfonts
 
           sed
 
