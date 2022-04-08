@@ -252,7 +252,7 @@ Use \"processes\" to specify process dependencies.~%"))
                     ;; scripts by procedure.
                     (or (and=> (hash-ref procedure-table key)
                                (lambda (script)
-                                 (hash-set! h process script)))
+                                 (hashq-set! h process script)))
 
                         ;; Otherwise compute the script object and
                         ;; record it for later.
@@ -264,7 +264,7 @@ Use \"processes\" to specify process dependencies.~%"))
                                                          #:containerize? containerize?
                                                          #:workflow workflow
                                                          #:input-files input-files)))
-                            (hash-set! h process script)
+                            (hashq-set! h process script)
                             (hash-set! procedure-table key script))))))
                 (workflow-processes workflow))
       h))
@@ -276,11 +276,11 @@ Use \"processes\" to specify process dependencies.~%"))
                         (log-event 'debug
                                    (G_ "Computing wrapper script for process `~a'~%")
                                    (process-name process))
-                        (hash-set! h process
-                                   (process->script-wrapper process
-                                                            #:make-wrapper make-wrapper
-                                                            #:workflow workflow
-                                                            #:scripts-table scripts-table)))
+                        (hashq-set! h process
+                                    (process->script-wrapper process
+                                                             #:make-wrapper make-wrapper
+                                                             #:workflow workflow
+                                                             #:scripts-table scripts-table)))
                       (workflow-processes workflow))
             h)
           scripts-table)))
@@ -288,7 +288,7 @@ Use \"processes\" to specify process dependencies.~%"))
     (let* ((h (make-hash-table))
            (processes (workflow-processes workflow))
            (scripts (map-in-order (lambda (process)
-                                    (hash-ref scripts-table process))
+                                    (hashq-ref scripts-table process))
                                   processes))
            (file-names
             (parameterize ((%guile-for-build (default-guile-derivation)))
@@ -308,7 +308,7 @@ Use \"processes\" to specify process dependencies.~%"))
                                (derivation-output-path output)))
                             (map derivation-outputs drvs))))))))))
       (for-each (lambda (process script-file)
-                  (hash-set! h process script-file))
+                  (hashq-set! h process script-file))
                 processes
                 file-names)
       h))
@@ -321,7 +321,7 @@ Use \"processes\" to specify process dependencies.~%"))
   (define wrapper-script-files-table
     (script-files-by-process wrapper-scripts-table))
   (define (script-for-process process)
-    (hash-ref wrapper-script-files-table process))
+    (hashq-ref wrapper-script-files-table process))
 
   (define process->cache-prefix
     (make-process->cache-prefix workflow
