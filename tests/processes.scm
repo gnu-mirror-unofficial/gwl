@@ -18,6 +18,7 @@
   #:use-module (gwl errors)
   #:use-module (gwl sugar reader)
   #:use-module (guix gexp)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1) ; this is available at run time
   #:use-module (srfi srfi-34)
   #:use-module (srfi srfi-35)
@@ -166,12 +167,21 @@ cat("hello from R")
 
 (test-assert "compile-procedure supports any kind of code"
   (let* ((proc (make-process
-                (name "bash")
-                (procedure # /bin/bash -c { echo "hello from bash" })))
+                (name "guile")
+                (procedure # /path/to/guile -c { (display "hello from guile") })))
          (snippet (process-procedure proc)))
     (and (code-snippet? snippet)
-         (eq? '/bin/bash (code-snippet-language snippet))
+         (eq? '/path/to/guile (code-snippet-language snippet))
          (equal? '("-c") (code-snippet-arguments snippet))
-         (pair? (compile-procedure proc)))))
+         (pair? (compile-procedure proc))
+         (match (compile-procedure proc)
+           (('begin
+              ('use-modules mods)
+              ('for-each . whatever)
+              ('let (('retval
+                      ('apply 'system*
+                              ('append ('list ('string-append ('getenv "_GWL_PROFILE") "/path/to/guile") "-c")
+                                  ('list ('string-join ('map some-proc ('list " (display \"hello from guile\") ")) ""))))))
+                ('or ('zero? 'retval) ('exit 'retval)))) #true)))))
 
 (test-end "processes")
