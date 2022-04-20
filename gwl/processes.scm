@@ -371,7 +371,7 @@ of PROCESS."
     ("_GWL_PROCESS_COMPLEXITY_TIME" .
      ,(or (and=> (process-time process) number->string) ""))))
 
-(define-syntax-rule (snippet-caller code-converter command)
+(define (snippet-caller code-converter command)
   (lambda (process code)
     `(begin
        (use-modules (srfi srfi-1))
@@ -384,40 +384,40 @@ of PROCESS."
                                  value))))
                  ',(process->env process))
        (let ((retval (apply system*
-                            (append command
-                                    (code-converter (string-join (map (lambda (val)
-                                                                        (if (list? val)
-                                                                            (format #f "~{~a~^ ~}" val)
-                                                                            (format #f "~a" val)))
-                                                                      (list ,@code))
-                                                                 ""))))))
+                            (append ,command
+                                    (,code-converter (string-join (map (lambda (val)
+                                                                         (if (list? val)
+                                                                             (format #f "~{~a~^ ~}" val)
+                                                                             (format #f "~a" val)))
+                                                                       (list ,@code))
+                                                                  ""))))))
          (or (zero? retval) (exit retval))))))
 
 (define language-python
   (make <language>
     #:name 'python
-    #:call (snippet-caller list '("python3" "-c"))))
+    #:call (snippet-caller 'list '(list "python3" "-c"))))
 
 (define language-r
   (make <language>
     #:name 'R
     #:call (snippet-caller
-            (lambda (code)
-              (append-map (lambda (line)
-                            (list "-e" line))
-                          (filter (negate string-null?)
-                                  (string-split code #\newline))))
-            '("Rscript"))))
+            '(lambda (code)
+               (append-map (lambda (line)
+                             (list "-e" line))
+                           (filter (negate string-null?)
+                                   (string-split code #\newline))))
+            '(list "Rscript"))))
 
 (define language-bash
   (make <language>
     #:name 'bash
-    #:call (snippet-caller list '("bash" "-c"))))
+    #:call (snippet-caller 'list '(list "bash" "-c"))))
 
 (define language-sh
   (make <language>
     #:name 'sh
-    #:call (snippet-caller list '("/bin/sh" "-c"))))
+    #:call (snippet-caller 'list '(list "/bin/sh" "-c"))))
 
 (define languages
   (list language-sh
@@ -471,10 +471,11 @@ written to a file."
                              language-call)
                       ;; There is no pre-defined way to execute the
                       ;; snippet.  Use generic approach.
-                      (snippet-caller list
-                                      (list
-                                       (string-append (getenv "_GWL_PROFILE")
-                                                      #$(sanitize-path (symbol->string name))))))))
+                      (snippet-caller 'list
+                                      `(list
+                                        (string-append (getenv "_GWL_PROFILE")
+                                                       ,(sanitize-path (symbol->string name)))
+                                        ,@(code-snippet-arguments snippet))))))
        (call process code)))))
 
 (define (run-process-command command)
