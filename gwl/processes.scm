@@ -562,7 +562,7 @@ the container."
               (write-passwd (list passwd))
               (write-group groups)
 
-              (system* #$script)
+              (apply system* #$script (cdr (command-line)))
 
               ;; Copy generated files to final directory.
               (for-each (lambda (output)
