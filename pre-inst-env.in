@@ -30,4 +30,7 @@ export PATH
 GWL_UNINSTALLED="t"
 export GWL_UNINSTALLED
 
+GUIX_EXTENSIONS_PATH="$abs_top_builddir/guix/extensions"
+export GUIX_EXTENSIONS_PATH
+
 exec "$@"
