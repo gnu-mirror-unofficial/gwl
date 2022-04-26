@@ -1,5 +1,5 @@
 ;;; Copyright © 2018 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2019, 2020, 2021 Ricardo Wurmus <rekado@elephly.net>
+;;; Copyright © 2019, 2020, 2021, 2022 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -34,6 +34,9 @@
         " and " (a (@ (href "https://www.gnu.org/software/gwl")) "GNU GWL")
         " have been installed already.  In case the GNU GWL hasn't been"
         " installed, run: " (code "guix install gwl"))
+
+     (p "Then tell Guix where to find the GWL extension: "
+        (code "export GUIX_EXTENSIONS_PATH=$HOME/.guix-profile/share/guix/extensions"))
 
      (h2 "Introduction")
 
